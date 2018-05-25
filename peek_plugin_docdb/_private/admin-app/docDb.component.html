@@ -1,0 +1,38 @@
+<div class="container">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <!-- Home Tab -->
+        <li role="presentation" class="active">
+            <a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a>
+        </li>
+        <!-- Edit Document Tab -->
+        <li role="presentation">
+            <a href="#editDocument" aria-controls="editDocument" role="tab"
+               data-toggle="tab">Edit Document</a>
+        </li>
+        <!-- Edit Settings Tab -->
+        <li role="presentation">
+            <a href="#editSetting" aria-controls="editSetting" role="tab"
+               data-toggle="tab">Edit Settings</a>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <!-- Edit Settings Tab -->
+        <div role="tabpanel" class="tab-pane" id="editSetting">
+            <pl-docdb-edit-setting></pl-docdb-edit-setting>
+        </div>
+        <!-- Edit Document Tab -->
+        <div role="tabpanel" class="tab-pane" id="editDocument">
+            <pl-docdb-edit-document></pl-docdb-edit-document>
+        </div>
+        <!-- Home Tab -->
+        <div role="tabpanel" class="tab-pane active" id="home">
+            <h1 class="text-center">DocDb Plugin</h1>
+            <p>Angular2 Lazy Loaded Module</p>
+            <p>This is the root of the admin app for the DocDb plugin</p>
+        </div>
+
+    </div>
+</div>

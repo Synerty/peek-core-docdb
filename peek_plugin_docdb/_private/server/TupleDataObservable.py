@@ -4,7 +4,7 @@ from peek_plugin_docdb._private.PluginNames import docDbFilt
 from peek_plugin_docdb._private.PluginNames import docDbObservableName
 
 from .tuple_providers.DocumentTupleProvider import DocumentTupleProvider
-from peek_plugin_docdb._private.storage.DocumentTuple import DocumentTuple
+from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
 
 
 def makeTupleDataObservableHandler(ormSessionCreator):
@@ -23,6 +23,6 @@ def makeTupleDataObservableHandler(ormSessionCreator):
                 additionalFilt=docDbFilt)
 
     # Register TupleProviders here
-    tupleObservable.addTupleProvider(DocumentTuple.tupleName(),
+    tupleObservable.addTupleProvider(DocDbDocument.tupleName(),
                                      DocumentTupleProvider(ormSessionCreator))
     return tupleObservable

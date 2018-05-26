@@ -7,7 +7,7 @@ from vortex.Payload import Payload
 from vortex.TupleSelector import TupleSelector
 from vortex.handler.TupleDataObservableHandler import TuplesProviderABC
 
-from peek_plugin_docdb._private.storage.DocumentTuple import DocumentTuple
+from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class DocumentTupleProvider(TuplesProviderABC):
 
         session = self._ormSessionCreator()
         try:
-            tasks = (session.query(DocumentTuple)
+            tasks = (session.query(DocDbDocument)
                 # Potentially filter the results
                 # .filter(DocumentTuple.val1 == val1)
                 .all()

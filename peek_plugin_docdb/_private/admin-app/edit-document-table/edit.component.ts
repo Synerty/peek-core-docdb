@@ -8,6 +8,7 @@ import {
 import {DocumentTuple,
     docDbFilt
 } from "@peek/peek_plugin_docdb/_private";
+import {Ng2BalloonMsgService} from "@synerty/ng2-balloon-msg";
 
 
 @Component({
@@ -25,7 +26,8 @@ export class EditDocumentComponent extends ComponentLifecycleEventEmitter {
 
     loader: TupleLoader;
 
-    constructor(vortexService: VortexService) {
+    constructor(private balloonMsg: Ng2BalloonMsgService,
+                vortexService: VortexService) {
         super();
 
         this.loader = vortexService.createTupleLoader(this,
@@ -68,7 +70,15 @@ export class EditDocumentComponent extends ComponentLifecycleEventEmitter {
                 if (itemsToDelete.length != 0) {
                     return this.loader.del(itemsToDelete);
                 }
-            });
+            })
+            .then(() => this.balloonMsg.showSuccess("Save Successful"))
+            .catch(e => this.balloonMsg.showError(e));
+    }
+
+    resetClicked() {
+        this.loader.load()
+            .then(() => this.balloonMsg.showSuccess("Reset Successful"))
+            .catch(e => this.balloonMsg.showError(e));
     }
 
 }

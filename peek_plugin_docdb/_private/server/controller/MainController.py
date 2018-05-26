@@ -8,7 +8,7 @@ from vortex.TupleAction import TupleActionABC
 from vortex.handler.TupleActionProcessor import TupleActionProcessorDelegateABC
 from vortex.handler.TupleDataObservableHandler import TupleDataObservableHandler
 
-from peek_plugin_docdb._private.storage.DocumentTuple import DocumentTuple
+from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
 from peek_plugin_docdb._private.tuples.AddIntValueActionTuple import AddIntValueActionTuple
 from peek_plugin_docdb._private.tuples.StringCapToggleActionTuple import StringCapToggleActionTuple
 
@@ -39,8 +39,8 @@ class MainController(TupleActionProcessorDelegateABC):
         try:
             # Perform update using SQLALchemy
             session = self._dbSessionCreator()
-            row = (session.query(DocumentTuple)
-                   .filter(DocumentTuple.id == action.documentId)
+            row = (session.query(DocDbDocument)
+                   .filter(DocDbDocument.id == action.documentId)
                    .one())
 
             # Exit early if the string is empty
@@ -59,7 +59,7 @@ class MainController(TupleActionProcessorDelegateABC):
 
             # Notify the observer of the update
             # This tuple selector must exactly match what the UI observes
-            tupleSelector = TupleSelector(DocumentTuple.tupleName(), {})
+            tupleSelector = TupleSelector(DocDbDocument.tupleName(), {})
             self._tupleObservable.notifyOfTupleUpdate(tupleSelector)
 
         finally:
@@ -71,8 +71,8 @@ class MainController(TupleActionProcessorDelegateABC):
         try:
             # Perform update using SQLALchemy
             session = self._dbSessionCreator()
-            row = (session.query(DocumentTuple)
-                   .filter(DocumentTuple.id == action.documentId)
+            row = (session.query(DocDbDocument)
+                   .filter(DocDbDocument.id == action.documentId)
                    .one())
             row.int1 += action.offset
             session.commit()
@@ -81,7 +81,7 @@ class MainController(TupleActionProcessorDelegateABC):
 
             # Notify the observer of the update
             # This tuple selector must exactly match what the UI observes
-            tupleSelector = TupleSelector(DocumentTuple.tupleName(), {})
+            tupleSelector = TupleSelector(DocDbDocument.tupleName(), {})
             self._tupleObservable.notifyOfTupleUpdate(tupleSelector)
 
         finally:

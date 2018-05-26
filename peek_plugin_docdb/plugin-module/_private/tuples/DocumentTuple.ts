@@ -6,14 +6,14 @@ import {docDbTuplePrefix} from "../PluginNames";
 export class DocumentTuple extends Tuple {
     public static readonly tupleName = docDbTuplePrefix + "DocumentTuple";
 
-    //  Description of date1
-    id : number;
+    //  The unique ID of this document (database generated)
+    id: number;
 
-    //  Description of string1
-    string1 : string;
+    //  The unique key of this document
+    key: string;
 
-    //  Description of int1
-    int1 : number;
+    // The document data
+    document: {};
 
     constructor() {
         super(DocumentTuple.tupleName)

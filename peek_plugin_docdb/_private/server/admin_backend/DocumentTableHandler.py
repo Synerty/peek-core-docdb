@@ -1,7 +1,7 @@
 import logging
 
 from peek_plugin_docdb._private.PluginNames import docDbFilt
-from peek_plugin_docdb._private.storage.DocumentTuple import DocumentTuple
+from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
 from vortex.TupleSelector import TupleSelector
 from vortex.handler.TupleDataObservableHandler import TupleDataObservableHandler
 from vortex.sqla_orm.OrmCrudHandler import OrmCrudHandler, OrmCrudHandlerExtension
@@ -32,7 +32,7 @@ class __ExtUpdateObservable(OrmCrudHandlerExtension):
         selector = {}
         # Copy any filter values into the selector
         # selector["lookupName"] = payloadFilt["lookupName"]
-        tupleSelector = TupleSelector(DocumentTuple.tupleName(),
+        tupleSelector = TupleSelector(DocDbDocument.tupleName(),
                                       selector)
         self._tupleDataObserver.notifyOfTupleUpdate(tupleSelector)
         return True
@@ -43,9 +43,9 @@ class __ExtUpdateObservable(OrmCrudHandlerExtension):
 
 # This method creates an instance of the handler class.
 def makeDocumentTableHandler(tupleObservable, dbSessionCreator):
-    handler = __CrudHandler(dbSessionCreator, DocumentTuple,
+    handler = __CrudHandler(dbSessionCreator, DocDbDocument,
                             filtKey, retreiveAll=True)
 
     logger.debug("Started")
-    handler.addExtension(DocumentTuple, __ExtUpdateObservable(tupleObservable))
+    handler.addExtension(DocDbDocument, __ExtUpdateObservable(tupleObservable))
     return handler

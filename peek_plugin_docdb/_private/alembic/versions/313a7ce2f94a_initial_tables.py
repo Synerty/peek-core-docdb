@@ -2,14 +2,14 @@
 
 Peek Plugin Database Migration Script
 
-Revision ID: d2a50061e57f
+Revision ID: 313a7ce2f94a
 Revises: 
-Create Date: 2018-05-26 09:23:25.572541
+Create Date: 2018-05-26 15:56:10.323502
 
 """
 
 # revision identifiers, used by Alembic.
-revision = 'd2a50061e57f'
+revision = '313a7ce2f94a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -42,7 +42,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('modelSetId', sa.Integer(), nullable=False),
     sa.Column('chunkKey', sa.String(), nullable=False),
-    sa.Column('encodedData', peek_plugin_base.storage.TypeDecorators.PeekLargeBinary(), nullable=False),
+    sa.Column('encodedData', sa.LargeBinary(), nullable=False),
     sa.Column('encodedHash', sa.String(), nullable=False),
     sa.Column('lastUpdate', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['modelSetId'], ['pl_docdb.DocDbModelSet.id'], ondelete='CASCADE'),

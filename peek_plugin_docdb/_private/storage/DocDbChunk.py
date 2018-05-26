@@ -1,15 +1,14 @@
 import logging
 
-from peek_plugin_base.storage.TypeDecorators import PeekLargeBinary
-from peek_plugin_diagram._private.PluginNames import diagramTuplePrefix
-from sqlalchemy import Column
+from peek_plugin_docdb._private.PluginNames import docDbTuplePrefix
+from sqlalchemy import Column, LargeBinary
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import Index
-from vortex.Tuple import Tuple, addTupleType
 
 from peek_plugin_docdb._private.storage.DocDbModelSet import DocDbModelSet
+from vortex.Tuple import Tuple, addTupleType
 from .DeclarativeBase import DeclarativeBase
 
 logger = logging.getLogger(__name__)
@@ -17,9 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 @addTupleType
-class DocDbChunkCompiled(Tuple, DeclarativeBase):
+class DocDbChunk(Tuple, DeclarativeBase):
     __tablename__ = 'DocDbChunkCompiled'
-    __tupleType__ = diagramTuplePrefix + __tablename__
+    __tupleType__ = docDbTuplePrefix + __tablename__
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
@@ -29,7 +28,7 @@ class DocDbChunkCompiled(Tuple, DeclarativeBase):
     modelSet = relationship(DocDbModelSet)
 
     chunkKey = Column(String, nullable=False)
-    encodedData = Column(PeekLargeBinary, nullable=False)
+    encodedData = Column(LargeBinary, nullable=False)
     encodedHash = Column(String, nullable=False)
     lastUpdate = Column(String, nullable=False)
 

@@ -9,7 +9,7 @@ from .DeclarativeBase import DeclarativeBase
 logger = logging.getLogger(__name__)
 
 
-class DocDbChunkQueue(DeclarativeBase):
+class DocDbCompilerQueue(DeclarativeBase):
     __tablename__ = 'DocDbChunkQueue'
 
     id = Column(Integer, primary_key=True, autoincrement=True)

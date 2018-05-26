@@ -1,36 +1,28 @@
 import logging
 
-from peek_plugin_inbox.server.InboxApiABC import InboxApiABC
+from celery import Celery
+
 from peek_plugin_base.server.PluginServerEntryHookABC import PluginServerEntryHookABC
-
-from peek_plugin_docdb._private.storage import DeclarativeBase
-from peek_plugin_docdb._private.storage.DeclarativeBase import loadStorageTuples
-
 from peek_plugin_base.server.PluginServerStorageEntryHookABC import \
     PluginServerStorageEntryHookABC
-
+from peek_plugin_base.server.PluginServerWorkerEntryHookABC import \
+    PluginServerWorkerEntryHookABC
+from peek_plugin_docdb._private.storage import DeclarativeBase
+from peek_plugin_docdb._private.storage.DeclarativeBase import loadStorageTuples
 from peek_plugin_docdb._private.tuples import loadPrivateTuples
 from peek_plugin_docdb.tuples import loadPublicTuples
-
-from .TupleDataObservable import makeTupleDataObservableHandler
-
+from peek_plugin_docdb._private.server.api.DocDbApi import DocDbApi
 from .TupleActionProcessor import makeTupleActionProcessorHandler
-from .controller.MainController import MainController
-
+from .TupleDataObservable import makeTupleDataObservableHandler
 from .admin_backend import makeAdminBackendHandlers
-
-from .agent_handlers.RpcForAgent import RpcForAgent
-
-from .ServerToAgentRpcCallExample import ServerToAgentRpcCallExample
-
-from .DocDbApi import DocDbApi
-
-from .ExampleUseTaskApi import ExampleUseTaskApi
+from .controller.MainController import MainController
 
 logger = logging.getLogger(__name__)
 
 
-class ServerEntryHook(PluginServerEntryHookABC, PluginServerStorageEntryHookABC):
+class ServerEntryHook(PluginServerEntryHookABC,
+                      PluginServerStorageEntryHookABC,
+                      PluginServerWorkerEntryHookABC):
     def __init__(self, *args, **kwargs):
         """" Constructor """
         # Call the base classes constructor
@@ -72,24 +64,6 @@ class ServerEntryHook(PluginServerEntryHookABC, PluginServerStorageEntryHookABC)
 
         self._loadedObjects.append(tupleObservable)
 
-        # session = self.dbSessionCreator()
-        #
-        # This will retrieve all the settings
-        # from peek_plugin_docdb._private.storage.Setting import globalSetting
-        # allSettings = globalSetting(session)
-        # logger.debug(allSettings)
-        #
-        # This will retrieve the value of property1
-        # from peek_plugin_docdb._private.storage.Setting import PROPERTY1
-        # value1 = globalSetting(session, key=PROPERTY1)
-        # logger.debug("value1 = %s" % value1)
-        #
-        # This will set property1
-        # globalSetting(session, key=PROPERTY1, value="new value 1")
-        # session.commit()
-        #
-        # session.close()
-
         mainController = MainController(
             dbSessionCreator=self.dbSessionCreator,
             tupleObservable=tupleObservable)
@@ -97,25 +71,9 @@ class ServerEntryHook(PluginServerEntryHookABC, PluginServerStorageEntryHookABC)
         self._loadedObjects.append(mainController)
         self._loadedObjects.append(makeTupleActionProcessorHandler(mainController))
 
-        # Initialise the RpcForAgent
-        self._loadedObjects.extend(RpcForAgent(mainController, self.dbSessionCreator)
-                                   .makeHandlers())
-
-        # Initialise and start the RPC for Server
-        self._loadedObjects.append(ServerToAgentRpcCallExample().start())
-
         # Initialise the API object that will be shared with other plugins
         self._api = DocDbApi(mainController)
         self._loadedObjects.append(self._api)
-
-        # Get a reference for the Active Task
-        activeTaskApi = self.platform.getOtherPluginApi("peek_plugin_inbox")
-        assert isinstance(activeTaskApi, InboxApiABC), "Wrong activeTaskApi"
-
-        # Initialise the example code that will send the test task
-        self._loadedObjects.append(
-            ExampleUseTaskApi(mainController, activeTaskApi).start()
-        )
 
         logger.debug("Started")
 
@@ -150,3 +108,10 @@ class ServerEntryHook(PluginServerEntryHookABC, PluginServerStorageEntryHookABC)
         platform service.
         """
         return self._api
+
+    ###### Implement PluginServerWorkerEntryHookABC
+
+    @property
+    def celeryApp(self) -> Celery:
+        from peek_plugin_docdb._private.worker.CeleryApp import celeryApp
+        return celeryApp

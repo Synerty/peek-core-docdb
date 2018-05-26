@@ -8,11 +8,11 @@ from twisted.internet import task
 from twisted.internet.defer import inlineCallbacks
 
 from peek_plugin_base.storage.StorageUtil import makeCoreValuesSubqueryCondition
-from peek_plugin_diagram._private.server.client_handlers.ClientGridUpdateHandler import \
+from peek_plugin_docdb._private.server.client_handlers.ClientGridUpdateHandler import \
     ClientGridUpdateHandler
-from peek_plugin_diagram._private.server.controller.StatusController import \
+from peek_plugin_docdb._private.server.controller.StatusController import \
     StatusController
-from peek_plugin_diagram._private.storage.GridKeyIndex import \
+from peek_plugin_docdb._private.storage.GridKeyIndex import \
     GridKeyCompilerQueue
 from vortex.DeferUtil import deferToThreadWrapWithLogger, vortexLogFailure
 from vortex.VortexFactory import NoVortexException
@@ -72,7 +72,7 @@ class GridKeyCompilerQueueController:
 
     @inlineCallbacks
     def _poll(self):
-        from peek_plugin_diagram._private.worker.tasks.GridCompilerTask import \
+        from peek_plugin_docdb._private.worker.tasks.GridCompilerTask import \
             compileGrids
 
         # We queue the grids in bursts, reducing the work we have to do.

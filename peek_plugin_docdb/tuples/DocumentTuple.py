@@ -14,7 +14,10 @@ class DocumentTuple(Tuple):
     __tupleType__ = docDbTuplePrefix + 'DocumentTuple'
 
     #:  The unique key of this document
-    key:str = TupleField()
+    key: str = TupleField()
+
+    #:  The unique key of this document
+    modelSetKey: str = TupleField()
 
     #:  The document data
-    document :Dict= TupleField()
+    document: Dict = TupleField()

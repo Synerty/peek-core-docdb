@@ -1,23 +1,21 @@
 import logging
-from os import path as osp
 
 from twisted.internet.defer import inlineCallbacks
 
 from peek_plugin_base.PeekVortexUtil import peekServerName
 from peek_plugin_base.client.PluginClientEntryHookABC import PluginClientEntryHookABC
-from peek_plugin_docdb._private.PluginNames import docdbActionProcessorName
-from peek_plugin_docdb._private.PluginNames import docdbFilt
-from peek_plugin_docdb._private.PluginNames import docdbObservableName
+from peek_plugin_docdb._private.PluginNames import docDbFilt, \
+    docDbActionProcessorName
+from peek_plugin_docdb._private.PluginNames import docDbObservableName
 from peek_plugin_docdb._private.client.TupleDataObservable import \
     makeClientTupleDataObservableHandler
-from peek_plugin_docdb._private.client.controller.LocationIndexCacheController import \
-    LocationIndexCacheController
-from peek_plugin_docdb._private.client.handlers.LocationIndexCacheHandler import \
-    LocationIndexCacheHandler
+from peek_plugin_docdb._private.client.controller.DocumentCacheController import \
+    DocumentCacheController
+from peek_plugin_docdb._private.client.handlers.DocumentCacheHandler import \
+    DocumentCacheHandler
 from peek_plugin_docdb._private.storage.DeclarativeBase import loadStorageTuples
 from peek_plugin_docdb._private.tuples import loadPrivateTuples
 from peek_plugin_docdb.tuples import loadPublicTuples
-from txhttputil.site.FileUnderlayResource import FileUnderlayResource
 from vortex.handler.TupleActionProcessorProxy import TupleActionProcessorProxy
 from vortex.handler.TupleDataObservableProxyHandler import TupleDataObservableProxyHandler
 from vortex.handler.TupleDataObserverClient import TupleDataObserverClient
@@ -54,59 +52,65 @@ class ClientEntryHook(PluginClientEntryHookABC):
         """ Load
 
         This will be called when the plugin is loaded, just after the db is migrated.
-        Place any custom initialiastion steps here.
+        Place any custom initialisation steps here.
 
         """
 
+        # ----------------
         # Proxy actions back to the server, we don't process them at all
         self._loadedObjects.append(
             TupleActionProcessorProxy(
-                tupleActionProcessorName=docdbActionProcessorName,
+                tupleActionProcessorName=docDbActionProcessorName,
                 proxyToVortexName=peekServerName,
-                additionalFilt=docdbFilt)
+                additionalFilt=docDbFilt)
         )
 
+        # ----------------
         # Provide the devices access to the servers observable
         tupleDataObservableProxyHandler = TupleDataObservableProxyHandler(
-            observableName=docdbObservableName,
+            observableName=docDbObservableName,
             proxyToVortexName=peekServerName,
-            additionalFilt=docdbFilt,
+            additionalFilt=docDbFilt,
             observerName="Proxy to devices")
         self._loadedObjects.append(tupleDataObservableProxyHandler)
 
+        # ----------------
         #: This is an observer for us (the client) to use to observe data
         # from the server
         serverTupleObserver = TupleDataObserverClient(
-            observableName=docdbObservableName,
+            observableName=docDbObservableName,
             destVortexName=peekServerName,
-            additionalFilt=docdbFilt,
-            observerName="Data for us"
+            additionalFilt=docDbFilt,
+            observerName="Data for client"
         )
         self._loadedObjects.append(serverTupleObserver)
 
+        # ----------------
         # Create the Tuple Observer
-        makeClientTupleDataObservableHandler(
-            tupleDataObservableProxyHandler
+        makeClientTupleDataObservableHandler(tupleDataObservableProxyHandler)
+
+        # ----------------
+        # Document Cache Controller
+
+        searchDocumentController = DocumentCacheController(
+            self.platform.serviceId
         )
-        # This is already in the _loadedObjects, it's tupleDataObservableProxyHandler
-
-        # ----- Location Index Cache Controller
-
-        locationIndexCacheController = LocationIndexCacheController(
-            self.platform.serviceId)
-        self._loadedObjects.append(locationIndexCacheController)
+        self._loadedObjects.append(searchDocumentController)
 
         # This is the custom handler for the client
-        locationIndexCacheHandler = LocationIndexCacheHandler(
-            locationIndexCacheController=locationIndexCacheController,
+        searchDocumentHandler = DocumentCacheHandler(
+            cacheController=searchDocumentController,
             clientId=self.platform.serviceId
         )
-        self._loadedObjects.append(locationIndexCacheHandler)
+        self._loadedObjects.append(searchDocumentHandler)
 
-        locationIndexCacheController.setLocationIndexCacheHandler(
-            locationIndexCacheHandler)
+        searchDocumentController.setDocumentCacheHandler(
+            searchDocumentHandler
+        )
 
-        yield locationIndexCacheController.start()
+        # ----------------
+        # Start the compiler controllers
+        yield searchDocumentController.start()
 
         logger.debug("Started")
 

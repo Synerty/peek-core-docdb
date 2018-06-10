@@ -1,43 +1,32 @@
 <div class="panel panel-default">
-    <div class="panel-heading">Edit Documents
-        <div class="btn-toolbar pull-right">
-            <div class="btn-group">
-                <div class="btn btn-default btn-sm" (click)='save()'>
-                    Save
+    <div class="panel-heading">View Documents</div>
+    <div class="panel-body">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="input-group">
+                        <input type="text" class="form-control"
+                               [(ngModel)]="modelSetKey"
+                               placeholder="Model Set Key">
+                    </div>
                 </div>
-                <div class="btn btn-default btn-sm" (click)='resetClicked()'>
-                    Reset
+                <div class="col-md-12">
+                    <div class="input-group">
+                        <input type="text" class="form-control"
+                               [(ngModel)]="docKey"
+                               placeholder="Document Key">
+                        <span class="input-group-btn">
+                        <button class="btn btn-default" type="button"
+                                (click)='resetClicked()'>Fetch</button>
+                      </span>
+                    </div>
                 </div>
-                <!--
-                <div class="btn btn-default btn-sm" (click)='addRow()'>
-                    Add
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <pre>{{item | json}}</pre>
                 </div>
-                -->
             </div>
         </div>
-    </div>
-    <div class="panel-body">
-        <table class="table">
-            <tr>
-                <th>key</th>
-                <th>document</th>
-                <th></th>
-            </tr>
-            <tr *ngFor="let item of items">
-                <td>
-                    {{item.key}}
-                </td>
-                <td>
-                    <pre>{{item.document | json}}</pre>
-                </td>
-                <!--
-                <td>
-                    <div class="btn btn-default" (click)='removeRow(item)'>
-                        <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
-                    </div>
-                </td>
-                -->
-            </tr>
-        </table>
     </div>
 </div>

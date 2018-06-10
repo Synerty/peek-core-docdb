@@ -6,8 +6,7 @@ from peek_plugin_docdb._private.client.controller.DocumentCacheController import
 from twisted.internet.defer import Deferred
 
 from peek_plugin_base.PeekVortexUtil import peekClientName
-from peek_plugin_docdb._private.storage.EncodedDocumentChunk import \
-    EncodedDocumentChunk
+from peek_plugin_docdb._private.storage.DocDbEncodedChunk import DocDbEncodedChunk
 from vortex.DeferUtil import vortexLogFailure, deferToThreadWrapWithLogger
 from vortex.Payload import Payload
 from vortex.VortexFactory import VortexFactory, NoVortexException
@@ -73,8 +72,8 @@ class ClientChunkUpdateHandler:
         session = self._dbSessionCreator()
         try:
             results = list(
-                session.query(EncodedDocumentChunk)
-                    .filter(EncodedDocumentChunk.chunkKey.in_(chunkKeys))
+                session.query(DocDbEncodedChunk)
+                    .filter(DocDbEncodedChunk.chunkKey.in_(chunkKeys))
             )
 
             if not results:

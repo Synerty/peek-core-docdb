@@ -11,8 +11,7 @@ from peek_plugin_docdb._private.server.client_handlers.ClientChunkUpdateHandler 
     ClientChunkUpdateHandler
 from peek_plugin_docdb._private.server.controller.StatusController import \
     StatusController
-from peek_plugin_docdb._private.storage.DocumentCompilerQueue import \
-    DocumentCompilerQueue
+from peek_plugin_docdb._private.storage.DocDbCompilerQueue import DocDbCompilerQueue
 from vortex.DeferUtil import deferToThreadWrapWithLogger, vortexLogFailure
 
 logger = logging.getLogger(__name__)
@@ -37,27 +36,27 @@ class ChunkCompilerQueueController:
 
     def __init__(self, dbSessionCreator,
                  statusController: StatusController,
-                 clientDocumentUpdateHandler: ClientChunkUpdateHandler):
+                 clientChunkUpdateHandler: ClientChunkUpdateHandler):
         self._dbSessionCreator = dbSessionCreator
         self._statusController: StatusController = statusController
-        self._clientDocumentUpdateHandler: ClientChunkUpdateHandler = clientDocumentUpdateHandler
+        self._clientChunkUpdateHandler: ClientChunkUpdateHandler = clientChunkUpdateHandler
 
         self._pollLoopingCall = task.LoopingCall(self._poll)
         self._lastQueueId = -1
         self._queueCount = 0
 
     def start(self):
-        self._statusController.setDocumentCompilerStatus(True, self._queueCount)
+        self._statusController.setCompilerStatus(True, self._queueCount)
         d = self._pollLoopingCall.start(self.PERIOD, now=False)
         d.addCallbacks(self._timerCallback, self._timerErrback)
 
     def _timerErrback(self, failure):
         vortexLogFailure(failure, logger)
-        self._statusController.setDocumentCompilerStatus(False, self._queueCount)
-        self._statusController.setDocumentCompilerError(str(failure.value))
+        self._statusController.setCompilerStatus(False, self._queueCount)
+        self._statusController.setCompilerError(str(failure.value))
 
     def _timerCallback(self, _):
-        self._statusController.setDocumentCompilerStatus(False, self._queueCount)
+        self._statusController.setCompilerStatus(False, self._queueCount)
 
     def stop(self):
         self._pollLoopingCall.stop()
@@ -117,12 +116,12 @@ class ChunkCompilerQueueController:
     def _grabQueueChunk(self):
         session = self._dbSessionCreator()
         try:
-            qry = (session.query(DocumentCompilerQueue)
-                .order_by(asc(DocumentCompilerQueue.id))
-                .filter(DocumentCompilerQueue.id > self._lastQueueId)
-                .yield_per(500)
-                # .limit(self.FETCH_SIZE)
-                )
+            qry = (session.query(DocDbCompilerQueue)
+                   .order_by(asc(DocDbCompilerQueue.id))
+                   .filter(DocDbCompilerQueue.id > self._lastQueueId)
+                   .yield_per(500)
+                   # .limit(self.FETCH_SIZE)
+                   )
 
             queueItems = qry.all()
             session.expunge_all()
@@ -135,7 +134,7 @@ class ChunkCompilerQueueController:
     @deferToThreadWrapWithLogger(logger)
     def _deleteDuplicateQueueItems(self, itemIds):
         session = self._dbSessionCreator()
-        table = DocumentCompilerQueue.__table__
+        table = DocDbCompilerQueue.__table__
         try:
             SIZE = 1000
             for start in range(0, len(itemIds), SIZE):
@@ -150,14 +149,13 @@ class ChunkCompilerQueueController:
     def _pollCallback(self, chunkKeys: List[str], startTime, processedCount):
         self._queueCount -= 1
         logger.debug("Time Taken = %s" % (datetime.now(pytz.utc) - startTime))
-        self._clientDocumentUpdateHandler.sendChunks(chunkKeys)
-        self._statusController.addToDocumentCompilerTotal(processedCount)
-        self._statusController.setDocumentCompilerStatus(True, self._queueCount)
+        self._clientChunkUpdateHandler.sendChunks(chunkKeys)
+        self._statusController.addToCompilerTotal(processedCount)
+        self._statusController.setCompilerStatus(True, self._queueCount)
 
     def _pollErrback(self, failure, startTime):
         self._queueCount -= 1
-        self._statusController.setDocumentCompilerError(str(failure.value))
-        self._statusController.setDocumentCompilerStatus(True, self._queueCount)
+        self._statusController.setCompilerError(str(failure.value))
+        self._statusController.setCompilerStatus(True, self._queueCount)
         logger.debug("Time Taken = %s" % (datetime.now(pytz.utc) - startTime))
         vortexLogFailure(failure, logger)
-

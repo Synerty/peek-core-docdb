@@ -20,6 +20,7 @@ export class ViewDocumentComponent extends ComponentLifecycleEventEmitter {
     };
 
     docKey: string = '';
+    modelSetKey: string = '';
 
     doc: DocumentTuple = new DocumentTuple();
 
@@ -30,7 +31,10 @@ export class ViewDocumentComponent extends ComponentLifecycleEventEmitter {
         super();
 
         this.loader = vortexService.createTupleLoader(this,
-            () => extend({key: this.docKey}, this.filt, docDbFilt));
+            () => extend({
+                docKey: this.docKey,
+                modelSetKey: this.modelSetKey
+            }, this.filt, docDbFilt));
 
         this.loader.observable
             .subscribe((tuples: DocumentTuple[]) => {
@@ -39,13 +43,6 @@ export class ViewDocumentComponent extends ComponentLifecycleEventEmitter {
                 else
                     this.doc = tuples[0];
             });
-    }
-
-
-    save() {
-        this.loader.save(this.doc)
-            .then(() => this.balloonMsg.showSuccess("Save Successful"))
-            .catch(e => this.balloonMsg.showError(e));
     }
 
     resetClicked() {

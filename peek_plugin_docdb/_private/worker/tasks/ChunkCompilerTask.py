@@ -11,8 +11,8 @@ from sqlalchemy import select
 from txcelery.defer import DeferrableTask
 
 from peek_plugin_base.worker import CeleryDbConn
-from peek_plugin_docdb._private.storage.EncodedDocumentChunk import \
-    EncodedDocumentChunk
+from peek_plugin_docdb._private.storage.DocDbEncodedChunk import \
+    DocDbEncodedChunk
 from peek_plugin_docdb._private.storage.Document import Document
 from peek_plugin_docdb._private.storage.DocumentCompilerQueue import \
     DocumentCompilerQueue
@@ -43,7 +43,7 @@ def compileDocumentChunk(self, queueItems) -> List[str]:
     chunkKeys = list(set([i.chunkKey for i in queueItems]))
 
     queueTable = DocumentCompilerQueue.__table__
-    compiledTable = EncodedDocumentChunk.__table__
+    compiledTable = DocDbEncodedChunk.__table__
     lastUpdate = datetime.now(pytz.utc).isoformat()
 
     startTime = datetime.now(pytz.utc)
@@ -129,7 +129,7 @@ def compileDocumentChunk(self, queueItems) -> List[str]:
 
 
 def _loadExistingHashes(conn, chunkKeys: List[str]) -> Dict[str, str]:
-    compiledTable = EncodedDocumentChunk.__table__
+    compiledTable = DocDbEncodedChunk.__table__
 
     results = conn.execute(select(
         columns=[compiledTable.c.chunkKey, compiledTable.c.encodedHash],

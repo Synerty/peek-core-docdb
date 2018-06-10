@@ -5,6 +5,11 @@
         <li role="presentation" class="active">
             <a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a>
         </li>
+        <!-- Status -->
+        <li role="presentation">
+            <a href="#status" aria-controls="status" role="tab"
+               data-toggle="tab">Status</a>
+        </li>
         <!-- Edit Document Tab -->
         <li role="presentation">
             <a href="#editDocument" aria-controls="editDocument" role="tab"
@@ -19,6 +24,10 @@
 
     <!-- Tab panes -->
     <div class="tab-content">
+        <!-- Edit Status Tab -->
+        <div role="tabpanel" class="tab-pane" id="status">
+            <pl-docdb-status></pl-docdb-status>
+        </div>
         <!-- Edit Settings Tab -->
         <div role="tabpanel" class="tab-pane" id="editSetting">
             <pl-docdb-edit-setting></pl-docdb-edit-setting>

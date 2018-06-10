@@ -7,8 +7,8 @@ from twisted.internet.defer import inlineCallbacks
 from peek_plugin_docdb._private.PluginNames import docDbFilt
 from peek_plugin_docdb._private.server.client_handlers.ClientChunkLoadRpc import \
     ClientChunkLoadRpc
-from peek_plugin_docdb._private.storage.EncodedDocumentChunk import \
-    EncodedDocumentChunk
+from peek_plugin_docdb._private.storage.DocDbEncodedChunk import \
+    DocDbEncodedChunk
 from vortex.PayloadEndpoint import PayloadEndpoint
 from vortex.PayloadEnvelope import PayloadEnvelope
 
@@ -33,7 +33,7 @@ class DocumentCacheController:
         self._webAppHandler = None
 
         #: This stores the cache of document data for the clients
-        self._cache: Dict[int, EncodedDocumentChunk] = {}
+        self._cache: Dict[int, DocDbEncodedChunk] = {}
 
         self._endpoint = PayloadEndpoint(clientDocumentUpdateFromServerFilt,
                                          self._processDocumentPayload)
@@ -61,7 +61,7 @@ class DocumentCacheController:
         while True:
             logger.info(
                 "Loading DocumentChunk %s to %s" % (offset, offset + self.LOAD_CHUNK))
-            encodedChunkTuples: List[EncodedDocumentChunk] = (
+            encodedChunkTuples: List[DocDbEncodedChunk] = (
                 yield ClientChunkLoadRpc.loadDocumentChunks(offset, self.LOAD_CHUNK)
             )
 
@@ -75,11 +75,11 @@ class DocumentCacheController:
     @inlineCallbacks
     def _processDocumentPayload(self, payloadEnvelope: PayloadEnvelope, **kwargs):
         paylod = yield payloadEnvelope.decodePayloadDefer()
-        documentTuples: List[EncodedDocumentChunk] = paylod.tuples
+        documentTuples: List[DocDbEncodedChunk] = paylod.tuples
         self._loadDocumentIntoCache(documentTuples)
 
     def _loadDocumentIntoCache(self,
-                                  encodedChunkTuples: List[EncodedDocumentChunk]):
+                                  encodedChunkTuples: List[DocDbEncodedChunk]):
         chunkKeysUpdated: List[str] = []
 
         for t in encodedChunkTuples:
@@ -93,7 +93,7 @@ class DocumentCacheController:
 
         self._webAppHandler.notifyOfDocumentUpdate(chunkKeysUpdated)
 
-    def document(self, chunkKey) -> EncodedDocumentChunk:
+    def document(self, chunkKey) -> DocDbEncodedChunk:
         return self._cache.get(chunkKey)
 
     def documentKeys(self) -> List[int]:

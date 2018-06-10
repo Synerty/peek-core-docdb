@@ -10,18 +10,11 @@ from sqlalchemy import select, bindparam
 from txcelery.defer import DeferrableTask
 
 from peek_plugin_base.worker import CeleryDbConn
-from peek_plugin_docdb._private.storage.Document import Document
-from peek_plugin_docdb._private.storage.DocumentCompilerQueue import \
-    DocumentCompilerQueue
-from peek_plugin_docdb._private.storage.DocumentRoute import DocumentRoute
-from peek_plugin_docdb._private.storage.DocumentTypeTuple import \
-    DocumentTypeTuple
-from peek_plugin_docdb._private.storage.DocDbPropertyTuple import DocDbPropertyTuple
-from peek_plugin_docdb._private.worker.CeleryApp import celeryApp
-from peek_plugin_docdb._private.worker.tasks.ImportDocDbIndexTask import \
-    ObjectToIndexTuple, reindexDocument
+from peek_plugin_docdb._private.storage.DocDbCompilerQueue import \
+    DocDbCompilerQueue
+from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
 from peek_plugin_docdb._private.worker.tasks._CalcChunkKey import makeChunkKeyFromInt
-from peek_plugin_docdb.tuples.ImportDocumentTuple import ImportDocumentTuple
+from peek_plugin_docdb.tuples.DocumentTuple import DocumentTuple
 from vortex.Payload import Payload
 
 logger = logging.getLogger(__name__)
@@ -42,21 +35,13 @@ def removeDocumentTask(self, importGroupHashes: List[str]) -> None:
 
 @DeferrableTask
 @celeryApp.task(bind=True)
-def importDocumentTask(self, documentsEncodedPayload: bytes) -> None:
+def importTask(self, modelSetKey:str, documentsEncodedPayload: bytes) -> None:
     # Decode arguments
-    newDocuments: List[ImportDocumentTuple] = (
+    newDocuments: List[DocumentTuple] = (
         Payload().fromEncodedPayload(documentsEncodedPayload).tuples
     )
 
-    # Cleanup some of the input data
-    for o in newDocuments:
-        if not o.objectType:
-            o.objectType = 'none'
 
-        o.objectType = o.objectType.lower()
-
-        if o.properties:
-            o.properties = {k.lower(): v for k, v in o.properties.items()}
 
     try:
         objectTypeIdsByName = _prepareLookups(newDocuments)
@@ -76,72 +61,10 @@ def importDocumentTask(self, documentsEncodedPayload: bytes) -> None:
         raise self.retry(exc=e, countdown=3)
 
 
-def _prepareLookups(newDocuments: List[ImportDocumentTuple]) -> Dict[str, int]:
-    """ Check Or Insert DocDb Properties
-
-    Make sure the docDb properties exist.
-
-    """
-
-    dbSession = CeleryDbConn.getDbSession()
-
-    startTime = datetime.now(pytz.utc)
-
-    try:
-
-        objectTypeNames = {'none'}
-        propertyNames = {'key'}
-
-        for o in newDocuments:
-            objectTypeNames.add(o.objectType)
-
-            if o.properties:
-                propertyNames.update(o.properties)
-
-        # Prepare Properties
-        dbProps = dbSession.query(DocDbPropertyTuple).all()
-        propertyNames -= set([o.name for o in dbProps])
-
-        if propertyNames:
-            for newPropName in propertyNames:
-                dbSession.add(DocDbPropertyTuple(name=newPropName, title=newPropName))
-
-            dbSession.commit()
-
-        del dbProps
-        del propertyNames
-
-        # Prepare Object Types
-        dbObjectTypes = dbSession.query(DocumentTypeTuple).all()
-        objectTypeNames -= set([o.name for o in dbObjectTypes])
-
-        if not objectTypeNames:
-            objectTypeIdsByName = {o.name: o.id for o in dbObjectTypes}
-
-        else:
-            for newPropName in objectTypeNames:
-                dbSession.add(DocumentTypeTuple(name=newPropName, title=newPropName))
-
-            dbSession.commit()
-
-            dbObjectTypes = dbSession.query(DocumentTypeTuple).all()
-            objectTypeIdsByName = {o.name: o.id for o in dbObjectTypes}
-
-        logger.debug("Prepared lookups in %s", (datetime.now(pytz.utc) - startTime))
-
-        return objectTypeIdsByName
-
-    except Exception as e:
-        dbSession.rollback()
-        raise
-
-    finally:
-        dbSession.close()
 
 
-def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
-                           objectTypeIdsByName: Dict[str, int]) -> Tuple[
-    List[ObjectToIndexTuple], Dict[str, int], Set[int]]:
+def _insertOrUpdateObjects(newDocuments: List[DocumentTuple],
+                           objectTypeIdsByName: Dict[str, int]) -> None:
     """ Insert or Update Objects
 
     1) Find objects and update them
@@ -278,7 +201,7 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
         conn.close()
 
 
-def _insertObjectRoutes(newDocuments: List[ImportDocumentTuple],
+def _insertObjectRoutes(newDocuments: List[DocumentTuple],
                         objectIdByKey: Dict[str, int]):
     """ Insert Object Routes
 
@@ -342,7 +265,7 @@ def _insertObjectRoutes(newDocuments: List[ImportDocumentTuple],
         conn.close()
 
 
-def _packObjectJson(newDocuments: List[ImportDocumentTuple],
+def _packObjectJson(newDocuments: List[DocumentTuple],
                     chunkKeysForQueue: Set[int]):
     """ Pack Object Json
 
@@ -355,8 +278,8 @@ def _packObjectJson(newDocuments: List[ImportDocumentTuple],
     :return:
     """
 
-    documentTable = Document.__table__
-    objectQueueTable = DocumentCompilerQueue.__table__
+    documentTable = DocDbDocument.__table__
+    objectQueueTable = DocDbCompilerQueue.__table__
     dbSession = CeleryDbConn.getDbSession()
 
     startTime = datetime.now(pytz.utc)

@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 @addTupleType
-class DocDbChunk(Tuple, DeclarativeBase):
-    __tablename__ = 'DocDbChunkCompiled'
-    __tupleType__ = docDbTuplePrefix + __tablename__
+class DocDbEncodedChunk(Tuple, DeclarativeBase):
+    __tablename__ = 'DocDbEncodedChunkTuple'
+    __tupleType__ = docDbTuplePrefix + 'DocDbEncodedChunk'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
@@ -33,5 +33,5 @@ class DocDbChunk(Tuple, DeclarativeBase):
     lastUpdate = Column(String, nullable=False)
 
     __table_args__ = (
-        Index("idx_GKIndexUpdate_coordSetId", modelSetId, chunkKey, unique=False),
+        Index("idx_Chunk_modelSetId_chunkKey", modelSetId, chunkKey, unique=False),
     )

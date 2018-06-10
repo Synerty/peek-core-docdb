@@ -7,21 +7,19 @@ from sqlalchemy import asc
 from twisted.internet import task
 from twisted.internet.defer import inlineCallbacks
 
-from peek_plugin_base.storage.StorageUtil import makeCoreValuesSubqueryCondition
-from peek_plugin_docdb._private.server.client_handlers.ClientGridUpdateHandler import \
-    ClientGridUpdateHandler
+from peek_plugin_docdb._private.server.client_handlers.ClientChunkUpdateHandler import \
+    ClientChunkUpdateHandler
 from peek_plugin_docdb._private.server.controller.StatusController import \
     StatusController
-from peek_plugin_docdb._private.storage.GridKeyIndex import \
-    GridKeyCompilerQueue
+from peek_plugin_docdb._private.storage.DocumentCompilerQueue import \
+    DocumentCompilerQueue
 from vortex.DeferUtil import deferToThreadWrapWithLogger, vortexLogFailure
-from vortex.VortexFactory import NoVortexException
 
 logger = logging.getLogger(__name__)
 
 
-class GridKeyCompilerQueueController:
-    """ Grid Compiler
+class ChunkCompilerQueueController:
+    """ DocDbChunkCompilerQueueController
 
     Compile the disp items into the grid data
 
@@ -31,38 +29,35 @@ class GridKeyCompilerQueueController:
 
     """
 
-    FETCH_SIZE = 5
+    FETCH_SIZE = 10
     PERIOD = 0.200
 
-    QUEUE_MAX = 100
-    QUEUE_MIN = 30
+    QUEUE_MAX = 10
+    QUEUE_MIN = 0
 
-    def __init__(self, ormSessionCreator,
+    def __init__(self, dbSessionCreator,
                  statusController: StatusController,
-                 clientGridUpdateHandler: ClientGridUpdateHandler):
-        self._ormSessionCreator = ormSessionCreator
+                 clientDocumentUpdateHandler: ClientChunkUpdateHandler):
+        self._dbSessionCreator = dbSessionCreator
         self._statusController: StatusController = statusController
-        self._clientGridUpdateHandler: ClientGridUpdateHandler = clientGridUpdateHandler
+        self._clientDocumentUpdateHandler: ClientChunkUpdateHandler = clientDocumentUpdateHandler
 
         self._pollLoopingCall = task.LoopingCall(self._poll)
         self._lastQueueId = -1
         self._queueCount = 0
 
     def start(self):
-        self._statusController.setGridCompilerStatus(True, self._queueCount)
+        self._statusController.setDocumentCompilerStatus(True, self._queueCount)
         d = self._pollLoopingCall.start(self.PERIOD, now=False)
         d.addCallbacks(self._timerCallback, self._timerErrback)
 
-    def isBusy(self) -> bool:
-        return self._queueCount != 0
-
     def _timerErrback(self, failure):
         vortexLogFailure(failure, logger)
-        self._statusController.setGridCompilerStatus(False, self._queueCount)
-        self._statusController.setGridCompilerError(str(failure.value))
+        self._statusController.setDocumentCompilerStatus(False, self._queueCount)
+        self._statusController.setDocumentCompilerError(str(failure.value))
 
     def _timerCallback(self, _):
-        self._statusController.setGridCompilerStatus(False, self._queueCount)
+        self._statusController.setDocumentCompilerStatus(False, self._queueCount)
 
     def stop(self):
         self._pollLoopingCall.stop()
@@ -72,8 +67,8 @@ class GridKeyCompilerQueueController:
 
     @inlineCallbacks
     def _poll(self):
-        from peek_plugin_docdb._private.worker.tasks.GridCompilerTask import \
-            compileGrids
+        from peek_plugin_docdb._private.worker.tasks.ChunkCompilerTask import \
+            compileDocumentChunk
 
         # We queue the grids in bursts, reducing the work we have to do.
         if self._queueCount > self.QUEUE_MIN:
@@ -90,12 +85,12 @@ class GridKeyCompilerQueueController:
         # and there are lots of them
         queueIdsToDelete = []
 
-        gridKeySet = set()
+        docDbIndexChunkKeys = set()
         for i in queueItems:
-            if i.gridKey in gridKeySet:
+            if i.chunkKey in docDbIndexChunkKeys:
                 queueIdsToDelete.append(i.id)
             else:
-                gridKeySet.add(i.gridKey)
+                docDbIndexChunkKeys.add(i.chunkKey)
 
         if queueIdsToDelete:
             # Delete the duplicates and requery for our new list
@@ -110,7 +105,7 @@ class GridKeyCompilerQueueController:
             # Set the watermark
             self._lastQueueId = items[-1].id
 
-            d = compileGrids.delay(items)
+            d = compileDocumentChunk.delay(items)
             d.addCallback(self._pollCallback, datetime.now(pytz.utc), len(items))
             d.addErrback(self._pollErrback, datetime.now(pytz.utc))
 
@@ -120,14 +115,14 @@ class GridKeyCompilerQueueController:
 
     @deferToThreadWrapWithLogger(logger)
     def _grabQueueChunk(self):
-        session = self._ormSessionCreator()
+        session = self._dbSessionCreator()
         try:
-            qry = (session.query(GridKeyCompilerQueue)
-                   .order_by(asc(GridKeyCompilerQueue.id))
-                   .filter(GridKeyCompilerQueue.id > self._lastQueueId)
-                   .yield_per(500)
-                   # .limit(self.FETCH_SIZE)
-                   )
+            qry = (session.query(DocumentCompilerQueue)
+                .order_by(asc(DocumentCompilerQueue.id))
+                .filter(DocumentCompilerQueue.id > self._lastQueueId)
+                .yield_per(500)
+                # .limit(self.FETCH_SIZE)
+                )
 
             queueItems = qry.all()
             session.expunge_all()
@@ -139,31 +134,30 @@ class GridKeyCompilerQueueController:
 
     @deferToThreadWrapWithLogger(logger)
     def _deleteDuplicateQueueItems(self, itemIds):
-        session = self._ormSessionCreator()
-        table = GridKeyCompilerQueue.__table__
+        session = self._dbSessionCreator()
+        table = DocumentCompilerQueue.__table__
         try:
             SIZE = 1000
             for start in range(0, len(itemIds), SIZE):
                 chunkIds = itemIds[start: start + SIZE]
 
-                session.execute(table.delete(makeCoreValuesSubqueryCondition(
-                    session.bind, table.c.id, chunkIds
-                )))
+                session.execute(table.delete(table.c.id.in_(chunkIds)))
 
             session.commit()
         finally:
             session.close()
 
-    def _pollCallback(self, gridKeys: List[str], startTime, processedCount):
+    def _pollCallback(self, chunkKeys: List[str], startTime, processedCount):
         self._queueCount -= 1
         logger.debug("Time Taken = %s" % (datetime.now(pytz.utc) - startTime))
-        self._clientGridUpdateHandler.sendGrids(gridKeys)
-        self._statusController.addToGridCompilerTotal(processedCount)
-        self._statusController.setGridCompilerStatus(True, self._queueCount)
+        self._clientDocumentUpdateHandler.sendChunks(chunkKeys)
+        self._statusController.addToDocumentCompilerTotal(processedCount)
+        self._statusController.setDocumentCompilerStatus(True, self._queueCount)
 
     def _pollErrback(self, failure, startTime):
         self._queueCount -= 1
-        self._statusController.setGridCompilerError(str(failure.value))
-        self._statusController.setGridCompilerStatus(True, self._queueCount)
+        self._statusController.setDocumentCompilerError(str(failure.value))
+        self._statusController.setDocumentCompilerStatus(True, self._queueCount)
         logger.debug("Time Taken = %s" % (datetime.now(pytz.utc) - startTime))
         vortexLogFailure(failure, logger)
+

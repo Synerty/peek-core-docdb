@@ -1,4 +1,4 @@
-from .DocumentTableHandler import makeDocumentTableHandler
+from .ViewDocumentHandler import makeDocumentTableHandler
 from .SettingPropertyHandler import makeSettingPropertyHandler
 from vortex.handler.TupleDataObservableHandler import TupleDataObservableHandler
 

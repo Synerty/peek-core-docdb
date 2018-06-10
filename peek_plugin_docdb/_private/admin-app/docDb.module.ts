@@ -2,7 +2,7 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {NgModule} from "@angular/core";
 import {Routes, RouterModule} from "@angular/router";
-import {EditDocumentComponent} from "./edit-document-table/edit.component";
+import {ViewDocumentComponent} from "./view-document/view-document";
 import {EditSettingComponent} from "./edit-setting-table/edit.component";
 
 
@@ -27,7 +27,7 @@ export const pluginRoutes: Routes = [
     ],
     exports: [],
     providers: [],
-    declarations: [DocDbComponent, EditDocumentComponent, EditSettingComponent]
+    declarations: [DocDbComponent, ViewDocumentComponent, EditSettingComponent]
 })
 export class DocDbModule {
 

@@ -14,7 +14,8 @@
         "storage",
         "admin",
         "client",
-        "mobile"
+        "mobile",
+        "desktop"
     ],
     "server": {
     },
@@ -25,21 +26,47 @@
         "showHomeLink": true,
         "appDir": "_private/admin-app",
         "appModule": "docDb.module#DocDbModule",
-        "moduleDir": "plugin-module",
+        "moduleDir": "plugin-module"
     },
     "client": {
     },
     "mobile": {
-        "showHomeLink": true,
-        "appDir": "_private/mobile-app",
-        "appModule": "docDb.module#DocDbModule",
-        "assetDir": "_private/mobile-assets",
-        "icon": "/assets/peek_plugin_docdb/icon.png",
-        "moduleDir": "plugin-module"
-    },
-    "agent": {
+        // I don't think there will be a UI for this
+//        "showHomeLink": true,
+//        "appDir": "_private/both-app",
+//        "appModule": "docDb.module#DocDbModule",
+//        "assetDir": "_private/both-assets",
+//        "icon": "/assets/peek_plugin_docdb/icon.png",
+        "moduleDir": "plugin-module",
+        "rootServices": [
+            {
+                "file": "_private/docDb-object-loader/PrivateDocumentLoaderService",
+                "class": "PrivateDocumentLoaderService",
+                "persistent": true
+            },
+            {
+                "file": "DocDbService",
+                "class": "DocDbService"
+            }
+        ]
     },
     "desktop": {
-        "moduleDir": "plugin-module"
+//        "showHomeLink": true,
+//        "appDir": "_private/both-app",
+//        "appModule": "docDb.module#DocDbModule",
+//        "assetDir": "_private/both-assets",
+//        "icon": "/assets/peek_plugin_docdb/icon.png",
+        "moduleDir": "plugin-module",
+        "rootServices": [
+            {
+                "file": "_private/docDb-object-loader/PrivateDocumentLoaderService",
+                "class": "PrivateDocumentLoaderService",
+                "persistent": true
+            },
+            {
+                "file": "DocDbService",
+                "class": "DocDbService"
+            }
+        ]
     }
 }

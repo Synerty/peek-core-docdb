@@ -25,13 +25,25 @@
         </div>
         <!-- Edit Document Tab -->
         <div role="tabpanel" class="tab-pane" id="editDocument">
-            <pl-docdb-edit-document></pl-docdb-edit-document>
+            <pl-docdb-view-document></pl-docdb-view-document>
         </div>
         <!-- Home Tab -->
         <div role="tabpanel" class="tab-pane active" id="home">
-            <h1 class="text-center">DocDb Plugin</h1>
-            <p>Angular2 Lazy Loaded Module</p>
-            <p>This is the root of the admin app for the DocDb plugin</p>
+            <h1 class="text-center">Document DB</h1>
+            <p>This plugin stores JSON like 'Documents', and supports offline caching.</p>
+            <p>The documents are used to store information about objects, for example,
+                A piece of equipment might have a document that looks like this:</p>
+            <pre>
+                {
+                    key: "ABC123",
+                    document: {
+                    {
+                        alias:"A12345678COMP",
+                        name: "This is a circuit breaker ABC123",
+                        rating: "11kV"
+                    }
+                }
+            </pre>
         </div>
 
     </div>

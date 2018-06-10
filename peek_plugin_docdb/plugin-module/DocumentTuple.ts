@@ -1,5 +1,5 @@
 import {addTupleType, Tuple} from "@synerty/vortexjs";
-import {docDbTuplePrefix} from "../PluginNames";
+import {docDbTuplePrefix} from "./_private/PluginNames";
 
 
 @addTupleType

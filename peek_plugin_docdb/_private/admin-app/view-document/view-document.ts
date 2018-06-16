@@ -5,7 +5,8 @@ import {
     TupleLoader,
     VortexService
 } from "@synerty/vortexjs";
-import {docDbFilt, DocumentTuple} from "@peek/peek_plugin_docdb/_private";
+import {docDbFilt} from "@peek/peek_plugin_docdb/_private";
+import { DocumentTuple} from "@peek/peek_plugin_docdb";
 import {Ng2BalloonMsgService} from "@synerty/ng2-balloon-msg";
 
 

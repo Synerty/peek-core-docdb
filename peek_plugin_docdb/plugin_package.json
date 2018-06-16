@@ -1,8 +1,8 @@
 {
     "plugin": {
-        "title": "DocDb Plugin",
+        "title": "Document Db",
         "packageName": "peek_plugin_docdb",
-    "version":"0.0.1",
+        "version": "0.0.1",
         "buildNumber": "#PLUGIN_BUILD#",
         "buildDate": "#BUILD_DATE#",
         "creator": "Synerty Pty Ltd",
@@ -32,11 +32,11 @@
     },
     "mobile": {
         // I don't think there will be a UI for this
-//        "showHomeLink": true,
-//        "appDir": "_private/both-app",
-//        "appModule": "docDb.module#DocDbModule",
-//        "assetDir": "_private/both-assets",
-//        "icon": "/assets/peek_plugin_docdb/icon.png",
+        //        "showHomeLink": true,
+        //        "appDir": "_private/both-app",
+        //        "appModule": "docDb.module#DocDbModule",
+        //        "assetDir": "_private/both-assets",
+        //        "icon": "/assets/peek_plugin_docdb/icon.png",
         "moduleDir": "plugin-module",
         "rootServices": [
             {
@@ -51,11 +51,11 @@
         ]
     },
     "desktop": {
-//        "showHomeLink": true,
-//        "appDir": "_private/both-app",
-//        "appModule": "docDb.module#DocDbModule",
-//        "assetDir": "_private/both-assets",
-//        "icon": "/assets/peek_plugin_docdb/icon.png",
+        //        "showHomeLink": true,
+        //        "appDir": "_private/both-app",
+        //        "appModule": "docDb.module#DocDbModule",
+        //        "assetDir": "_private/both-assets",
+        //        "icon": "/assets/peek_plugin_docdb/icon.png",
         "moduleDir": "plugin-module",
         "rootServices": [
             {

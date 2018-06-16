@@ -3,7 +3,7 @@ from typing import Union
 
 from twisted.internet.defer import Deferred, inlineCallbacks
 
-from peek_plugin_search._private.server.controller.StatusController import \
+from peek_plugin_docdb._private.server.controller.StatusController import \
     StatusController
 from vortex.Payload import Payload
 from vortex.TupleSelector import TupleSelector

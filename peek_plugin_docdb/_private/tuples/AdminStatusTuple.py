@@ -1,10 +1,10 @@
-from peek_plugin_search._private.PluginNames import searchTuplePrefix
+from peek_plugin_docdb._private.PluginNames import docDbTuplePrefix
 from vortex.Tuple import addTupleType, TupleField, Tuple
 
 
 @addTupleType
 class AdminStatusTuple(Tuple):
-    __tupleType__ = searchTuplePrefix + "AdminStatusTuple"
+    __tupleType__ = docDbTuplePrefix + "AdminStatusTuple"
 
     documentCompilerQueueStatus: bool = TupleField(False)
     documentCompilerQueueSize: int = TupleField(0)

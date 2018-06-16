@@ -6,7 +6,7 @@ import {docDbTuplePrefix} from "../PluginNames";
 export class EncodedDocumentChunkTuple extends Tuple {
     public static readonly tupleName = docDbTuplePrefix + "EncodedDocumentChunkTuple";
 
-    chunkKey: number;
+    chunkKey: string;
     lastUpdate: string;
     encodedData: string;
 

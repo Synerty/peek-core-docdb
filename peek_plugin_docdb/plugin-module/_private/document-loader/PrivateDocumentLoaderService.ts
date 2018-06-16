@@ -1,5 +1,4 @@
 import {Injectable} from "@angular/core";
-import * as pako from "pako";
 
 import {
     ComponentLifecycleEventEmitter,
@@ -14,19 +13,14 @@ import {
     VortexStatusService
 } from "@synerty/vortexjs";
 
-import {
-    docDbFilt,
-    documentCacheStorageName,
-    docDbTuplePrefix
-} from "../PluginNames";
+import {docDbCacheStorageName, docDbFilt, docDbTuplePrefix} from "../PluginNames";
 
 
 import {Subject} from "rxjs/Subject";
 import {Observable} from "rxjs/Observable";
 import {EncodedDocumentChunkTuple} from "./EncodedDocumentChunkTuple";
 import {DocumentUpdateDateTuple} from "./DocumentUpdateDateTuple";
-import {DocDbResultObjectTuple} from "../../DocDbResultObjectTuple";
-import {DocDbResultObjectRouteTuple} from "../../DocDbResultObjectRouteTuple";
+import {DocumentTuple} from "../../DocumentTuple";
 
 
 // ----------------------------------------------------------------------------
@@ -44,12 +38,12 @@ let clientDocumentWatchUpdateFromDeviceFilt = extend(
 
 class DocumentChunkTupleSelector extends TupleSelector {
 
-    constructor(private chunkKey: number) {
+    constructor(private chunkKey: string) {
         super(docDbTuplePrefix + "DocumentChunkTuple", {key: chunkKey});
     }
 
     toOrderedJsonStr(): string {
-        return this.chunkKey.toString();
+        return this.chunkKey;
     }
 }
 
@@ -68,7 +62,7 @@ class UpdateDateTupleSelector extends TupleSelector {
 // ----------------------------------------------------------------------------
 /** hash method
  */
-function objectIdChunk(objectId: number): number {
+function keyChunk(modelSetKey: string, key: string): string {
     /** Object ID Chunk
 
      This method creates an int from 0 to MAX, representing the hash bucket for this
@@ -76,16 +70,25 @@ function objectIdChunk(objectId: number): number {
 
      This is simple, and provides a reasonable distribution
 
-     @param objectId: The ID if the object to get the chunk key for
+     @param modelSetKey: The key of the model set that the documents are in
+     @param key: The key of the document to get the chunk key for
 
      @return: The bucket / chunkKey where you'll find the object with this ID
 
      */
-    if (objectId == null)
-        throw new Error("keyword is None or zero length");
+    if (key == null || key.length == 0)
+        throw new Error("key is None or zero length");
 
-    // 1024 buckets
-    return objectId & 1023;
+    let bucket = 0;
+
+    for (let i = 0; i < key.length; i++) {
+        bucket = ((bucket << 5) - bucket) + key.charCodeAt(i);
+        bucket |= 0; // Convert to 32bit integer
+    }
+
+    bucket = bucket & 1023; // 1024 buckets
+
+    return `${modelSetKey}.${bucket}`;
 }
 
 
@@ -116,7 +119,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
 
         this.storage = new TupleOfflineStorageService(
             storageFactory,
-            new TupleOfflineStorageNameService(documentCacheStorageName)
+            new TupleOfflineStorageNameService(docDbCacheStorageName)
         );
 
         this.initialLoad();
@@ -173,7 +176,12 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
     }
 
 
-    //
+    /** Ask Server For Updates
+     *
+     * Tell the server the state of the chunks in our index and ask if there
+     * are updates.
+     *
+     */
     private askServerForUpdates() {
         // There is no point talking to the server if it's offline
         if (!this.vortexStatusService.snapshot.isOnline)
@@ -272,55 +280,56 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
     }
 
 
-    /** Get Objects
+    /** Get Documents
      *
      * Get the objects with matching keywords from the index..
      *
      */
-    getObjects(objectTypeId: number | null, objectIds: number[]): Promise<DocDbResultObjectTuple[]> {
-        if (objectIds == null || objectIds.length == 0) {
-            throw new Error("We've been passed a null/empty keywords");
+    getDocuments(modelSetKey: string, keys: string[]): Promise<DocumentTuple[]> {
+        if (keys == null || keys.length == 0) {
+            throw new Error("We've been passed a null/empty keys");
         }
 
         if (this.isReady())
-            return this.getObjectsWhenReady(objectTypeId, objectIds);
+            return this.getDocumentsWhenReady(modelSetKey, keys);
 
         return this.isReadyObservable()
             .toPromise()
-            .then(() => this.getObjectsWhenReady(objectTypeId, objectIds));
+            .then(() => this.getDocumentsWhenReady(modelSetKey, keys));
     }
 
 
-    /** Get Objects When Ready
+    /** Get Documents When Ready
      *
      * Get the objects with matching keywords from the index..
      *
      */
-    private getObjectsWhenReady(objectTypeId: number | null, objectIds: number[]): Promise<DocDbResultObjectTuple[]> {
+    private getDocumentsWhenReady(
+        modelSetKey: string, keys: string[]): Promise<DocumentTuple[]> {
 
-        let objectIdsByChunkKey: { [key: number]: number[]; } = {};
-        let chunkKeys: number[] = [];
+        let keysByChunkKey: { [key: string]: string[]; } = {};
+        let chunkKeys: string[] = [];
 
-        for (let objectId of objectIds) {
-            let chunkKey: number = objectIdChunk(objectId);
-            if (objectIdsByChunkKey[chunkKey] == null)
-                objectIdsByChunkKey[chunkKey] = [];
-            objectIdsByChunkKey[chunkKey].push(objectId);
+        for (let key of keys) {
+            let chunkKey: string = keyChunk(modelSetKey, key);
+            if (keysByChunkKey[chunkKey] == null)
+                keysByChunkKey[chunkKey] = [];
+            keysByChunkKey[chunkKey].push(key);
             chunkKeys.push(chunkKey);
         }
 
 
         let promises = [];
         for (let chunkKey of chunkKeys) {
-            let objectIds = objectIdsByChunkKey[chunkKey];
+            let keysForThisChunk = keysByChunkKey[chunkKey];
             promises.push(
-                this.getObjectsForObjectIds(objectTypeId, objectIds, chunkKey)
+                this.getDocumentsForKeys(keysForThisChunk, chunkKey)
             );
         }
 
         return Promise.all(promises)
-            .then((results: DocDbResultObjectTuple[][]) => {
-                let objects: DocDbResultObjectTuple[] = [];
+            .then((results: DocumentTuple[][]) => {
+                let objects: DocumentTuple[] = [];
                 for (let result of  results) {
                     objects.add(result);
                 }
@@ -329,17 +338,16 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
     }
 
 
-    /** Get Objects for Object ID
+    /** Get Documents for Object ID
      *
      * Get the objects with matching keywords from the index..
      *
      */
-    private getObjectsForObjectIds(objectTypeId: number | null,
-                                   objectIds: number[],
-                                   chunkKey: number): Promise<DocDbResultObjectTuple[]> {
+    private getDocumentsForKeys(keys: string[],
+                                chunkKey: string): Promise<DocumentTuple[]> {
 
         if (!this.index.updateDateByChunkKey.hasOwnProperty(chunkKey)) {
-            console.log(`ObjectIDs: ${objectIds} doesn't appear in the index`);
+            console.log(`ObjectIDs: ${keys} doesn't appear in the index`);
             return Promise.resolve([]);
         }
 
@@ -355,20 +363,21 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                     .then((payload: Payload) => JSON.parse(<any>payload.tuples))
                     .then((chunkData: { [key: number]: string; }) => {
 
-                        let foundObjects: DocDbResultObjectTuple[] = [];
+                        let foundDocuments: DocumentTuple[] = [];
 
-                        for (let objectId of objectIds) {
+                        for (let key of keys) {
                             // Find the keyword, we're just iterating
-                            if (!chunkData.hasOwnProperty(objectId)) {
+                            if (!chunkData.hasOwnProperty(key)) {
                                 console.log(
-                                    `WARNING: ObjectID ${objectId} is missing from index,`
+                                    `WARNING: ObjectID ${key} is missing from index,`
                                     + ` chunkKey ${chunkKey}`
                                 );
                                 continue;
                             }
+                            /*
 
                             // Reconstruct the data
-                            let objectProps: {} = JSON.parse(chunkData[objectId]);
+                            let objectProps: {} = JSON.parse(chunkData[key]);
 
                             // Get out the object type
                             let thisObjectTypeId = objectProps['_otid_'];
@@ -387,24 +396,18 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                             delete objectProps['key'];
 
                             // Create the new object
-                            let newObject = new DocDbResultObjectTuple();
-                            foundObjects.push(newObject);
+                            let newObject = new DocumentTuple();
+                            foundDocuments.push(newObject);
 
-                            newObject.id = objectId;
+                            newObject.id = key;
                             newObject.key = objectKey;
                             newObject.objectTypeId = thisObjectTypeId;
                             newObject.properties = objectProps;
 
-                            for (let route of routes) {
-                                let newRoute = new DocDbResultObjectRouteTuple();
-                                newObject.routes.push(newRoute);
-
-                                newRoute.path = route[0];
-                                newRoute.title = route[1];
-                            }
+                            */
                         }
 
-                        return foundObjects;
+                        return foundDocuments;
 
                     });
             });

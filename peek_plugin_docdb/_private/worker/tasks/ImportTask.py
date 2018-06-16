@@ -13,6 +13,7 @@ from peek_plugin_base.worker import CeleryDbConn
 from peek_plugin_docdb._private.storage.DocDbCompilerQueue import \
     DocDbCompilerQueue
 from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
+from peek_plugin_docdb._private.worker.CeleryApp import celeryApp
 from peek_plugin_docdb._private.worker.tasks._CalcChunkKey import makeChunkKeyFromInt
 from peek_plugin_docdb.tuples.DocumentTuple import DocumentTuple
 from vortex.Payload import Payload

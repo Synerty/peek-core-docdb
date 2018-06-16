@@ -29,23 +29,13 @@ export class DocDbService {
     }
 
 
-
     /** Get Locations
      *
      * Get the objects with matching keywords from the index..
      *
      */
-    getObjects(keys: string[]): Promise<DocumentTuple[]> {
-
-        // let keywords = this.splitKeywords(keywordsString);
-        // console.log(keywords);
-        //
-        // return this.docDbIndexLoader.getObjectIds(propertyName, keywords)
-        //     .then((objectIds: number[]) => {
-        //
-        //         return this.documentLoader.getObjects(objectTypeId, objectIds);
-        //     })
-
+    getObjects(modelSetKey:string, keys: string[]): Promise<DocumentTuple[]> {
+        return this.documentLoader.getDocuments(modelSetKey, keys);
     }
 
 }

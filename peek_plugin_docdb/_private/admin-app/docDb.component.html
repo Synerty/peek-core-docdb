@@ -13,7 +13,17 @@
         <!-- Edit Document Tab -->
         <li role="presentation">
             <a href="#editDocument" aria-controls="editDocument" role="tab"
-               data-toggle="tab">Edit Document</a>
+               data-toggle="tab">View Document</a>
+        </li>
+        <!-- Edit Document Type Tab -->
+        <li role="presentation">
+            <a href="#editDocType" aria-controls="editDocType" role="tab"
+               data-toggle="tab">Edit Document Types</a>
+        </li>
+        <!-- Edit Property Names Tab -->
+        <li role="presentation">
+            <a href="#editPropertyNames" aria-controls="editPropertyNames" role="tab"
+               data-toggle="tab">Edit Property Names</a>
         </li>
         <!-- Edit Settings Tab -->
         <li role="presentation">
@@ -35,6 +45,14 @@
         <!-- Edit Document Tab -->
         <div role="tabpanel" class="tab-pane" id="editDocument">
             <pl-docdb-view-document></pl-docdb-view-document>
+        </div>
+        <!-- Edit Document Type Tab -->
+        <div role="tabpanel" class="tab-pane" id="editDocType">
+            <pl-docdb-edit-object-type></pl-docdb-edit-object-type>
+        </div>
+        <!-- Edit Property Names Tab -->
+        <div role="tabpanel" class="tab-pane" id="editPropertyNames">
+            <pl-docdb-edit-property></pl-docdb-edit-property>
         </div>
         <!-- Home Tab -->
         <div role="tabpanel" class="tab-pane active" id="home">

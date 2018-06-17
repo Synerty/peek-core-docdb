@@ -23,6 +23,8 @@ import {
     docDbObservableName,
     docDbTupleOfflineServiceName
 } from "@peek/peek_plugin_docdb/_private";
+import {EditPropertyComponent} from "./edit-property-table/edit.component";
+import {EditDocumentTypeComponent} from "./edit-object-type-table/edit.component";
 
 
 export function tupleActionPushNameServiceFactory() {
@@ -70,7 +72,12 @@ export const pluginRoutes: Routes = [
             useFactory: tupleDataObservableNameServiceFactory
         },
     ],
-    declarations: [DocDbComponent, ViewDocumentComponent, EditSettingComponent, StatusComponent]
+    declarations: [DocDbComponent,
+        ViewDocumentComponent,
+        EditSettingComponent,
+        StatusComponent,
+        EditPropertyComponent,
+        EditDocumentTypeComponent]
 })
 export class DocDbModule {
 

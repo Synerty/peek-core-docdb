@@ -7,18 +7,22 @@ from peek_plugin_base.server.PluginServerStorageEntryHookABC import \
     PluginServerStorageEntryHookABC
 from peek_plugin_base.server.PluginServerWorkerEntryHookABC import \
     PluginServerWorkerEntryHookABC
+from peek_plugin_docdb._private.server.api.DocDbApi import DocDbApi
 from peek_plugin_docdb._private.server.client_handlers.ClientChunkLoadRpc import \
     ClientChunkLoadRpc
 from peek_plugin_docdb._private.server.client_handlers.ClientChunkUpdateHandler import \
     ClientChunkUpdateHandler
 from peek_plugin_docdb._private.server.controller.ChunkCompilerQueueController import \
     ChunkCompilerQueueController
+from peek_plugin_docdb._private.server.controller.ImportController import ImportController
 from peek_plugin_docdb._private.server.controller.StatusController import StatusController
 from peek_plugin_docdb._private.storage import DeclarativeBase
 from peek_plugin_docdb._private.storage.DeclarativeBase import loadStorageTuples
 from peek_plugin_docdb._private.tuples import loadPrivateTuples
 from peek_plugin_docdb.tuples import loadPublicTuples
-from peek_plugin_docdb._private.server.api.DocDbApi import DocDbApi
+from peek_plugin_docdb.tuples.DocumentTuple import DocumentTuple
+from vortex.DeferUtil import vortexLogFailure
+from vortex.Payload import Payload
 from .TupleActionProcessor import makeTupleActionProcessorHandler
 from .TupleDataObservable import makeTupleDataObservableHandler
 from .admin_backend import makeAdminBackendHandlers
@@ -118,7 +122,7 @@ class ServerEntryHook(PluginServerEntryHookABC,
 
         # ----------------
         # Import Controller
-        searchObjectImportController = SearchObjectImportController()
+        searchObjectImportController = ImportController()
         self._loadedObjects.append(searchObjectImportController)
 
         # ----------------
@@ -142,52 +146,36 @@ class ServerEntryHook(PluginServerEntryHookABC,
     def _test(self):
         # ----------------
         # API test
-        searchObjects = []
-        so1 = ImportSearchObjectTuple(
-            key="so1key",
-            properties={
+        newDocs = []
+        so1 = DocumentTuple(
+            key="doc1key",
+            modelSetKey="testModel",
+            document={
                 "name": "134 Ocean Parade, Circuit breaker 1",
-                "alias": "SO1ALIAS"
+                "alias": "SO1ALIAS",
+                "propStr": "Test Property 1",
+                "propNumArr": [1, 2, 4, 5, 6],
+                "propStrArr": ["one", "two", "three", "four"]
             }
         )
 
-        so1.routes.append(ImportSearchObjectRouteTuple(
-            importGroupHash="importHash1",
-            routeTitle="SO1 Route1",
-            routePath="/route/for/so1"
-        ))
-
-        so1.routes.append(ImportSearchObjectRouteTuple(
-            importGroupHash="importHash2",
-            routeTitle="SO1 Route2",
-            routePath="/route/for/so2"
-        ))
-
-        searchObjects.append(so1)
-        so2 = ImportSearchObjectTuple(
-            key="so2key",
-            properties={
+        newDocs.append(so1)
+        so2 = DocumentTuple(
+            key="doc2key",
+            modelSetKey="testModel",
+            document={
                 "name": "69 Sheep Farmers Rd Sub TX breaker",
-                "alias": "SO2ALIAS"
+                "alias": "SO2ALIAS",
+                "propStr": "Test Property 1",
+                "propNumArr": [7,8,9,10,11],
+                "propStrArr": ["five", "siz", "seven", "eight"]
             }
         )
 
-        so2.routes.append(ImportSearchObjectRouteTuple(
-            importGroupHash="importHash1",
-            routeTitle="SO2 Route1",
-            routePath="/route/for/so2/r2"
-        ))
+        newDocs.append(so2)
 
-        so2.routes.append(ImportSearchObjectRouteTuple(
-            importGroupHash="importHash2",
-            routeTitle="SO2 Route2",
-            routePath="/route/for/so2/r2"
-        ))
-
-        searchObjects.append(so2)
-
-        d = Payload(tuples=searchObjects).toEncodedPayloadDefer()
-        d.addCallback(self._api.importSearchObjects)
+        d = Payload(tuples=newDocs).toEncodedPayloadDefer()
+        d.addCallback(self._api.createOrUpdateDocuments)
         d.addErrback(vortexLogFailure, logger, consumeError=True)
 
     def stop(self):

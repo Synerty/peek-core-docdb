@@ -30,13 +30,13 @@ logger = logging.getLogger(__name__)
 
 @DeferrableTask
 @celeryApp.task(bind=True)
-def removeDocumentTask(self, importGroupHashes: List[str]) -> None:
+def removeDocumentTask(self, modelSetKey: str, keys: List[str]) -> None:
     pass
 
 
 @DeferrableTask
 @celeryApp.task(bind=True)
-def importTask(self, modelSetKey:str, documentsEncodedPayload: bytes) -> None:
+def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> None:
     # Decode arguments
     newDocuments: List[DocumentTuple] = (
         Payload().fromEncodedPayload(documentsEncodedPayload).tuples

@@ -7,13 +7,11 @@ from twisted.internet.defer import Deferred
 class DocDbApiABC(metaclass=ABCMeta):
 
     @abstractmethod
-    def createOrUpdateDocuments(self, modelSetKey: str,
-                                documentsEncodedPayload: bytes) -> Deferred:
+    def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> Deferred:
         """ Create or Update Documents
 
         Add new documents to the document db
 
-        :param modelSetKey: the model set key that these documents will belong to
         :param documentsEncodedPayload: An encoded payload containing :code:`List[DocumentTuple]`
         :return: A deferred that fires when the creates or updates are complete
 

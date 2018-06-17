@@ -1,6 +1,10 @@
-from .ViewDocumentHandler import makeDocumentTableHandler
-from .SettingPropertyHandler import makeSettingPropertyHandler
+from peek_plugin_docdb._private.server.admin_backend.EditDocumentPropertyHandler import \
+    makeDocumentPropertyHandler
+from peek_plugin_docdb._private.server.admin_backend.EditDocumentTypeHandler import \
+    makeDocumentTypeHandler
 from vortex.handler.TupleDataObservableHandler import TupleDataObservableHandler
+from .SettingPropertyHandler import makeSettingPropertyHandler
+from .ViewDocumentHandler import makeDocumentTableHandler
 
 
 def makeAdminBackendHandlers(tupleObservable: TupleDataObservableHandler,
@@ -8,4 +12,7 @@ def makeAdminBackendHandlers(tupleObservable: TupleDataObservableHandler,
     yield makeDocumentTableHandler(tupleObservable, dbSessionCreator)
 
     yield makeSettingPropertyHandler(dbSessionCreator)
-    pass
+
+    yield makeDocumentPropertyHandler(tupleObservable, dbSessionCreator)
+
+    yield makeDocumentTypeHandler(tupleObservable, dbSessionCreator)

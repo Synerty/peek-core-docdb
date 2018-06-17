@@ -4,7 +4,7 @@ import {
     TupleDataObserverService,
     TupleSelector
 } from "@synerty/vortexjs";
-import {AdminStatusTuple, searchFilt} from "@peek/peek_plugin_search/_private";
+import {AdminStatusTuple, docDbFilt} from "@peek/peek_plugin_docdb/_private";
 import {Ng2BalloonMsgService} from "@synerty/ng2-balloon-msg";
 
 

@@ -1,7 +1,14 @@
 from peek_plugin_base.storage.DbConnection import DbSessionCreator
 from peek_plugin_docdb._private.PluginNames import docDbFilt
 from peek_plugin_docdb._private.PluginNames import docDbObservableName
+from peek_plugin_docdb._private.server.tuple_providers.DocumentPropertyTupleProvider import \
+    DocumentPropertyTupleProvider
+from peek_plugin_docdb._private.server.tuple_providers.DocumentTypeTupleProvider import \
+    DocumentTypeTupleProvider
 from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
+from peek_plugin_docdb._private.storage.DocDbDocumentTypeTuple import \
+    DocDbDocumentTypeTuple
+from peek_plugin_docdb._private.storage.DocDbPropertyTuple import DocDbPropertyTuple
 from peek_plugin_docdb._private.tuples.AdminStatusTuple import AdminStatusTuple
 from vortex.handler.TupleDataObservableHandler import TupleDataObservableHandler
 from .controller.StatusController import StatusController
@@ -33,5 +40,13 @@ def makeTupleDataObservableHandler(dbSessionCreator: DbSessionCreator,
     # Admin status tuple
     tupleObservable.addTupleProvider(AdminStatusTuple.tupleName(),
                                      AdminStatusTupleProvider(statusController))
+
+    # Document Type Tuple
+    tupleObservable.addTupleProvider(DocDbDocumentTypeTuple.tupleName(),
+                                     DocumentTypeTupleProvider(dbSessionCreator))
+
+    # Document Property Tuple
+    tupleObservable.addTupleProvider(DocDbPropertyTuple.tupleName(),
+                                     DocumentPropertyTupleProvider(dbSessionCreator))
 
     return tupleObservable

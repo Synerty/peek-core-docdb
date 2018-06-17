@@ -13,9 +13,9 @@ from txcelery.defer import DeferrableTask
 from peek_plugin_base.worker import CeleryDbConn
 from peek_plugin_docdb._private.storage.DocDbEncodedChunk import \
     DocDbEncodedChunk
-from peek_plugin_docdb._private.storage.Document import Document
-from peek_plugin_docdb._private.storage.DocumentCompilerQueue import \
-    DocumentCompilerQueue
+from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
+from peek_plugin_docdb._private.storage.DocDbCompilerQueue import \
+    DocDbCompilerQueue
 from peek_plugin_docdb._private.worker.CeleryApp import celeryApp
 from vortex.Payload import Payload
 
@@ -42,7 +42,7 @@ def compileDocumentChunk(self, queueItems) -> List[str]:
     """
     chunkKeys = list(set([i.chunkKey for i in queueItems]))
 
-    queueTable = DocumentCompilerQueue.__table__
+    queueTable = DocDbCompilerQueue.__table__
     compiledTable = DocDbEncodedChunk.__table__
     lastUpdate = datetime.now(pytz.utc).isoformat()
 
@@ -93,7 +93,7 @@ def compileDocumentChunk(self, queueItems) -> List[str]:
             )
 
         if inserts:
-            newIdGen = CeleryDbConn.prefetchDeclarativeIds(Document, len(inserts))
+            newIdGen = CeleryDbConn.prefetchDeclarativeIds(DocDbDocument, len(inserts))
             for insert in inserts:
                 insert["id"] = next(newIdGen)
 
@@ -144,9 +144,9 @@ def _buildIndex(chunkKeys) -> Dict[str, bytes]:
 
     try:
         indexQry = (
-            session.query(Document.chunkKey, Document.id, Document.packedJson)
-                .filter(Document.chunkKey.in_(chunkKeys))
-                .order_by(Document.id)
+            session.query(DocDbDocument.chunkKey, DocDbDocument.id, DocDbDocument.packedJson)
+                .filter(DocDbDocument.chunkKey.in_(chunkKeys))
+                .order_by(DocDbDocument.id)
                 .yield_per(1000)
                 .all()
         )

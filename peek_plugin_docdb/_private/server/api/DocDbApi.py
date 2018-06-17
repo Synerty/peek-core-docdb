@@ -14,9 +14,8 @@ class DocDbApi(DocDbApiABC):
     def shutdown(self):
         pass
 
-    def createOrUpdateDocuments(self, modelSetKey: str,
-                                documentsEncodedPayload: bytes) -> Deferred:
-        self._importController.importDocuments(modelSetKey, )
+    def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> Deferred:
+        self._importController.createOrUpdateDocuments(documentsEncodedPayload)
 
     def deleteDocuments(self, modelSetKey: str, keys: List[str]) -> Deferred:
         pass

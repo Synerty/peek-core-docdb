@@ -1,20 +1,23 @@
 import json
 import logging
-import zlib
 from collections import defaultdict
+from copy import copy
 from datetime import datetime
-from typing import List, Dict, Tuple, Set
+from typing import List, Dict, Set, Tuple
 
 import pytz
 from sqlalchemy import select, bindparam
 from txcelery.defer import DeferrableTask
 
 from peek_plugin_base.worker import CeleryDbConn
-from peek_plugin_docdb._private.storage.DocDbCompilerQueue import \
-    DocDbCompilerQueue
+from peek_plugin_docdb._private.storage.DocDbCompilerQueue import DocDbCompilerQueue
 from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
+from peek_plugin_docdb._private.storage.DocDbDocumentTypeTuple import \
+    DocDbDocumentTypeTuple
+from peek_plugin_docdb._private.storage.DocDbModelSet import DocDbModelSet
+from peek_plugin_docdb._private.storage.DocDbPropertyTuple import DocDbPropertyTuple
 from peek_plugin_docdb._private.worker.CeleryApp import celeryApp
-from peek_plugin_docdb._private.worker.tasks._CalcChunkKey import makeChunkKeyFromInt
+from peek_plugin_docdb._private.worker.tasks._CalcChunkKey import makeChunkKey
 from peek_plugin_docdb.tuples.DocumentTuple import DocumentTuple
 from vortex.Payload import Payload
 
@@ -22,10 +25,10 @@ logger = logging.getLogger(__name__)
 
 
 # We need to insert the into the following tables:
-# Document - or update it's details if required
+# DocDbDocument - or update it's details if required
 # DocDbIndex - The index of the keywords for the object
-# DocumentRoute - delete old importGroupHash
-# DocumentRoute - insert the new routes
+# DocDbDocumentRoute - delete old importGroupHash
+# DocDbDocumentRoute - insert the new routes
 
 
 @DeferrableTask
@@ -42,20 +45,25 @@ def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> None:
         Payload().fromEncodedPayload(documentsEncodedPayload).tuples
     )
 
+    _validateNewDocuments(newDocuments)
 
+    modelSetIdByKey = _loadModelSets()
 
+    # Do the import
     try:
-        objectTypeIdsByName = _prepareLookups(newDocuments)
 
-        objectsToIndex, objectIdByKey, chunkKeysForQueue = _insertOrUpdateObjects(
-            newDocuments, objectTypeIdsByName
-        )
+        documentByModelKey = defaultdict(list)
+        for doc in newDocuments:
+            documentByModelKey[doc.modelSetKey].append(doc)
 
-        _insertObjectRoutes(newDocuments, objectIdByKey)
+        for modelSetKey, docs in documentByModelKey.items():
+            modelSetId = modelSetIdByKey.get(modelSetKey)
+            if modelSetId is None:
+                modelSetId = _makeModelSet(modelSetKey)
+                modelSetIdByKey[modelSetKey] = modelSetId
 
-        _packObjectJson(newDocuments, chunkKeysForQueue)
-
-        reindexDocument(objectsToIndex)
+            docTypeIdsByName = _prepareLookups(docs, modelSetId)
+            _insertOrUpdateObjects(docs, modelSetId, docTypeIdsByName)
 
     except Exception as e:
         logger.debug("Retrying import docDb objects, %s", e)
@@ -63,9 +71,129 @@ def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> None:
 
 
 
+def _validateNewDocuments(newDocuments: List[DocumentTuple]) -> None:
+    for doc in newDocuments:
+        if not doc.key:
+            raise Exception("key is empty for %s" % doc)
+
+        if not doc.modelSetKey:
+            raise Exception("modelSetKey is empty for %s" % doc)
+
+        if not doc.documentType:
+            raise Exception("documentType is empty for %s" % doc)
+
+        if not doc.document:
+            raise Exception("document is empty for %s" % doc)
+
+
+def _loadModelSets() -> Dict[str, int]:
+    # Get the model set
+    engine = CeleryDbConn.getDbEngine()
+    conn = engine.connect()
+    try:
+        modelSetTable = DocDbModelSet.__table__
+        results = list(conn.execute(select(
+            columns=[modelSetTable.c.id, modelSetTable.c.key]
+        )))
+        modelSetIdByKey = {o.key: o.id for o in results}
+        del results
+
+    finally:
+        conn.close()
+    return modelSetIdByKey
+
+
+def _makeModelSet(modelSetKey: str) -> int:
+    # Get the model set
+    dbSession = CeleryDbConn.getDbSession()
+    try:
+        newItem = DocDbModelSet(key=modelSetKey, name=modelSetKey)
+        dbSession.add(newItem)
+        dbSession.commit()
+        return newItem.id
+
+    finally:
+        dbSession.close()
+
+
+def _prepareLookups(newDocuments: List[DocumentTuple], modelSetId: int) -> Dict[str, int]:
+    """ Check Or Insert Search Properties
+
+    Make sure the search properties exist.
+
+    """
+
+    dbSession = CeleryDbConn.getDbSession()
+
+    startTime = datetime.now(pytz.utc)
+
+    try:
+
+        docTypeNames = set()
+        propertyNames = set()
+
+        for o in newDocuments:
+            docTypeNames.add(o.documentType)
+
+            if o.document:
+                propertyNames.update(o.document)
+
+        # Prepare Properties
+        dbProps = (
+            dbSession.query(DocDbPropertyTuple)
+                .filter(DocDbPropertyTuple.modelSetId == modelSetId)
+                .all()
+        )
+        propertyNames -= set([o.name for o in dbProps])
+
+        if propertyNames:
+            for newPropName in propertyNames:
+                dbSession.add(DocDbPropertyTuple(
+                    name=newPropName, title=newPropName, modelSetId=modelSetId
+                ))
+
+            dbSession.commit()
+
+        del dbProps
+        del propertyNames
+
+        # Prepare Object Types
+        dbObjectTypes = (
+            dbSession.query(DocDbDocumentTypeTuple)
+                .filter(DocDbDocumentTypeTuple.modelSetId == modelSetId)
+                .all()
+        )
+        docTypeNames -= set([o.name for o in dbObjectTypes])
+
+        if not docTypeNames:
+            docTypeIdsByName = {o.name: o.id for o in dbObjectTypes}
+
+        else:
+            for newType in docTypeNames:
+                dbSession.add(DocDbDocumentTypeTuple(
+                    name=newType, title=newType, modelSetId=modelSetId
+                ))
+
+            dbSession.commit()
+
+            dbObjectTypes = dbSession.query(DocDbDocumentTypeTuple).all()
+            docTypeIdsByName = {o.name: o.id for o in dbObjectTypes}
+
+        logger.debug("Prepared lookups in %s", (datetime.now(pytz.utc) - startTime))
+
+        return docTypeIdsByName
+
+    except Exception as e:
+        dbSession.rollback()
+        raise
+
+    finally:
+        dbSession.close()
+
 
 def _insertOrUpdateObjects(newDocuments: List[DocumentTuple],
-                           objectTypeIdsByName: Dict[str, int]) -> None:
+                           modelSetId: int,
+                           docTypeIdsByName: Dict[str, int]) -> None:
     """ Insert or Update Objects
 
     1) Find objects and update them
@@ -73,7 +201,8 @@ def _insertOrUpdateObjects(newDocuments: List[DocumentTuple],
 
     """
 
-    documentTable = Document.__table__
+    documentTable = DocDbDocument.__table__
+    queueTable = DocDbCompilerQueue.__table__
 
     startTime = datetime.now(pytz.utc)
 
@@ -82,16 +211,15 @@ def _insertOrUpdateObjects(newDocuments: List[DocumentTuple],
     transaction = conn.begin()
 
     try:
-        objectsToIndex: Dict[int, List[ObjectToIndexTuple]] = {}
         objectIdByKey: Dict[str, int] = {}
 
         objectKeys = [o.key for o in newDocuments]
-        chunkKeysForQueue: Set[int] = set()
+        chunkKeysForQueue: Set[Tuple(str, str)] = set()
 
         # Query existing objects
         results = list(conn.execute(select(
             columns=[documentTable.c.id, documentTable.c.key,
-                     documentTable.c.chunkKey, documentTable.c.propertiesJson],
+                     documentTable.c.chunkKey, documentTable.c.documentJson],
             whereclause=documentTable.c.key.in_(objectKeys)
         )))
 
@@ -100,252 +228,79 @@ def _insertOrUpdateObjects(newDocuments: List[DocumentTuple],
 
         # Get the IDs that we need
         newIdGen = CeleryDbConn.prefetchDeclarativeIds(
-            Document, len(newDocuments) - len(foundObjectByKey)
+            DocDbDocument, len(newDocuments) - len(foundObjectByKey)
         )
 
         # Create state arrays
         inserts = []
-        propUpdates = []
-        objectTypeUpdates = []
+        updates = []
 
         # Work out which objects have been updated or need inserting
-        for importObject in newDocuments:
+        for importDocument in newDocuments:
 
-            existingObject = foundObjectByKey.get(importObject.key)
-            importObjectTypeId = objectTypeIdsByName[importObject.objectType]
+            existingObject = foundObjectByKey.get(importDocument.key)
+            importDocumentTypeId = docTypeIdsByName[importDocument.documentType]
 
-            propsWithKey = dict(key=importObject.key)
-
-            if importObject.properties:
-                if existingObject and existingObject.propertiesJson:
-                    propsWithKey.update(json.loads(existingObject.propertiesJson))
-
-                # Add the data we're importing second
-                propsWithKey.update(importObject.properties)
-
-                propsStr = json.dumps(propsWithKey, sort_keys=True)
-
-            else:
-                propsStr = None
+            packedJsonDict = copy(importDocument.document)
+            packedJsonDict['_k'] = importDocument.key
+            packedJsonDict['_dtid'] = importDocumentTypeId
+            documentJson = json.dumps(packedJsonDict, sort_keys=True)
 
             # Work out if we need to update the object type
-            if importObject.objectType != 'None' and existingObject:
-                objectTypeUpdates.append(
-                    dict(b_id=existingObject.id, b_typeId=importObjectTypeId)
+            if existingObject:
+                updates.append(
+                    dict(b_id=existingObject.id,
+                         b_typeId=importDocumentTypeId,
+                         b_documentJson=documentJson)
                 )
 
-            # Work out if we need to update the existing object or create one
-            if existingObject:
-                docDbIndexUpdateNeeded = propsStr and existingObject.propertiesJson != propsStr
-                if docDbIndexUpdateNeeded:
-                    propUpdates.append(dict(b_id=existingObject.id, b_propsStr=propsStr))
-
             else:
-                docDbIndexUpdateNeeded = True
                 id_ = next(newIdGen)
-                existingObject = Document(
+                existingObject = DocDbDocument(
                     id=id_,
-                    key=importObject.key,
-                    objectTypeId=importObjectTypeId,
-                    propertiesJson=propsStr,
-                    chunkKey=makeChunkKeyFromInt(id_)
+                    modelSetId=modelSetId,
+                    documentTypeId=importDocumentTypeId,
+                    key=importDocument.key,
+                    chunkKey=makeChunkKey(importDocument.modelSetKey, importDocument.key),
+                    documentJson=documentJson
                 )
                 inserts.append(existingObject.tupleToSqlaBulkInsertDict())
 
-            if docDbIndexUpdateNeeded:
-                objectsToIndex[existingObject.id] = ObjectToIndexTuple(
-                    id=existingObject.id,
-                    key=existingObject.key,
-                    props=propsWithKey
-                )
-
             objectIdByKey[existingObject.key] = existingObject.id
-            chunkKeysForQueue.add(existingObject.chunkKey)
+            chunkKeysForQueue.add((modelSetId, existingObject.chunkKey))
 
         # Insert the DocDb Objects
         if inserts:
             conn.execute(documentTable.insert(), inserts)
 
-        if propUpdates:
+        if updates:
             stmt = (
                 documentTable.update()
                     .where(documentTable.c.id == bindparam('b_id'))
-                    .values(propertiesJson=bindparam('b_propsStr'))
+                    .values(documentTypeId=bindparam('b_typeId'),
+                            documentJson=bindparam('b_documentJson'))
             )
-            conn.execute(stmt, propUpdates)
-
-        if objectTypeUpdates:
-            stmt = (
-                documentTable.update()
-                    .where(documentTable.c.id == bindparam('b_id'))
-                    .values(objectTypeId=bindparam('b_typeId'))
-            )
-            conn.execute(stmt, objectTypeUpdates)
-
-        if inserts or propUpdates or objectTypeUpdates:
-            transaction.commit()
-        else:
-            transaction.rollback()
-
-        logger.debug("Inserted %s updated %s ObjectToIndexTuple in %s",
-                     len(inserts), len(propUpdates),
-                     (datetime.now(pytz.utc) - startTime))
-
-        return list(objectsToIndex.values()), objectIdByKey, chunkKeysForQueue
-
-    except Exception as e:
-        transaction.rollback()
-        raise
-
-
-    finally:
-        conn.close()
-
-
-def _insertObjectRoutes(newDocuments: List[DocumentTuple],
-                        objectIdByKey: Dict[str, int]):
-    """ Insert Object Routes
-
-    1) Drop all routes with matching importGroupHash
-
-    2) Insert the new routes
-
-    :param newDocuments:
-    :param objectIdByKey:
-    :return:
-    """
-
-    documentRoute = DocumentRoute.__table__
-
-    startTime = datetime.now(pytz.utc)
-
-    engine = CeleryDbConn.getDbEngine()
-    conn = engine.connect()
-    transaction = conn.begin()
-
-    try:
-        importHashSet = set()
-        inserts = []
-
-        for importObject in newDocuments:
-            for importRoute in importObject.routes:
-                importHashSet.add(importRoute.importGroupHash)
-                inserts.append(dict(
-                    objectId=objectIdByKey[importObject.key],
-                    importGroupHash=importRoute.importGroupHash,
-                    routeTitle=importRoute.routeTitle,
-                    routePath=importRoute.routePath
-                ))
-
-        if importHashSet:
-            conn.execute(
-                documentRoute
-                    .delete()
-                    .where(documentRoute.c.importGroupHash.in_(list(importHashSet)))
-            )
-
-        # Insert the DocDb Object routes
-        if inserts:
-            conn.execute(documentRoute.insert(), inserts)
-
-        if importHashSet or inserts:
-            transaction.commit()
-        else:
-            transaction.rollback()
-
-        logger.debug("Inserted %s DocumentRoute in %s",
-                     len(inserts),
-                     (datetime.now(pytz.utc) - startTime))
-
-    except Exception as e:
-        transaction.rollback()
-        raise
-
-
-    finally:
-        conn.close()
-
-
-def _packObjectJson(newDocuments: List[DocumentTuple],
-                    chunkKeysForQueue: Set[int]):
-    """ Pack Object Json
-
-    1) Create JSON and update object.
-
-    Doing this takes longer to bulk load, but quicker to make incremental changes
-
-    :param newDocuments:
-    :param chunkKeysForQueue:
-    :return:
-    """
-
-    documentTable = DocDbDocument.__table__
-    objectQueueTable = DocDbCompilerQueue.__table__
-    dbSession = CeleryDbConn.getDbSession()
-
-    startTime = datetime.now(pytz.utc)
-
-    try:
-
-        indexQry = (
-            dbSession.query(Document.id, Document.propertiesJson,
-                            Document.objectTypeId,
-                            DocumentRoute.routeTitle, DocumentRoute.routePath)
-                .join(DocumentRoute, Document.id == DocumentRoute.objectId)
-                .filter(Document.chunkKey.in_(chunkKeysForQueue))
-                .filter(Document.propertiesJson != None)
-                .filter(DocumentRoute.routePath != None)
-                .order_by(Document.id, DocumentRoute.routeTitle)
-                .yield_per(1000)
-                .all()
-        )
-
-        # I chose a simple name for this one.
-        qryDict = defaultdict(list)
-
-        for item in indexQry:
-            (
-                qryDict[(item.id, item.propertiesJson, item.objectTypeId)]
-                    .append([item.routeTitle, item.routePath])
-            )
-
-        packedJsonUpdates = []
-
-        # Sort each bucket by the key
-        for (id_, propertiesJson, objectTypeId), routes in qryDict.items():
-            props = json.loads(propertiesJson)
-            props['_r_'] = routes
-            props['_otid_'] = objectTypeId
-            packedJson = json.dumps(props, sort_keys=True)
-            packedJsonUpdates.append(dict(b_id=id_, b_packedJson=packedJson))
-
-        if packedJsonUpdates:
-            stmt = (
-                documentTable.update()
-                    .where(documentTable.c.id == bindparam('b_id'))
-                    .values(packedJson=bindparam('b_packedJson'))
-            )
-            dbSession.execute(stmt, packedJsonUpdates)
+            conn.execute(stmt, updates)
 
         if chunkKeysForQueue:
-            dbSession.execute(
-                objectQueueTable.insert(),
-                [dict(chunkKey=v) for v in chunkKeysForQueue]
+            conn.execute(
+                queueTable.insert(),
+                [dict(modelSetId=m, chunkKey=c) for m, c in chunkKeysForQueue]
             )
 
-        if packedJsonUpdates or chunkKeysForQueue:
-            dbSession.commit()
+        if inserts or updates or chunkKeysForQueue:
+            transaction.commit()
         else:
-            dbSession.rollback()
+            transaction.rollback()
 
-        logger.debug("Packed JSON for %s Documents",
-                     len(newDocuments),
+        logger.debug("Inserted %s updated %s queued %s chunks in %s",
+                     len(inserts), len(updates), len(chunkKeysForQueue),
                      (datetime.now(pytz.utc) - startTime))
 
-    except Exception as e:
-        dbSession.rollback()
+    except Exception:
+        transaction.rollback()
         raise
 
 
     finally:
-        dbSession.close()
+        conn.close()

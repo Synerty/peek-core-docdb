@@ -4,12 +4,16 @@ from sqlalchemy import Column
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer, String
 
+from peek_plugin_docdb._private.PluginNames import docDbTuplePrefix
+from vortex.Tuple import Tuple, addTupleType
 from .DeclarativeBase import DeclarativeBase
 
 logger = logging.getLogger(__name__)
 
 
-class DocDbCompilerQueue(DeclarativeBase):
+@addTupleType
+class DocDbCompilerQueue(Tuple, DeclarativeBase):
+    __tupleType__ = docDbTuplePrefix + 'DocDbChunkQueueTuple'
     __tablename__ = 'DocDbChunkQueue'
 
     id = Column(Integer, primary_key=True, autoincrement=True)

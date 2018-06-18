@@ -11,11 +11,11 @@ from sqlalchemy import select
 from txcelery.defer import DeferrableTask
 
 from peek_plugin_base.worker import CeleryDbConn
-from peek_plugin_docdb._private.storage.DocDbEncodedChunk import \
-    DocDbEncodedChunk
-from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
 from peek_plugin_docdb._private.storage.DocDbCompilerQueue import \
     DocDbCompilerQueue
+from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
+from peek_plugin_docdb._private.storage.DocDbEncodedChunk import \
+    DocDbEncodedChunk
 from peek_plugin_docdb._private.worker.CeleryApp import celeryApp
 from vortex.Payload import Payload
 
@@ -33,13 +33,23 @@ Compile the docDb indexes
 
 @DeferrableTask
 @celeryApp.task(bind=True)
-def compileDocumentChunk(self, queueItems) -> List[str]:
+def compileDocumentChunk(self, queueItems) -> List[int]:
     """ Compile DocDb Index Task
 
-    :param self: A celery reference to this task
     :param queueItems: An encoded payload containing the queue tuples.
     :returns: A list of grid keys that have been updated.
     """
+    queueItemsByModelSetId = defaultdict(list)
+
+    for queueItem in queueItems:
+        queueItemsByModelSetId[queueItem.modelSetId].append(queueItem)
+
+    for modelSetId, modelSetQueueItems in queueItemsByModelSetId.items():
+        _compileDocumentChunk(modelSetId, modelSetQueueItems)
+
+    return list(set([i.chunkKey for i in queueItems]))
+
+def _compileDocumentChunk(modelSetId:int, queueItems:List[DocDbCompilerQueue]) -> None:
     chunkKeys = list(set([i.chunkKey for i in queueItems]))
 
     queueTable = DocDbCompilerQueue.__table__
@@ -78,6 +88,7 @@ def compileDocumentChunk(self, queueItems) -> List[str]:
 
             chunksToDelete.append(chunkKey)
             inserts.append(dict(
+                modelSetId=modelSetId,
                 chunkKey=chunkKey,
                 encodedData=docDbIndexChunkEncodedPayload,
                 encodedHash=encodedHash,
@@ -116,7 +127,6 @@ def compileDocumentChunk(self, queueItems) -> List[str]:
         logger.debug("Compiled and Committed %s EncodedDocumentChunks in %s",
                      total, (datetime.now(pytz.utc) - startTime))
 
-        return chunkKeys
 
     except Exception as e:
         transaction.rollback()
@@ -144,9 +154,9 @@ def _buildIndex(chunkKeys) -> Dict[str, bytes]:
 
     try:
         indexQry = (
-            session.query(DocDbDocument.chunkKey, DocDbDocument.id, DocDbDocument.packedJson)
+            session.query(DocDbDocument.chunkKey, DocDbDocument.key, DocDbDocument.documentJson)
                 .filter(DocDbDocument.chunkKey.in_(chunkKeys))
-                .order_by(DocDbDocument.id)
+                .order_by(DocDbDocument.key)
                 .yield_per(1000)
                 .all()
         )
@@ -155,13 +165,13 @@ def _buildIndex(chunkKeys) -> Dict[str, bytes]:
         packagedJsonByObjIdByChunkKey = defaultdict(dict)
 
         for item in indexQry:
-            packagedJsonByObjIdByChunkKey[item.chunkKey][item.id] = item.packedJson
+            packagedJsonByObjIdByChunkKey[item.chunkKey][item.key] = item.documentJson
 
         encPayloadByChunkKey = {}
 
         # Sort each bucket by the key
-        for chunkKey, packedJsonById in packagedJsonByObjIdByChunkKey.items():
-            tuples = json.dumps(packedJsonById, sort_keys=True)
+        for chunkKey, packedJsonByKey in packagedJsonByObjIdByChunkKey.items():
+            tuples = json.dumps(packedJsonByKey, sort_keys=True)
 
             # Create the blob data for this index.
             # It will be docDbed by a binary sort

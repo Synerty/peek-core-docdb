@@ -150,6 +150,7 @@ class ServerEntryHook(PluginServerEntryHookABC,
         so1 = DocumentTuple(
             key="doc1key",
             modelSetKey="testModel",
+            documentType="objectType1",
             document={
                 "name": "134 Ocean Parade, Circuit breaker 1",
                 "alias": "SO1ALIAS",
@@ -163,6 +164,7 @@ class ServerEntryHook(PluginServerEntryHookABC,
         so2 = DocumentTuple(
             key="doc2key",
             modelSetKey="testModel",
+            documentType="objectType2",
             document={
                 "name": "69 Sheep Farmers Rd Sub TX breaker",
                 "alias": "SO2ALIAS",

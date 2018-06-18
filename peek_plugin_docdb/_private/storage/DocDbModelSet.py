@@ -18,14 +18,3 @@ class DocDbModelSet(Tuple, DeclarativeBase):
     comment = Column(String)
     propsJson = Column(String)
 
-
-def getOrCreateDocDbModelSet(session, modelSetKey: str) -> DocDbModelSet:
-    qry = session.query(DocDbModelSet).filter(DocDbModelSet.key == modelSetKey)
-    if not qry.count():
-        session.add(DocDbModelSet(
-            name=modelSetKey,
-            key=modelSetKey
-        ))
-        session.commit()
-
-    return qry.one()

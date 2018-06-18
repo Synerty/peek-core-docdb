@@ -19,5 +19,8 @@ class DocumentTuple(Tuple):
     #:  The unique key of this document
     modelSetKey: str = TupleField()
 
+    #:  The document type string
+    documentType: str = TupleField()
+
     #:  The document data
     document: Dict = TupleField()

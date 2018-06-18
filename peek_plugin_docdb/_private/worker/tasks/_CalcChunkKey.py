@@ -3,16 +3,20 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def makeChunkKeyFromString(key: str) -> int:
+def makeChunkKey(modelSetKey: str, key: str) -> str:
     """ Make Chunk Key
 
     This is simple, and provides a reasonable distribution
 
+    :param modelSetKey:
     :param key:
 
     :return: chunkKey
 
     """
+
+    if not modelSetKey:
+        raise Exception("modelSetKey is None or zero length")
 
     if not key:
         raise Exception("key is None or zero length")
@@ -24,23 +28,4 @@ def makeChunkKeyFromString(key: str) -> int:
 
     bucket = bucket & 1023  # 1024 buckets
 
-    return bucket
-
-
-def makeChunkKeyFromInt(key: int) -> int:
-    """ Make Chunk Key
-
-    This is simple, and provides a reasonable distribution
-
-    :param key:
-
-    :return: chunkKey
-
-    """
-
-    if key is None:
-        raise Exception("key is None")
-
-    bucket = key & 1023  # 1024 buckets
-
-    return bucket
+    return '%s.%s' % (modelSetKey, bucket)

@@ -1,9 +1,7 @@
 import logging
 
 from peek_plugin_base.worker.PluginWorkerEntryHookABC import PluginWorkerEntryHookABC
-from peek_plugin_docdb._private.worker.tasks import GridCompilerTask, \
-    ImportDispTask, LiveDbDisplayValueConverterTask, DispCompilerTask, \
-    LocationIndexCompilerTask
+from peek_plugin_docdb._private.worker.tasks import ChunkCompilerTask, ImportTask
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +21,8 @@ class WorkerEntryHook(PluginWorkerEntryHookABC):
 
     @property
     def celeryAppIncludes(self):
-        return [LocationIndexCompilerTask.__name__]
+        return [ImportTask.__name__,
+                ChunkCompilerTask.__name__]
 
     @property
     def celeryApp(self):

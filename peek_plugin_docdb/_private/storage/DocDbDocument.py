@@ -1,11 +1,13 @@
 from sqlalchemy import Column, Index, ForeignKey
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship
-from vortex.Tuple import Tuple, addTupleType
 
 from peek_plugin_docdb._private.PluginNames import docDbTuplePrefix
 from peek_plugin_docdb._private.storage.DeclarativeBase import DeclarativeBase
+from peek_plugin_docdb._private.storage.DocDbDocumentTypeTuple import \
+    DocDbDocumentTypeTuple
 from peek_plugin_docdb._private.storage.DocDbModelSet import DocDbModelSet
+from vortex.Tuple import Tuple, addTupleType
 
 
 @addTupleType
@@ -22,6 +24,12 @@ class DocDbDocument(Tuple, DeclarativeBase):
                         nullable=False)
     modelSet = relationship(DocDbModelSet)
 
+    #:  The model set for this document
+    documentTypeId = Column(Integer,
+                            ForeignKey('DocDbDocumentType.id', ondelete='CASCADE'),
+                            nullable=False)
+    documentType = relationship(DocDbDocumentTypeTuple)
+
     #:  The unique key of this document
     key = Column(String, nullable=False)
 
@@ -29,9 +37,10 @@ class DocDbDocument(Tuple, DeclarativeBase):
     chunkKey = Column(String, nullable=False)
 
     #:  The document data
-    document = Column(String, nullable=False)
+    documentJson = Column(String, nullable=False)
 
     __table_args__ = (
         Index("idx_Document_key", modelSetId, key, unique=True),
+        Index("idx_Document_documentType", documentTypeId, unique=False),
         Index("idx_Document_gridKey", chunkKey, unique=False),
     )

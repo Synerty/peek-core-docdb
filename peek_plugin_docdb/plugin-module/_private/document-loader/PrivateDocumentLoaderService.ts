@@ -21,6 +21,8 @@ import {Observable} from "rxjs/Observable";
 import {EncodedDocumentChunkTuple} from "./EncodedDocumentChunkTuple";
 import {DocumentUpdateDateTuple} from "./DocumentUpdateDateTuple";
 import {DocumentTuple} from "../../DocumentTuple";
+import {DocDbTupleService} from "../DocDbTupleService";
+import {DocumentTypeTuple} from "../../DocumentTypeTuple";
 
 
 // ----------------------------------------------------------------------------
@@ -107,30 +109,53 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
 
     private index = new DocumentUpdateDateTuple();
 
-    private _hasLoaded = false;
+    private _hasServerLoaded = false;
+    private _hasDocTypeLoaded = false;
 
     private _hasLoadedSubject = new Subject<void>();
     private storage: TupleOfflineStorageService;
 
+    private objectTypesByIds: { [id: number]: DocumentTypeTuple } = {};
+
     constructor(private vortexService: VortexService,
                 private vortexStatusService: VortexStatusService,
-                storageFactory: TupleStorageFactoryService) {
+                storageFactory: TupleStorageFactoryService,
+                private tupleService: DocDbTupleService) {
         super();
+
+        let ts = new TupleSelector(DocumentTypeTuple.tupleName, {});
+        this.tupleService.offlineObserver
+            .subscribeToTupleSelector(ts)
+            .takeUntil(this.onDestroyEvent)
+            .subscribe((tuples: DocumentTypeTuple[]) => {
+                this.objectTypesByIds = {};
+                for (let item of tuples) {
+                    this.objectTypesByIds[item.id] = item;
+                }
+                this._hasDocTypeLoaded = true;
+                this._notifyReady();
+            });
 
         this.storage = new TupleOfflineStorageService(
             storageFactory,
             new TupleOfflineStorageNameService(docDbCacheStorageName)
         );
 
+
         this.initialLoad();
     }
 
     isReady(): boolean {
-        return this._hasLoaded;
+        return this._hasServerLoaded;
     }
 
     isReadyObservable(): Observable<void> {
         return this._hasLoadedSubject;
+    }
+
+    private _notifyReady(): void {
+        if (this._hasDocTypeLoaded && this._hasServerLoaded)
+            this._hasLoadedSubject.next();
     }
 
     /** Initial load
@@ -145,8 +170,8 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                     this.index = tuples[0];
 
                     if (this.index.initialLoadComplete) {
-                        this._hasLoaded = true;
-                        this._hasLoadedSubject.next();
+                        this._hasServerLoaded = true;
+                        this._notifyReady();
                     }
 
                 }
@@ -207,7 +232,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
 
             this.storage.saveTuples(new UpdateDateTupleSelector(), [this.index])
                 .then(() => {
-                    this._hasLoaded = true;
+                    this._hasServerLoaded = true;
                     this._hasLoadedSubject.next();
                 })
                 .catch(err => console.log(`ERROR : ${err}`));
@@ -285,7 +310,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
      * Get the objects with matching keywords from the index..
      *
      */
-    getDocuments(modelSetKey: string, keys: string[]): Promise<DocumentTuple[]> {
+    getDocuments(modelSetKey: string, keys: string[]): Promise<{ [key: string]: DocumentTuple }> {
         if (keys == null || keys.length == 0) {
             throw new Error("We've been passed a null/empty keys");
         }
@@ -305,7 +330,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
      *
      */
     private getDocumentsWhenReady(
-        modelSetKey: string, keys: string[]): Promise<DocumentTuple[]> {
+        modelSetKey: string, keys: string[]): Promise<{ [key: string]: DocumentTuple }> {
 
         let keysByChunkKey: { [key: string]: string[]; } = {};
         let chunkKeys: string[] = [];
@@ -328,10 +353,10 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
         }
 
         return Promise.all(promises)
-            .then((results: DocumentTuple[][]) => {
-                let objects: DocumentTuple[] = [];
+            .then((results: DocumentTuple[]) => {
+                let objects: { [key: string]: DocumentTuple } = {};
                 for (let result of  results) {
-                    objects.add(result);
+                    objects[result.key] = result;
                 }
                 return objects;
             });
@@ -369,42 +394,28 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                             // Find the keyword, we're just iterating
                             if (!chunkData.hasOwnProperty(key)) {
                                 console.log(
-                                    `WARNING: ObjectID ${key} is missing from index,`
+                                    `WARNING: Document ${key} is missing from index,`
                                     + ` chunkKey ${chunkKey}`
                                 );
                                 continue;
                             }
-                            /*
 
                             // Reconstruct the data
                             let objectProps: {} = JSON.parse(chunkData[key]);
 
                             // Get out the object type
-                            let thisObjectTypeId = objectProps['_otid_'];
-                            delete objectProps['_otid_'];
-
-                            // If the property is set, then make sure it matches
-                            if (objectTypeId != null && objectTypeId != thisObjectTypeId)
-                                continue;
-
-                            // Get out the routes
-                            let routes: string[][] = objectProps['_r_'];
-                            delete objectProps['_r_'];
-
-                            // Get out the key
-                            let objectKey: string = objectProps['key'];
-                            delete objectProps['key'];
+                            let thisDocumentTypeId = objectProps['_dtid'];
+                            delete objectProps['_dtid'];
 
                             // Create the new object
                             let newObject = new DocumentTuple();
                             foundDocuments.push(newObject);
 
-                            newObject.id = key;
-                            newObject.key = objectKey;
-                            newObject.objectTypeId = thisObjectTypeId;
-                            newObject.properties = objectProps;
+                            newObject.key = key;
+                            newObject.documentType =
+                                this.objectTypesByIds[thisDocumentTypeId];
+                            newObject.document = objectProps;
 
-                            */
                         }
 
                         return foundDocuments;

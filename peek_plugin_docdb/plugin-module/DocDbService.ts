@@ -34,7 +34,7 @@ export class DocDbService {
      * Get the objects with matching keywords from the index..
      *
      */
-    getObjects(modelSetKey:string, keys: string[]): Promise<DocumentTuple[]> {
+    getObjects(modelSetKey:string, keys: string[]): Promise<{ [key: string]: DocumentTuple }> {
         return this.documentLoader.getDocuments(modelSetKey, keys);
     }
 

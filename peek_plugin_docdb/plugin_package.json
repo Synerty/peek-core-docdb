@@ -11,6 +11,7 @@
     "requiresServices": [
         "server",
         "worker",
+        "agent",
         "storage",
         "admin",
         "client",
@@ -40,9 +41,13 @@
         "moduleDir": "plugin-module",
         "rootServices": [
             {
-                "file": "_private/docDb-object-loader/PrivateDocumentLoaderService",
+                "file": "_private/document-loader/PrivateDocumentLoaderService",
                 "class": "PrivateDocumentLoaderService",
                 "persistent": true
+            },
+            {
+                "file": "_private/DocDbTupleService",
+                "class": "DocDbTupleService"
             },
             {
                 "file": "DocDbService",
@@ -59,9 +64,13 @@
         "moduleDir": "plugin-module",
         "rootServices": [
             {
-                "file": "_private/docDb-object-loader/PrivateDocumentLoaderService",
+                "file": "_private/document-loader/PrivateDocumentLoaderService",
                 "class": "PrivateDocumentLoaderService",
                 "persistent": true
+            },
+            {
+                "file": "_private/DocDbTupleService",
+                "class": "DocDbTupleService"
             },
             {
                 "file": "DocDbService",

@@ -1,10 +1,10 @@
 import {addTupleType, Tuple} from "@synerty/vortexjs";
-import {docDbTuplePrefix} from "../PluginNames";
+import {docDbTuplePrefix} from "./_private/PluginNames";
 
 
 @addTupleType
-export class DocDbPropertyTuple extends Tuple {
-    public static readonly tupleName = docDbTuplePrefix + "DocDbPropertyTuple";
+export class DocumentPropertyTuple extends Tuple {
+    public static readonly tupleName = docDbTuplePrefix + "DocumentPropertyTuple";
 
     //  The id
     id: number;
@@ -19,6 +19,6 @@ export class DocDbPropertyTuple extends Tuple {
     title: string;
 
     constructor() {
-        super(DocDbPropertyTuple.tupleName)
+        super(DocumentPropertyTuple.tupleName)
     }
 }

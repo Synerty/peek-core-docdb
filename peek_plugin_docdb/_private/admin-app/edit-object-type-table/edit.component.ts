@@ -1,12 +1,13 @@
 import {Component, OnInit} from "@angular/core";
 import {Ng2BalloonMsgService} from "@synerty/ng2-balloon-msg";
 import {
-    extend,
-    VortexService,
     ComponentLifecycleEventEmitter,
-    TupleLoader
+    extend,
+    TupleLoader,
+    VortexService
 } from "@synerty/vortexjs";
-import {DocDbDocumentTypeTuple, docDbFilt} from "@peek/peek_plugin_docdb/_private";
+import {docDbFilt} from "@peek/peek_plugin_docdb/_private";
+import {DocumentTypeTuple} from "@peek/peek_plugin_docdb";
 
 
 @Component({
@@ -19,7 +20,7 @@ export class EditDocumentTypeComponent extends ComponentLifecycleEventEmitter {
         "key": "admin.Edit.DocDbDocumentTypeTuple"
     };
 
-    items: DocDbDocumentTypeTuple[] = [];
+    items: DocumentTypeTuple[] = [];
 
     loader: TupleLoader;
 
@@ -32,7 +33,7 @@ export class EditDocumentTypeComponent extends ComponentLifecycleEventEmitter {
         );
 
         this.loader.observable
-            .subscribe((tuples:DocDbDocumentTypeTuple[]) => this.items = tuples);
+            .subscribe((tuples: DocumentTypeTuple[]) => this.items = tuples);
     }
 
     save() {

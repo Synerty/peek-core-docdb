@@ -2,19 +2,19 @@ import logging
 from collections import defaultdict
 from typing import List, Dict
 
-from peek_plugin_docdb._private.tuples.docDb_object.DocumentUpdateDateTuple import \
-    DocumentUpdateDateTuple
 from twisted.internet.defer import DeferredList, inlineCallbacks, Deferred
+
+from peek_plugin_docdb._private.PluginNames import docDbFilt
+from peek_plugin_docdb._private.client.controller.DocumentCacheController import \
+    DocumentCacheController
+from peek_plugin_docdb._private.tuples.DocumentUpdateDateTuple import \
+    DocumentUpdateDateTuple
 from vortex.DeferUtil import vortexLogFailure
 from vortex.Payload import Payload
 from vortex.PayloadEndpoint import PayloadEndpoint
 from vortex.PayloadEnvelope import PayloadEnvelope
 from vortex.VortexABC import SendVortexMsgResponseCallable
 from vortex.VortexFactory import VortexFactory
-
-from peek_plugin_docdb._private.PluginNames import docDbFilt
-from peek_plugin_docdb._private.client.controller.DocumentCacheController import \
-    DocumentCacheController
 
 logger = logging.getLogger(__name__)
 

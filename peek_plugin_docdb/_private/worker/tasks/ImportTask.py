@@ -242,7 +242,6 @@ def _insertOrUpdateObjects(newDocuments: List[DocumentTuple],
             importDocumentTypeId = docTypeIdsByName[importDocument.documentType]
 
             packedJsonDict = copy(importDocument.document)
-            packedJsonDict['_k'] = importDocument.key
             packedJsonDict['_dtid'] = importDocumentTypeId
             documentJson = json.dumps(packedJsonDict, sort_keys=True)
 

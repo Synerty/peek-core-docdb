@@ -1,12 +1,13 @@
 import {Component, OnInit} from "@angular/core";
 import {Ng2BalloonMsgService} from "@synerty/ng2-balloon-msg";
 import {
-    extend,
-    VortexService,
     ComponentLifecycleEventEmitter,
-    TupleLoader
+    extend,
+    TupleLoader,
+    VortexService
 } from "@synerty/vortexjs";
-import {DocDbPropertyTuple, docDbFilt} from "@peek/peek_plugin_docdb/_private";
+import {DocumentPropertyTuple} from "@peek/peek_plugin_docdb";
+import {docDbFilt} from "@peek/peek_plugin_docdb/_private";
 
 
 @Component({
@@ -19,7 +20,7 @@ export class EditPropertyComponent extends ComponentLifecycleEventEmitter {
         "key": "admin.Edit.DocDbPropertyTuple"
     };
 
-    items: DocDbPropertyTuple[] = [];
+    items: DocumentPropertyTuple[] = [];
 
     loader: TupleLoader;
 
@@ -32,7 +33,7 @@ export class EditPropertyComponent extends ComponentLifecycleEventEmitter {
         );
 
         this.loader.observable
-            .subscribe((tuples:DocDbPropertyTuple[]) => this.items = tuples);
+            .subscribe((tuples: DocumentPropertyTuple[]) => this.items = tuples);
     }
 
     save() {

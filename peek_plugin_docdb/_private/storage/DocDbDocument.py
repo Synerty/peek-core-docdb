@@ -30,6 +30,8 @@ class DocDbDocument(Tuple, DeclarativeBase):
                             nullable=False)
     documentType = relationship(DocDbDocumentTypeTuple)
 
+    importGroupHash = Column(String, nullable=False)
+
     #:  The unique key of this document
     key = Column(String, nullable=False)
 
@@ -43,4 +45,5 @@ class DocDbDocument(Tuple, DeclarativeBase):
         Index("idx_Document_key", modelSetId, key, unique=True),
         Index("idx_Document_documentType", documentTypeId, unique=False),
         Index("idx_Document_gridKey", chunkKey, unique=False),
+        Index("idx_Document_importGroupHash", importGroupHash, unique=False),
     )

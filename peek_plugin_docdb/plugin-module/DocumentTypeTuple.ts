@@ -9,6 +9,9 @@ export class DocumentTypeTuple extends Tuple {
     //  The id
     id: number;
 
+    //  The modelSetId of the document property
+    modelSetId: number;
+
     //  The name of the document type
     name: string;
 

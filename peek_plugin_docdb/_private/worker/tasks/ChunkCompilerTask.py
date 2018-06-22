@@ -39,17 +39,25 @@ def compileDocumentChunk(self, queueItems) -> List[int]:
     :param queueItems: An encoded payload containing the queue tuples.
     :returns: A list of grid keys that have been updated.
     """
-    queueItemsByModelSetId = defaultdict(list)
+    try:
+        queueItemsByModelSetId = defaultdict(list)
 
-    for queueItem in queueItems:
-        queueItemsByModelSetId[queueItem.modelSetId].append(queueItem)
+        for queueItem in queueItems:
+            queueItemsByModelSetId[queueItem.modelSetId].append(queueItem)
 
-    for modelSetId, modelSetQueueItems in queueItemsByModelSetId.items():
-        _compileDocumentChunk(modelSetId, modelSetQueueItems)
+        for modelSetId, modelSetQueueItems in queueItemsByModelSetId.items():
+            _compileDocumentChunk(modelSetId, modelSetQueueItems)
+
+
+    except Exception as e:
+        logger.debug("RETRYING task - %s", e)
+        raise self.retry(exc=e, countdown=10)
 
     return list(set([i.chunkKey for i in queueItems]))
 
-def _compileDocumentChunk(modelSetId:int, queueItems:List[DocDbCompilerQueue]) -> None:
+
+def _compileDocumentChunk(modelSetId: int,
+                          queueItems: List[DocDbCompilerQueue]) -> None:
     chunkKeys = list(set([i.chunkKey for i in queueItems]))
 
     queueTable = DocDbCompilerQueue.__table__
@@ -128,11 +136,9 @@ def _compileDocumentChunk(modelSetId:int, queueItems:List[DocDbCompilerQueue]) -
                      total, (datetime.now(pytz.utc) - startTime))
 
 
-    except Exception as e:
+    except Exception:
         transaction.rollback()
-        # logger.warning(e)  # Just a warning, it will retry
-        logger.exception(e)
-        raise self.retry(exc=e, countdown=10)
+        raise
 
     finally:
         conn.close()
@@ -154,7 +160,8 @@ def _buildIndex(chunkKeys) -> Dict[str, bytes]:
 
     try:
         indexQry = (
-            session.query(DocDbDocument.chunkKey, DocDbDocument.key, DocDbDocument.documentJson)
+            session.query(DocDbDocument.chunkKey, DocDbDocument.key,
+                          DocDbDocument.documentJson)
                 .filter(DocDbDocument.chunkKey.in_(chunkKeys))
                 .order_by(DocDbDocument.key)
                 .yield_per(1000)

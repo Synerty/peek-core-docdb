@@ -5,9 +5,12 @@ from peek_plugin_docdb._private.server.tuple_providers.DocumentPropertyTupleProv
     DocumentPropertyTupleProvider
 from peek_plugin_docdb._private.server.tuple_providers.DocumentTypeTupleProvider import \
     DocumentTypeTupleProvider
+from peek_plugin_docdb._private.server.tuple_providers.ModelSetTupleProvider import \
+    ModelSetTupleProvider
 from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
 from peek_plugin_docdb._private.storage.DocDbDocumentTypeTuple import \
     DocDbDocumentTypeTuple
+from peek_plugin_docdb._private.storage.DocDbModelSet import DocDbModelSet
 from peek_plugin_docdb._private.storage.DocDbPropertyTuple import DocDbPropertyTuple
 from peek_plugin_docdb._private.tuples.AdminStatusTuple import AdminStatusTuple
 from vortex.handler.TupleDataObservableHandler import TupleDataObservableHandler
@@ -48,5 +51,9 @@ def makeTupleDataObservableHandler(dbSessionCreator: DbSessionCreator,
     # Document Property Tuple
     tupleObservable.addTupleProvider(DocDbPropertyTuple.tupleName(),
                                      DocumentPropertyTupleProvider(dbSessionCreator))
+
+    # Model Set Tuple
+    tupleObservable.addTupleProvider(DocDbModelSet.tupleName(),
+                                     ModelSetTupleProvider(dbSessionCreator))
 
     return tupleObservable

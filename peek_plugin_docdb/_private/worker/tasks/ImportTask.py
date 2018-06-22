@@ -18,7 +18,7 @@ from peek_plugin_docdb._private.storage.DocDbModelSet import DocDbModelSet
 from peek_plugin_docdb._private.storage.DocDbPropertyTuple import DocDbPropertyTuple
 from peek_plugin_docdb._private.worker.CeleryApp import celeryApp
 from peek_plugin_docdb._private.worker.tasks._CalcChunkKey import makeChunkKey
-from peek_plugin_docdb.tuples.DocumentTuple import DocumentTuple
+from peek_plugin_docdb.tuples.ImportDocumentTuple import ImportDocumentTuple
 from vortex.Payload import Payload
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ def removeDocumentTask(self, modelSetKey: str, keys: List[str]) -> None:
 @celeryApp.task(bind=True)
 def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> None:
     # Decode arguments
-    newDocuments: List[DocumentTuple] = (
+    newDocuments: List[ImportDocumentTuple] = (
         Payload().fromEncodedPayload(documentsEncodedPayload).tuples
     )
 
@@ -71,7 +71,7 @@ def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> None:
 
 
 
-def _validateNewDocuments(newDocuments: List[DocumentTuple]) -> None:
+def _validateNewDocuments(newDocuments: List[ImportDocumentTuple]) -> None:
     for doc in newDocuments:
         if not doc.key:
             raise Exception("key is empty for %s" % doc)
@@ -82,8 +82,8 @@ def _validateNewDocuments(newDocuments: List[DocumentTuple]) -> None:
         if not doc.documentType:
             raise Exception("documentType is empty for %s" % doc)
 
-        if not doc.document:
-            raise Exception("document is empty for %s" % doc)
+        # if not doc.document:
+        #     raise Exception("document is empty for %s" % doc)
 
 
 def _loadModelSets() -> Dict[str, int]:
@@ -116,7 +116,7 @@ def _makeModelSet(modelSetKey: str) -> int:
         dbSession.close()
 
 
-def _prepareLookups(newDocuments: List[DocumentTuple], modelSetId: int) -> Dict[str, int]:
+def _prepareLookups(newDocuments: List[ImportDocumentTuple], modelSetId: int) -> Dict[str, int]:
     """ Check Or Insert Search Properties
 
     Make sure the search properties exist.
@@ -133,10 +133,10 @@ def _prepareLookups(newDocuments: List[DocumentTuple], modelSetId: int) -> Dict[
         propertyNames = set()
 
         for o in newDocuments:
-            docTypeNames.add(o.documentType)
+            docTypeNames.add(o.documentType.lower())
 
             if o.document:
-                propertyNames.update(o.document)
+                propertyNames.update([s.lower() for s in o.document])
 
         # Prepare Properties
         dbProps = (
@@ -191,7 +191,7 @@ def _prepareLookups(newDocuments: List[DocumentTuple], modelSetId: int) -> Dict[
         dbSession.close()
 
 
-def _insertOrUpdateObjects(newDocuments: List[DocumentTuple],
+def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
                            modelSetId: int,
                            docTypeIdsByName: Dict[str, int]) -> None:
     """ Insert or Update Objects
@@ -211,6 +211,7 @@ def _insertOrUpdateObjects(newDocuments: List[DocumentTuple],
     transaction = conn.begin()
 
     try:
+        importHashSet = set()
         objectIdByKey: Dict[str, int] = {}
 
         objectKeys = [o.key for o in newDocuments]
@@ -237,6 +238,7 @@ def _insertOrUpdateObjects(newDocuments: List[DocumentTuple],
 
         # Work out which objects have been updated or need inserting
         for importDocument in newDocuments:
+            importHashSet.add(importDocument.importGroupHash)
 
             existingObject = foundObjectByKey.get(importDocument.key)
             importDocumentTypeId = docTypeIdsByName[importDocument.documentType]
@@ -260,6 +262,7 @@ def _insertOrUpdateObjects(newDocuments: List[DocumentTuple],
                     modelSetId=modelSetId,
                     documentTypeId=importDocumentTypeId,
                     key=importDocument.key,
+                    importGroupHash=importDocument.importGroupHash,
                     chunkKey=makeChunkKey(importDocument.modelSetKey, importDocument.key),
                     documentJson=documentJson
                 )
@@ -267,6 +270,13 @@ def _insertOrUpdateObjects(newDocuments: List[DocumentTuple],
 
             objectIdByKey[existingObject.key] = existingObject.id
             chunkKeysForQueue.add((modelSetId, existingObject.chunkKey))
+
+        if importHashSet:
+            conn.execute(
+                documentTable
+                    .delete()
+                    .where(documentTable.c.importGroupHash.in_(list(importHashSet)))
+            )
 
         # Insert the DocDb Objects
         if inserts:

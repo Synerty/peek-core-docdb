@@ -9,8 +9,8 @@ export class DocumentPropertyTuple extends Tuple {
     //  The id
     id: number;
 
-    //  The modelSetKey of the document property
-    modelSetKey: string;
+    //  The modelSetId of the document property
+    modelSetId: number;
 
     //  The name of the document property
     name: string;

@@ -1,6 +1,6 @@
 {
     "plugin": {
-        "title": "Document Db",
+        "title": "DocumentDB",
         "packageName": "peek_plugin_docdb",
         "version": "0.0.1",
         "buildNumber": "#PLUGIN_BUILD#",

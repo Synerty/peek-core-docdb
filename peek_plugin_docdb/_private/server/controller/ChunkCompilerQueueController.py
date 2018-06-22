@@ -28,10 +28,10 @@ class ChunkCompilerQueueController:
 
     """
 
-    FETCH_SIZE = 10
+    FETCH_SIZE = 4
     PERIOD = 0.200
 
-    QUEUE_MAX = 10
+    QUEUE_MAX = 12
     QUEUE_MIN = 0
 
     def __init__(self, dbSessionCreator,

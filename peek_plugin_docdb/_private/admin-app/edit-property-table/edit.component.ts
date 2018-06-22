@@ -3,11 +3,13 @@ import {Ng2BalloonMsgService} from "@synerty/ng2-balloon-msg";
 import {
     ComponentLifecycleEventEmitter,
     extend,
+    TupleDataObserverService,
     TupleLoader,
+    TupleSelector,
     VortexService
 } from "@synerty/vortexjs";
 import {DocumentPropertyTuple} from "@peek/peek_plugin_docdb";
-import {docDbFilt} from "@peek/peek_plugin_docdb/_private";
+import {docDbFilt, ModelSetTuple} from "@peek/peek_plugin_docdb/_private";
 
 
 @Component({
@@ -23,9 +25,11 @@ export class EditPropertyComponent extends ComponentLifecycleEventEmitter {
     items: DocumentPropertyTuple[] = [];
 
     loader: TupleLoader;
+    modelSetById: { [key: number]: ModelSetTuple } = {};
 
     constructor(private balloonMsg: Ng2BalloonMsgService,
-                vortexService: VortexService) {
+                vortexService: VortexService,
+                private tupleObserver: TupleDataObserverService) {
         super();
 
         this.loader = vortexService.createTupleLoader(
@@ -34,6 +38,21 @@ export class EditPropertyComponent extends ComponentLifecycleEventEmitter {
 
         this.loader.observable
             .subscribe((tuples: DocumentPropertyTuple[]) => this.items = tuples);
+
+        let ts = new TupleSelector(ModelSetTuple.tupleName, {});
+        this.tupleObserver.subscribeToTupleSelector(ts)
+            .takeUntil(this.onDestroyEvent)
+            .subscribe((tuples: ModelSetTuple[]) => {
+                this.modelSetById = {};
+                for (let tuple of tuples) {
+                    this.modelSetById[tuple.id] = tuple;
+                }
+            });
+    }
+
+    modelSetTitle(tuple: DocumentPropertyTuple): string {
+        let modelSet = this.modelSetById[tuple.modelSetId];
+        return modelSet == null ? "" : modelSet.name;
     }
 
     save() {

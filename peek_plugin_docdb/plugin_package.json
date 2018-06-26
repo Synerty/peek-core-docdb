@@ -32,12 +32,13 @@
     "client": {
     },
     "mobile": {
-        // I don't think there will be a UI for this
-        //        "showHomeLink": true,
-        //        "appDir": "_private/both-app",
-        //        "appModule": "docDb.module#DocDbModule",
-        //        "assetDir": "_private/both-assets",
-        //        "icon": "/assets/peek_plugin_docdb/icon.png",
+        "cfgDir": "_private/both-cfg",
+        "cfgModule": "docdb-cfg.module#DocDBCfgModule",
+        "showHomeLink": false,
+        "appDir": "_private/both-app",
+        "appModule": "docDb.module#DocDbModule",
+        "assetDir": "_private/both-assets",
+        "icon": "/assets/peek_plugin_docdb/icon.png",
         "moduleDir": "plugin-module",
         "rootServices": [
             {

@@ -10,6 +10,10 @@ import {PrivateDocumentLoaderService} from "./_private/document-loader";
 import {DocumentTuple} from "./DocumentTuple";
 
 
+export interface DocumentResultI {
+    [key: string]: DocumentTuple
+}
+
 // ----------------------------------------------------------------------------
 /** LocationIndex Cache
  *
@@ -34,7 +38,7 @@ export class DocDbService {
      * Get the objects with matching keywords from the index..
      *
      */
-    getObjects(modelSetKey:string, keys: string[]): Promise<{ [key: string]: DocumentTuple }> {
+    getObjects(modelSetKey: string, keys: string[]): Promise<DocumentResultI> {
         return this.documentLoader.getDocuments(modelSetKey, keys);
     }
 

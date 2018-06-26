@@ -133,7 +133,8 @@ def _prepareLookups(newDocuments: List[ImportDocumentTuple], modelSetId: int) ->
         propertyNames = set()
 
         for o in newDocuments:
-            docTypeNames.add(o.documentType.lower())
+            o.documentType = o.documentType.lower()
+            docTypeNames.add(o.documentType)
 
             if o.document:
                 propertyNames.update([s.lower() for s in o.document])

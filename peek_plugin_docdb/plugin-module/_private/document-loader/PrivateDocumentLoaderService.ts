@@ -22,7 +22,7 @@ import {EncodedDocumentChunkTuple} from "./EncodedDocumentChunkTuple";
 import {DocumentUpdateDateTuple} from "./DocumentUpdateDateTuple";
 import {DocumentTuple} from "../../DocumentTuple";
 import {DocDbTupleService} from "../DocDbTupleService";
-import {DocumentTypeTuple} from "../../DocumentTypeTuple";
+import {DocDbDocumentTypeTuple} from "../../DocDbDocumentTypeTuple";
 
 
 // ----------------------------------------------------------------------------
@@ -115,7 +115,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
     private _hasLoadedSubject = new Subject<void>();
     private storage: TupleOfflineStorageService;
 
-    private objectTypesByIds: { [id: number]: DocumentTypeTuple } = {};
+    private objectTypesByIds: { [id: number]: DocDbDocumentTypeTuple } = {};
 
     constructor(private vortexService: VortexService,
                 private vortexStatusService: VortexStatusService,
@@ -123,11 +123,11 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                 private tupleService: DocDbTupleService) {
         super();
 
-        let ts = new TupleSelector(DocumentTypeTuple.tupleName, {});
+        let ts = new TupleSelector(DocDbDocumentTypeTuple.tupleName, {});
         this.tupleService.offlineObserver
             .subscribeToTupleSelector(ts)
             .takeUntil(this.onDestroyEvent)
-            .subscribe((tuples: DocumentTypeTuple[]) => {
+            .subscribe((tuples: DocDbDocumentTypeTuple[]) => {
                 this.objectTypesByIds = {};
                 for (let item of tuples) {
                     this.objectTypesByIds[item.id] = item;
@@ -353,10 +353,12 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
         }
 
         return Promise.all(promises)
-            .then((results: DocumentTuple[]) => {
+            .then((promiseResults: DocumentTuple[][]) => {
                 let objects: { [key: string]: DocumentTuple } = {};
-                for (let result of  results) {
-                    objects[result.key] = result;
+                for (let results of  promiseResults) {
+                    for (let result of results) {
+                        objects[result.key] = result;
+                    }
                 }
                 return objects;
             });

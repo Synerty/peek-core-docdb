@@ -9,7 +9,7 @@ import {
     TupleDataObserverService
 } from "@synerty/vortexjs";
 import {docDbFilt, ModelSetTuple} from "@peek/peek_plugin_docdb/_private";
-import {DocumentTypeTuple} from "@peek/peek_plugin_docdb";
+import {DocDbDocumentTypeTuple} from "@peek/peek_plugin_docdb";
 
 
 @Component({
@@ -22,7 +22,7 @@ export class EditDocumentTypeComponent extends ComponentLifecycleEventEmitter {
         "key": "admin.Edit.DocDbDocumentTypeTuple"
     };
 
-    items: DocumentTypeTuple[] = [];
+    items: DocDbDocumentTypeTuple[] = [];
 
     loader: TupleLoader;
     modelSetById: { [key: number]: ModelSetTuple } = {};
@@ -37,7 +37,7 @@ export class EditDocumentTypeComponent extends ComponentLifecycleEventEmitter {
         );
 
         this.loader.observable
-            .subscribe((tuples: DocumentTypeTuple[]) => this.items = tuples);
+            .subscribe((tuples: DocDbDocumentTypeTuple[]) => this.items = tuples);
 
         let ts = new TupleSelector(ModelSetTuple.tupleName, {});
         this.tupleObserver.subscribeToTupleSelector(ts)
@@ -50,7 +50,7 @@ export class EditDocumentTypeComponent extends ComponentLifecycleEventEmitter {
             });
     }
 
-    modelSetTitle(tuple: DocumentTypeTuple): string {
+    modelSetTitle(tuple: DocDbDocumentTypeTuple): string {
         let modelSet = this.modelSetById[tuple.modelSetId];
         return modelSet == null ? "" : modelSet.name;
     }

@@ -3,8 +3,8 @@ import {docDbTuplePrefix} from "./_private/PluginNames";
 
 
 @addTupleType
-export class DocumentPropertyTuple extends Tuple {
-    public static readonly tupleName = docDbTuplePrefix + "DocumentPropertyTuple";
+export class DocDbDocumentTypeTuple extends Tuple {
+    public static readonly tupleName = docDbTuplePrefix + "DocDbDocumentTypeTuple";
 
     //  The id
     id: number;
@@ -12,13 +12,13 @@ export class DocumentPropertyTuple extends Tuple {
     //  The modelSetId of the document property
     modelSetId: number;
 
-    //  The name of the document property
+    //  The name of the document type
     name: string;
 
-    //  The title of the document property
+    //  The title of the document type
     title: string;
 
     constructor() {
-        super(DocumentPropertyTuple.tupleName)
+        super(DocDbDocumentTypeTuple.tupleName)
     }
 }

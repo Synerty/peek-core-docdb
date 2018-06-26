@@ -1,51 +1,32 @@
 import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
 import {Routes} from "@angular/router";
-
 // Import a small abstraction library to switch between nativescript and web
 import {PeekModuleFactory} from "@synerty/peek-util-web";
-
 // Import the default route component
 import {DocDbComponent} from "./docDb.component";
-
-// Import the required classes from VortexJS
-import {
-    TupleOfflineStorageNameService,
-    TupleOfflineStorageService
-} from "@synerty/vortexjs";
-
-// Import the names we need for the
-import {
-    docDbTupleOfflineServiceName
-} from "@peek/peek_plugin_docdb/_private/PluginNames";
-
-// Import the required classes from VortexJS
-import {
-    TupleDataObservableNameService,
-    TupleDataObserverService,
-    TupleDataOfflineObserverService
-} from "@synerty/vortexjs";
-
-// Import the names we need for the
-
-import {DocumentComponent} from "./string-int/string-int.component";
-
-import {
-    docDbObservableName,
-    docDbFilt
-} from "@peek/peek_plugin_docdb/_private/PluginNames";
-
 // Import the required classes from VortexJS
 import {
     TupleActionPushNameService,
     TupleActionPushOfflineService,
-    TupleActionPushService
+    TupleActionPushService,
+    TupleDataObservableNameService,
+    TupleDataObserverService,
+    TupleDataOfflineObserverService,
+    TupleOfflineStorageNameService,
+    TupleOfflineStorageService
 } from "@synerty/vortexjs";
-
 // Import the names we need for the
 import {
+    docDbFilt,
+    docDbObservableName,
+    docDbTupleOfflineServiceName,
     docDbActionProcessorName
-} from "@peek/peek_plugin_docdb/_private";
+} from "@peek/peek_plugin_docdb/_private/PluginNames";
+// Import the names we need for the
+import {ViewDocComponent} from "./view-doc/view.component";
+
+// Import the names we need for the
 
 
 export function tupleActionPushNameServiceFactory() {
@@ -65,8 +46,12 @@ export function tupleOfflineStorageNameServiceFactory() {
 // Define the child routes for this plugin
 export const pluginRoutes: Routes = [
     {
-        path: 'stringint',
-        component: DocumentComponent
+        path: 'view_doc',
+        component: ViewDocComponent
+    },
+    {
+        path: 'view_doc/:modelSetKey/:key',
+        component: ViewDocComponent
     },
     {
         path: '',
@@ -101,7 +86,7 @@ export const pluginRoutes: Routes = [
             useFactory: tupleDataObservableNameServiceFactory
         },
     ],
-    declarations: [DocDbComponent, DocumentComponent]
+    declarations: [DocDbComponent, ViewDocComponent]
 })
 export class DocDbModule {
 }

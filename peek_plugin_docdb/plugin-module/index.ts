@@ -1,4 +1,4 @@
-export {DocDbService} from "./DocDbService";
+export {DocDbService, DocumentResultI} from "./DocDbService";
 export {DocumentTuple} from "./DocumentTuple";
-export {DocumentPropertyTuple} from "./DocumentPropertyTuple";
-export {DocumentTypeTuple} from "./DocumentTypeTuple";
+export {DocDbPropertyTuple} from "./DocDbPropertyTuple";
+export {DocDbDocumentTypeTuple} from "./DocDbDocumentTypeTuple";

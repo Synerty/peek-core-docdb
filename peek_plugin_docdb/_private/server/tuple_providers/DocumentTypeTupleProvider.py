@@ -23,11 +23,7 @@ class DocumentTypeTupleProvider(TuplesProviderABC):
 
         session = self._ormSessionCreator()
         try:
-            tuples = (
-                session
-                    .query(DocDbDocumentTypeTuple)
-                    .all()
-            )
+            tuples = session.query(DocDbDocumentTypeTuple).all()
 
             # Create the vortex message
             return Payload(filt, tuples=tuples).makePayloadEnvelope().toVortexMsg()

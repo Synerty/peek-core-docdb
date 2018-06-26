@@ -1,0 +1,18 @@
+<div class="peek-tables-section">
+    <table class="table">
+        <thead>
+        <tr class="tr">
+            <th class="tr">{{doc.key}}</th>
+            <th class="tr">{{docTypeName}}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let prop of docProps" class="tr">
+            <td class="tr">{{prop.title}}</td>
+            <td class="tr">{{prop.value}}</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <pre>{{this.doc.document | json}}</pre>
+</div>

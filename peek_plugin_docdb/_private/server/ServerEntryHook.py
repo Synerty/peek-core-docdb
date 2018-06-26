@@ -21,6 +21,7 @@ from peek_plugin_docdb._private.storage.DeclarativeBase import loadStorageTuples
 from peek_plugin_docdb._private.tuples import loadPrivateTuples
 from peek_plugin_docdb.tuples import loadPublicTuples
 from peek_plugin_docdb.tuples.DocumentTuple import DocumentTuple
+from peek_plugin_docdb.tuples.ImportDocumentTuple import ImportDocumentTuple
 from vortex.DeferUtil import vortexLogFailure
 from vortex.Payload import Payload
 from .TupleActionProcessor import makeTupleActionProcessorHandler
@@ -139,7 +140,7 @@ class ServerEntryHook(PluginServerEntryHookABC,
         # Start the compiler controllers
         searchObjectChunkCompilerQueueController.start()
 
-        self._test()
+        # self._test()
 
         logger.debug("Started")
 
@@ -147,10 +148,11 @@ class ServerEntryHook(PluginServerEntryHookABC,
         # ----------------
         # API test
         newDocs = []
-        so1 = DocumentTuple(
+        so1 = ImportDocumentTuple(
             key="doc1key",
             modelSetKey="testModel",
             documentType="objectType1",
+            importGroupHash='test load',
             document={
                 "name": "134 Ocean Parade, Circuit breaker 1",
                 "alias": "SO1ALIAS",
@@ -161,10 +163,11 @@ class ServerEntryHook(PluginServerEntryHookABC,
         )
 
         newDocs.append(so1)
-        so2 = DocumentTuple(
+        so2 = ImportDocumentTuple(
             key="doc2key",
             modelSetKey="testModel",
             documentType="objectType2",
+            importGroupHash='test load',
             document={
                 "name": "69 Sheep Farmers Rd Sub TX breaker",
                 "alias": "SO2ALIAS",

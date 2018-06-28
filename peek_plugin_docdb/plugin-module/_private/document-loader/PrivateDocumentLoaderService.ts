@@ -23,7 +23,15 @@ import {DocumentUpdateDateTuple} from "./DocumentUpdateDateTuple";
 import {DocumentTuple} from "../../DocumentTuple";
 import {DocDbTupleService} from "../DocDbTupleService";
 import {DocDbDocumentTypeTuple} from "../../DocDbDocumentTypeTuple";
+import {PrivateDocumentLoaderStatusTuple} from "./PrivateDocumentLoaderStatusTuple";
 
+import {OfflineConfigTuple} from "../tuples/OfflineConfigTuple";
+
+// ----------------------------------------------------------------------------
+
+export interface DocumentResultI {
+    [key: string]: DocumentTuple
+}
 
 // ----------------------------------------------------------------------------
 
@@ -64,6 +72,8 @@ class UpdateDateTupleSelector extends TupleSelector {
 // ----------------------------------------------------------------------------
 /** hash method
  */
+let BUCKET_COUNT = 1024;
+
 function keyChunk(modelSetKey: string, key: string): string {
     /** Object ID Chunk
 
@@ -88,7 +98,7 @@ function keyChunk(modelSetKey: string, key: string): string {
         bucket |= 0; // Convert to 32bit integer
     }
 
-    bucket = bucket & 1023; // 1024 buckets
+    bucket = bucket & (BUCKET_COUNT - 1); // 1024 buckets
 
     return `${modelSetKey}.${bucket}`;
 }
@@ -115,13 +125,29 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
     private _hasLoadedSubject = new Subject<void>();
     private storage: TupleOfflineStorageService;
 
+    private _statusSubject = new Subject<PrivateDocumentLoaderStatusTuple>();
+    private _status = new PrivateDocumentLoaderStatusTuple();
+
     private objectTypesByIds: { [id: number]: DocDbDocumentTypeTuple } = {};
+
+    private offlineConfig: OfflineConfigTuple = new OfflineConfigTuple();
 
     constructor(private vortexService: VortexService,
                 private vortexStatusService: VortexStatusService,
                 storageFactory: TupleStorageFactoryService,
                 private tupleService: DocDbTupleService) {
         super();
+
+        this.tupleService.offlineObserver
+            .subscribeToTupleSelector(new TupleSelector(OfflineConfigTuple.tupleName, {}))
+            .takeUntil(this.onDestroyEvent)
+            .filter(v => v.length != 0)
+            .subscribe((tuples: OfflineConfigTuple[]) => {
+                this.offlineConfig = tuples[0];
+                if (this.offlineConfig.cacheChunksForOffline)
+                    this.initialLoad();
+                this._notifyStatus();
+            });
 
         let ts = new TupleSelector(DocDbDocumentTypeTuple.tupleName, {});
         this.tupleService.offlineObserver
@@ -141,8 +167,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
             new TupleOfflineStorageNameService(docDbCacheStorageName)
         );
 
-
-        this.initialLoad();
+        this._notifyStatus();
     }
 
     isReady(): boolean {
@@ -153,9 +178,21 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
         return this._hasLoadedSubject;
     }
 
+    statusObservable(): Observable<PrivateDocumentLoaderStatusTuple> {
+        return this._statusSubject;
+    }
+
     private _notifyReady(): void {
         if (this._hasDocTypeLoaded && this._hasServerLoaded)
             this._hasLoadedSubject.next();
+    }
+
+    private _notifyStatus(): void {
+        this._status.cacheForOfflineEnabled = this.offlineConfig.cacheChunksForOffline;
+        this._status.initialLoadComplete = this.index.initialLoadComplete;
+        this._status.loadProgress = Object.keys(this.index.updateDateByChunkKey).length;
+        this._status.loadTotal = BUCKET_COUNT;
+        this._statusSubject.next(this._status);
     }
 
     /** Initial load
@@ -176,10 +213,15 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
 
                 }
 
+                this._notifyStatus();
+
                 this.setupVortexSubscriptions();
                 this.askServerForUpdates();
 
+
             });
+
+        this._notifyStatus();
 
     }
 
@@ -222,6 +264,9 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
      * Process the grids the server has sent us.
      */
     private processDocumentesFromServer(payloadEnvelope: PayloadEnvelope) {
+
+        this._status.lastCheck = new Date();
+
         if (payloadEnvelope.result != null && payloadEnvelope.result != true) {
             console.log(`ERROR: ${payloadEnvelope.result}`);
             return;
@@ -234,6 +279,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                 .then(() => {
                     this._hasServerLoaded = true;
                     this._hasLoadedSubject.next();
+                    this._notifyStatus();
                 })
                 .catch(err => console.log(`ERROR : ${err}`));
 
@@ -243,6 +289,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
         payloadEnvelope
             .decodePayload()
             .then((payload: Payload) => this.storeDocumentPayload(payload))
+            .then(() => this._notifyStatus())
             .catch(e =>
                 `DocumentCache.processDocumentesFromServer failed: ${e}`
             );
@@ -310,17 +357,34 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
      * Get the objects with matching keywords from the index..
      *
      */
-    getDocuments(modelSetKey: string, keys: string[]): Promise<{ [key: string]: DocumentTuple }> {
+    getDocuments(modelSetKey: string, keys: string[]): Promise<DocumentResultI> {
         if (keys == null || keys.length == 0) {
             throw new Error("We've been passed a null/empty keys");
         }
 
+        if (!this.offlineConfig.cacheChunksForOffline) {
+            let ts = new TupleSelector(DocumentTuple.tupleName, {
+                "modelSetKey": modelSetKey,
+                "keys": keys
+            });
+
+            let isOnlinePromise: any = this.vortexStatusService.snapshot.isOnline ?
+                Promise.resolve() :
+                this.vortexStatusService.isOnline.filter(online => online).toPromise();
+
+            return isOnlinePromise
+                .then(() => this.tupleService.offlineObserver.pollForTuples(ts, false))
+                .then((docs: DocumentTuple[]) => this._populateAndIndexObjectTypes(docs));
+        }
+
         if (this.isReady())
-            return this.getDocumentsWhenReady(modelSetKey, keys);
+            return this.getDocumentsWhenReady(modelSetKey, keys)
+                .then(docs => this._populateAndIndexObjectTypes(docs));
 
         return this.isReadyObservable()
             .toPromise()
-            .then(() => this.getDocumentsWhenReady(modelSetKey, keys));
+            .then(() => this.getDocumentsWhenReady(modelSetKey, keys))
+            .then(docs => this._populateAndIndexObjectTypes(docs));
     }
 
 
@@ -330,7 +394,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
      *
      */
     private getDocumentsWhenReady(
-        modelSetKey: string, keys: string[]): Promise<{ [key: string]: DocumentTuple }> {
+        modelSetKey: string, keys: string[]): Promise<DocumentTuple[]> {
 
         let keysByChunkKey: { [key: string]: string[]; } = {};
         let chunkKeys: string[] = [];
@@ -354,10 +418,10 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
 
         return Promise.all(promises)
             .then((promiseResults: DocumentTuple[][]) => {
-                let objects: { [key: string]: DocumentTuple } = {};
+                let objects: DocumentTuple[] = [];
                 for (let results of  promiseResults) {
                     for (let result of results) {
-                        objects[result.key] = result;
+                        objects.push(result);
                     }
                 }
                 return objects;
@@ -414,8 +478,8 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                             foundDocuments.push(newObject);
 
                             newObject.key = key;
-                            newObject.documentType =
-                                this.objectTypesByIds[thisDocumentTypeId];
+                            newObject.documentType = new DocDbDocumentTypeTuple();
+                            newObject.documentType.id = thisDocumentTypeId;
                             newObject.document = objectProps;
 
                         }
@@ -427,6 +491,16 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
 
         return retPromise;
 
+    }
+
+    private _populateAndIndexObjectTypes(docs: DocumentTuple[]): DocumentResultI {
+
+        let objects: { [key: string]: DocumentTuple } = {};
+        for (let doc of  docs) {
+            objects[doc.key] = doc;
+            doc.documentType = this.objectTypesByIds[doc.documentType.id];
+        }
+        return objects;
     }
 
 

@@ -11,7 +11,7 @@ export class DocumentTuple extends Tuple {
     key: string;
 
     // This Document Type ID
-    documentType: DocDbDocumentTypeTuple = DocDbDocumentTypeTuple();
+    documentType: DocDbDocumentTypeTuple = new DocDbDocumentTypeTuple();
 
     // The document data
     document: {} = {};

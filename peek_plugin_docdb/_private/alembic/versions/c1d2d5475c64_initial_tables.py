@@ -74,6 +74,7 @@ def upgrade():
     sa.Column('modelSetId', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('title', sa.String(), nullable=False),
+    sa.Column('order', sa.Integer(), server_default='0', nullable=False),
     sa.ForeignKeyConstraint(['modelSetId'], ['pl_docdb.DocDbModelSet.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     schema='pl_docdb'

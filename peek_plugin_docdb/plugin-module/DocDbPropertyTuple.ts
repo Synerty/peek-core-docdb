@@ -18,6 +18,9 @@ export class DocDbPropertyTuple extends Tuple {
     //  The title of the document property
     title: string;
 
+    //  The order of the document property
+    order: number;
+
     constructor() {
         super(DocDbPropertyTuple.tupleName)
     }

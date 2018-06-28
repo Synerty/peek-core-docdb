@@ -23,6 +23,7 @@ class DocDbPropertyTuple(Tuple, DeclarativeBase):
 
     name = Column(String, nullable=False)
     title = Column(String, nullable=False)
+    order = Column(Integer, nullable=False, server_default='0')
 
     __table_args__ = (
         Index("idx_DocDbProp_model_name", modelSetId, name, unique=True),

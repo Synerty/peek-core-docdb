@@ -62,7 +62,7 @@ class DocumentCacheHandler(object):
         payloadsByVortexUuid = defaultdict(Payload)
 
         for chunkKey in chunkKeys:
-            encodedDocumentChunk = self._cacheController.document(chunkKey)
+            encodedDocumentChunk = self._cacheController.documentChunk(chunkKey)
 
             # Queue up the required client notifications
             for vortexUuid in vortexUuids:
@@ -141,7 +141,7 @@ class DocumentCacheHandler(object):
             lastUpdate = lastUpdateByDocumentKey.get(documentKey)
 
             # NOTE: lastUpdate can be null.
-            encodedDocumentTuple = self._cacheController.document(documentKey)
+            encodedDocumentTuple = self._cacheController.documentChunk(documentKey)
             if not encodedDocumentTuple:
                 logger.debug("Document %s is not in the cache" % documentKey)
                 continue

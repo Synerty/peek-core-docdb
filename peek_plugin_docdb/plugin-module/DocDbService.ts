@@ -5,14 +5,8 @@ import {Payload} from "@synerty/vortexjs";
 
 import {Subject} from "rxjs/Subject";
 import {Observable} from "rxjs/Observable";
-import {PrivateDocumentLoaderService} from "./_private/document-loader";
+import {DocumentResultI, PrivateDocumentLoaderService} from "./_private/document-loader";
 
-import {DocumentTuple} from "./DocumentTuple";
-
-
-export interface DocumentResultI {
-    [key: string]: DocumentTuple
-}
 
 // ----------------------------------------------------------------------------
 /** LocationIndex Cache

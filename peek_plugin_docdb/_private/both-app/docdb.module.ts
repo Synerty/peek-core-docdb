@@ -4,7 +4,7 @@ import {Routes} from "@angular/router";
 // Import a small abstraction library to switch between nativescript and web
 import {PeekModuleFactory} from "@synerty/peek-util-web";
 // Import the default route component
-import {DocDbComponent} from "./docDb.component";
+import {DocdbComponent} from "./docdb.component";
 // Import the required classes from VortexJS
 import {
     TupleActionPushNameService,
@@ -56,7 +56,7 @@ export const pluginRoutes: Routes = [
     {
         path: '',
         pathMatch: 'full',
-        component: DocDbComponent
+        component: DocdbComponent
     }
 
 ];
@@ -86,7 +86,7 @@ export const pluginRoutes: Routes = [
             useFactory: tupleDataObservableNameServiceFactory
         },
     ],
-    declarations: [DocDbComponent, ViewDocComponent]
+    declarations: [DocdbComponent, ViewDocComponent]
 })
 export class DocDbModule {
 }

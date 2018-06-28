@@ -6,10 +6,6 @@ import {PeekModuleFactory} from "@synerty/peek-util-web";
 // Import the default route component
 import {DocdbCfgComponent} from "./docdb-cfg.component";
 // Import global modules, for example, the canvas extensions.
-import {GridLoader, GridLoaderA} from "peek_plugin_diagram/cache/GridLoader";
-
-import {PrivateDiagramCacheStatusService,} from "@peek/peek_plugin_diagram/_private/services/PrivateDiagramCacheStatusService";
-
 
 
 // Define the child routes for this plugin
@@ -37,12 +33,7 @@ export const pluginRoutes: Routes = [
         ...PeekModuleFactory.FormsModules,
     ],
     exports: [],
-    providers: [
-        {
-            provide: GridLoaderA,
-            useClass: GridLoader
-        }
-    ],
+    providers: [],
     declarations: [DocdbCfgComponent]
 })
 export class DocDBCfgModule {

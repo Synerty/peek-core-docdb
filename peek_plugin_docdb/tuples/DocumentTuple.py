@@ -1,6 +1,8 @@
 from typing import Dict
 
 from peek_plugin_docdb._private.PluginNames import docDbTuplePrefix
+from peek_plugin_docdb._private.storage.DocDbDocumentTypeTuple import \
+    DocDbDocumentTypeTuple
 from vortex.Tuple import Tuple, addTupleType, TupleField
 
 
@@ -20,7 +22,7 @@ class DocumentTuple(Tuple):
     modelSetKey: str = TupleField()
 
     #:  The document type string
-    documentType: str = TupleField()
+    documentType: DocDbDocumentTypeTuple = TupleField()
 
     #:  The document data
     document: Dict = TupleField()

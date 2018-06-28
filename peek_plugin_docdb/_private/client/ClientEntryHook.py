@@ -86,31 +86,34 @@ class ClientEntryHook(PluginClientEntryHookABC):
         self._loadedObjects.append(serverTupleObserver)
 
         # ----------------
-        # Create the Tuple Observer
-        makeClientTupleDataObservableHandler(tupleDataObservableProxyHandler)
-
-        # ----------------
         # Document Cache Controller
 
-        searchDocumentController = DocumentCacheController(
+        documentCacheController = DocumentCacheController(
             self.platform.serviceId
         )
-        self._loadedObjects.append(searchDocumentController)
+        self._loadedObjects.append(documentCacheController)
 
-        # This is the custom handler for the client
-        searchDocumentHandler = DocumentCacheHandler(
-            cacheController=searchDocumentController,
+        # ----------------
+        # Document Cache Handler
+
+        documentHandler = DocumentCacheHandler(
+            cacheController=documentCacheController,
             clientId=self.platform.serviceId
         )
-        self._loadedObjects.append(searchDocumentHandler)
+        self._loadedObjects.append(documentHandler)
 
-        searchDocumentController.setDocumentCacheHandler(
-            searchDocumentHandler
-        )
+        # ----------------
+        # Set the caches reference to the handler
+        documentCacheController.setDocumentCacheHandler(documentHandler)
+
+        # ----------------
+        # Create the Tuple Observer
+        makeClientTupleDataObservableHandler(tupleDataObservableProxyHandler,
+                                             documentCacheController)
 
         # ----------------
         # Start the compiler controllers
-        yield searchDocumentController.start()
+        yield documentCacheController.start()
 
         logger.debug("Started")
 

@@ -1,35 +1,52 @@
 import {Component, Input} from "@angular/core";
-import {
-    PrivateDiagramCacheStatusService
-} from "@peek/peek_plugin_diagram/_private/services/PrivateDiagramCacheStatusService";
 
-import {ComponentLifecycleEventEmitter} from "@synerty/vortexjs";
-import {GridLoaderA} from "peek_plugin_diagram/cache/GridLoader";
+import {ComponentLifecycleEventEmitter, TupleSelector} from "@synerty/vortexjs";
+import {DocDbTupleService, OfflineConfigTuple} from "@peek/peek_plugin_docdb/_private";
+import {
+    PrivateDocumentLoaderService,
+    PrivateDocumentLoaderStatusTuple
+} from "@peek/peek_plugin_docdb/_private/document-loader";
 
 
 @Component({
-    selector: 'peek-plugin-diagram-cfg',
+    selector: 'peek-plugin-docdb-cfg',
     templateUrl: 'docdb-cfg.component.web.html',
     moduleId: module.id
 })
 export class DocdbCfgComponent extends ComponentLifecycleEventEmitter {
 
-    lastStatus: string = "Not Running";
+    lastStatus: PrivateDocumentLoaderStatusTuple = new PrivateDocumentLoaderStatusTuple();
 
+    offlineConfig: OfflineConfigTuple = new OfflineConfigTuple();
 
-    constructor(private gridLoader: GridLoaderA,
-                private gridCachingStatus: PrivateDiagramCacheStatusService) {
+    private offlineTs = new TupleSelector(OfflineConfigTuple.tupleName, {});
+
+    constructor(private documentLoader: PrivateDocumentLoaderService,
+                private tupleService: DocDbTupleService) {
         super();
 
-        this.gridCachingStatus.cacheProgressObservable
+        this.documentLoader.statusObservable()
             .takeUntil(this.onDestroyEvent)
-            .subscribe( value => this.lastStatus = value);
+            .subscribe(value => this.lastStatus = value);
+
+        this.tupleService.offlineObserver.subscribeToTupleSelector(this.offlineTs)
+            .takeUntil(this.onDestroyEvent)
+            .subscribe((tuples: OfflineConfigTuple[]) => {
+                if (tuples.length == 0) {
+                    this.tupleService.offlineObserver.updateOfflineState(
+                        this.offlineTs, [this.offlineConfig]
+                    );
+                    return;
+                }
+            });
 
     }
 
-    cacheAllClicked(): void {
-        this.gridLoader.cacheAll();
-        alert("CACHING has started");
+    toggleOfflineMode(): void {
+        this.offlineConfig.cacheChunksForOffline = !this.offlineConfig.cacheChunksForOffline;
+        this.tupleService.offlineObserver.updateOfflineState(
+            this.offlineTs, [this.offlineConfig]
+        );
     }
 
 }

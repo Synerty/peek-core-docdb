@@ -93,7 +93,7 @@ class DocumentCacheController:
 
         self._webAppHandler.notifyOfDocumentUpdate(chunkKeysUpdated)
 
-    def document(self, chunkKey) -> DocDbEncodedChunk:
+    def documentChunk(self, chunkKey) -> DocDbEncodedChunk:
         return self._cache.get(chunkKey)
 
     def documentKeys(self) -> List[int]:

@@ -8,7 +8,8 @@ import {
     TupleActionPushService,
     TupleDataObserverService,
     TupleDataOfflineObserverService,
-    TupleSelector
+    TupleSelector,
+    VortexStatusService
 } from "@synerty/vortexjs";
 
 import {
@@ -25,6 +26,7 @@ import {extend} from "@synerty/vortexjs/src/vortex/UtilMisc";
 interface PropT {
     title: string;
     value: string;
+    order: number;
 }
 
 @Component({
@@ -42,6 +44,7 @@ export class ViewDocComponent extends ComponentLifecycleEventEmitter implements 
 
     constructor(private route: ActivatedRoute,
                 private docDbService: DocDbService,
+                private vortexStatus: VortexStatusService,
                 private tupleObserver: TupleDataOfflineObserverService,
                 private titleService: TitleService) {
         super();
@@ -107,11 +110,14 @@ export class ViewDocComponent extends ComponentLifecycleEventEmitter implements 
         this.titleService.setTitle(`Document ${key}`);
 
         for (let name of Object.keys(this.doc.document)) {
+            let prop = this.propertiesByName[name.toLowerCase()];
             this.docProps.push({
-                title: this.propertiesByName[name.toLowerCase()].title,
+                title: prop.title,
+                order: prop.order,
                 value: this.doc.document[name]
             });
         }
+        this.docProps.sort((a, b) => a.order - b.order);
 
         this.docTypeName = this.doc.documentType.title;
     }

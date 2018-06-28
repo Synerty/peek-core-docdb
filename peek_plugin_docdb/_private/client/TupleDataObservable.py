@@ -1,18 +1,22 @@
+from peek_plugin_docdb._private.client.controller.DocumentCacheController import \
+    DocumentCacheController
+from peek_plugin_docdb._private.client.tuple_providers.ClientDocumentTupleProvider import \
+    ClientDocumentTupleProvider
+from peek_plugin_docdb.tuples.DocumentTuple import DocumentTuple
 from vortex.handler.TupleDataObservableProxyHandler import TupleDataObservableProxyHandler
 
 
 def makeClientTupleDataObservableHandler(
-        tupleObservable: TupleDataObservableProxyHandler):
+        tupleObservable: TupleDataObservableProxyHandler,
+        cacheHandler: DocumentCacheController):
     """" Make CLIENT Tuple Data Observable Handler
 
-    This method creates the observable object, registers the tuple providers and then
-    returns it.
+    This method registers the tuple providers for the proxy, that are served locally.
 
+    :param cacheHandler:
     :param tupleObservable: The tuple observable proxy
-    :return: An instance of :code:`TupleDataObservableHandler`
 
     """
 
-
-    # tupleObservable.addTupleProvider(GridCacheIndexTuple.tupleName(),
-    #                                  GridCacheIndexTupleProvider(gridCacheController))
+    tupleObservable.addTupleProvider(DocumentTuple.tupleName(),
+                                     ClientDocumentTupleProvider(cacheHandler))

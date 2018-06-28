@@ -132,6 +132,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
 
     private offlineConfig: OfflineConfigTuple = new OfflineConfigTuple();
 
+
     constructor(private vortexService: VortexService,
                 private vortexStatusService: VortexStatusService,
                 storageFactory: TupleStorageFactoryService,
@@ -208,6 +209,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
 
                     if (this.index.initialLoadComplete) {
                         this._hasServerLoaded = true;
+                        this._hasLoadedSubject.next();
                         this._notifyReady();
                     }
 
@@ -218,11 +220,9 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                 this.setupVortexSubscriptions();
                 this.askServerForUpdates();
 
-
             });
 
         this._notifyStatus();
-
     }
 
     private setupVortexSubscriptions(): void {
@@ -250,6 +250,9 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
      *
      */
     private askServerForUpdates() {
+        if (!this.offlineConfig.cacheChunksForOffline)
+            return;
+
         // There is no point talking to the server if it's offline
         if (!this.vortexStatusService.snapshot.isOnline)
             return;

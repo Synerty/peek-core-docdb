@@ -57,11 +57,16 @@ class ClientDocumentTupleProvider(TuplesProviderABC):
                 thisDocumentTypeId = objectProps['_dtid']
                 del objectProps['_dtid']
 
+                # Get out the object type
+                thisModelSetId = objectProps['_msid']
+                del objectProps['_msid']
+
                 # Create the new object
                 newObject = DocumentTuple()
                 foundDocuments.append(newObject)
 
                 newObject.key = subKey
+                newObject.modelSetId = thisModelSetId
                 newObject.documentType = DocDbDocumentTypeTuple(id=thisDocumentTypeId)
                 newObject.document = objectProps
 

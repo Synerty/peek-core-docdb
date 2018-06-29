@@ -480,11 +480,16 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                             let thisDocumentTypeId = objectProps['_dtid'];
                             delete objectProps['_dtid'];
 
+                            // Get out the object type
+                            let thisModelSetId = objectProps['_msid'];
+                            delete objectProps['_msid'];
+
                             // Create the new object
                             let newObject = new DocumentTuple();
                             foundDocuments.push(newObject);
 
                             newObject.key = key;
+                            newObject.modelSetId = thisModelSetId;
                             newObject.documentType = new DocDbDocumentTypeTuple();
                             newObject.documentType.id = thisDocumentTypeId;
                             newObject.document = objectProps;

@@ -64,7 +64,7 @@ export class ViewDocComponent extends ComponentLifecycleEventEmitter implements 
             this.propertiesByName = {};
 
             for (let item of tuples) {
-                this.propertiesByName[item.name] = item;
+                this.propertiesByName[`${item.modelSetId}.${item.name}`] = item;
             }
         });
 
@@ -110,7 +110,8 @@ export class ViewDocComponent extends ComponentLifecycleEventEmitter implements 
         this.titleService.setTitle(`Document ${key}`);
 
         for (let name of Object.keys(this.doc.document)) {
-            let prop = this.propertiesByName[name.toLowerCase()];
+            let propKey = `${this.doc.modelSetId}.${name.toLowerCase()}`;
+            let prop = this.propertiesByName[propKey] || new DocDbPropertyTuple();
             this.docProps.push({
                 title: prop.title,
                 order: prop.order,

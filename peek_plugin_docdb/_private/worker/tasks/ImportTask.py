@@ -246,6 +246,7 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
 
             packedJsonDict = copy(importDocument.document)
             packedJsonDict['_dtid'] = importDocumentTypeId
+            packedJsonDict['_msid'] = modelSetId
             documentJson = json.dumps(packedJsonDict, sort_keys=True)
 
             # Work out if we need to update the object type

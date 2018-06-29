@@ -10,6 +10,9 @@ export class DocumentTuple extends Tuple {
     //  The unique key of this document
     key: string;
 
+    //  The modelSetId for this document.
+    modelSetId: number;
+
     // This Document Type ID
     documentType: DocDbDocumentTypeTuple = new DocDbDocumentTypeTuple();
 

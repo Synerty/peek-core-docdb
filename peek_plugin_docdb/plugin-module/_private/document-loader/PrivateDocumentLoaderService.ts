@@ -183,6 +183,10 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
         return this._statusSubject;
     }
 
+    status(): PrivateDocumentLoaderStatusTuple {
+        return this._status;
+    }
+
     private _notifyReady(): void {
         if (this._hasDocTypeLoaded && this._hasServerLoaded)
             this._hasLoadedSubject.next();

@@ -25,6 +25,7 @@ export class DocdbCfgComponent extends ComponentLifecycleEventEmitter {
                 private tupleService: DocDbTupleService) {
         super();
 
+        this.lastStatus = this.documentLoader.status();
         this.documentLoader.statusObservable()
             .takeUntil(this.onDestroyEvent)
             .subscribe(value => this.lastStatus = value);

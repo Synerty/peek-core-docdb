@@ -29,19 +29,6 @@ import {ViewDocComponent} from "./view-doc/view.component";
 // Import the names we need for the
 
 
-export function tupleActionPushNameServiceFactory() {
-    return new TupleActionPushNameService(
-        docDbActionProcessorName, docDbFilt);
-}
-
-export function tupleDataObservableNameServiceFactory() {
-    return new TupleDataObservableNameService(
-        docDbObservableName, docDbFilt);
-}
-
-export function tupleOfflineStorageNameServiceFactory() {
-    return new TupleOfflineStorageNameService(docDbTupleOfflineServiceName);
-}
 
 // Define the child routes for this plugin
 export const pluginRoutes: Routes = [
@@ -73,18 +60,6 @@ export const pluginRoutes: Routes = [
     ],
     exports: [],
     providers: [
-        TupleActionPushOfflineService, TupleActionPushService, {
-            provide: TupleActionPushNameService,
-            useFactory: tupleActionPushNameServiceFactory
-        },
-        TupleOfflineStorageService, {
-            provide: TupleOfflineStorageNameService,
-            useFactory: tupleOfflineStorageNameServiceFactory
-        },
-        TupleDataObserverService, TupleDataOfflineObserverService, {
-            provide: TupleDataObservableNameService,
-            useFactory: tupleDataObservableNameServiceFactory
-        },
     ],
     declarations: [DocdbComponent, ViewDocComponent]
 })

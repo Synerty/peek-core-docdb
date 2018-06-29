@@ -16,18 +16,13 @@ import {
     DocDbDocumentTypeTuple,
     DocDbPropertyTuple,
     DocDbService,
+    DocPropT,
     DocumentResultI,
     DocumentTuple
 } from "@peek/peek_plugin_docdb";
 import {Observable} from "rxjs/Observable";
 import {extend} from "@synerty/vortexjs/src/vortex/UtilMisc";
 
-
-interface PropT {
-    title: string;
-    value: string;
-    order: number;
-}
 
 @Component({
     selector: 'plugin-docDb-result',
@@ -37,15 +32,12 @@ interface PropT {
 export class ViewDocComponent extends ComponentLifecycleEventEmitter implements OnInit {
 
     doc: DocumentTuple = new DocumentTuple();
-    docProps: PropT[] = [];
+    docProps: DocPropT[] = [];
     docTypeName: string = '';
-
-    propertiesByName: { [key: string]: DocDbPropertyTuple; } = {};
 
     constructor(private route: ActivatedRoute,
                 private docDbService: DocDbService,
                 private vortexStatus: VortexStatusService,
-                private tupleObserver: TupleDataOfflineObserverService,
                 private titleService: TitleService) {
         super();
 
@@ -55,26 +47,7 @@ export class ViewDocComponent extends ComponentLifecycleEventEmitter implements 
 
     ngOnInit() {
 
-        let propTs = new TupleSelector(DocDbPropertyTuple.tupleName, {});
-        let propObservable = this.tupleObserver
-            .subscribeToTupleSelector(propTs)
-            .takeUntil(this.onDestroyEvent);
-
-        propObservable.subscribe((tuples: DocDbPropertyTuple[]) => {
-            this.propertiesByName = {};
-
-            for (let item of tuples) {
-                this.propertiesByName[`${item.modelSetId}.${item.name}`] = item;
-            }
-        });
-
-        let routeObservable = this.route.params
-            .takeUntil(this.onDestroyEvent);
-
-
-        Observable.zip(propObservable, routeObservable,
-            (v1: any, params: Params) => params
-        )
+        this.route.params
             .takeUntil(this.onDestroyEvent)
             .subscribe((params: Params) => {
                 let vars = {};
@@ -109,17 +82,7 @@ export class ViewDocComponent extends ComponentLifecycleEventEmitter implements 
 
         this.titleService.setTitle(`Document ${key}`);
 
-        for (let name of Object.keys(this.doc.document)) {
-            let propKey = `${this.doc.modelSetId}.${name.toLowerCase()}`;
-            let prop = this.propertiesByName[propKey] || new DocDbPropertyTuple();
-            this.docProps.push({
-                title: prop.title,
-                order: prop.order,
-                value: this.doc.document[name]
-            });
-        }
-        this.docProps.sort((a, b) => a.order - b.order);
-
+        this.docProps = this.docDbService.getNiceOrderedProperties(this.doc);
         this.docTypeName = this.doc.documentType.title;
     }
 

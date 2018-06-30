@@ -8,8 +8,8 @@ import {
     TupleSelector,
     VortexService
 } from "@synerty/vortexjs";
-import {DocDbPropertyTuple} from "@peek/peek_plugin_docdb";
-import {docDbFilt, ModelSetTuple} from "@peek/peek_plugin_docdb/_private";
+import {DocDbModelSetTuple, DocDbPropertyTuple} from "@peek/peek_plugin_docdb";
+import {docDbFilt} from "@peek/peek_plugin_docdb/_private";
 
 
 @Component({
@@ -25,7 +25,7 @@ export class EditPropertyComponent extends ComponentLifecycleEventEmitter {
     items: DocDbPropertyTuple[] = [];
 
     loader: TupleLoader;
-    modelSetById: { [key: number]: ModelSetTuple } = {};
+    modelSetById: { [key: number]: DocDbModelSetTuple } = {};
 
     constructor(private balloonMsg: Ng2BalloonMsgService,
                 vortexService: VortexService,
@@ -39,10 +39,10 @@ export class EditPropertyComponent extends ComponentLifecycleEventEmitter {
         this.loader.observable
             .subscribe((tuples: DocDbPropertyTuple[]) => this.items = tuples);
 
-        let ts = new TupleSelector(ModelSetTuple.tupleName, {});
+        let ts = new TupleSelector(DocDbModelSetTuple.tupleName, {});
         this.tupleObserver.subscribeToTupleSelector(ts)
             .takeUntil(this.onDestroyEvent)
-            .subscribe((tuples: ModelSetTuple[]) => {
+            .subscribe((tuples: DocDbModelSetTuple[]) => {
                 this.modelSetById = {};
                 for (let tuple of tuples) {
                     this.modelSetById[tuple.id] = tuple;

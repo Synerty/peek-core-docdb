@@ -1,13 +1,13 @@
 import {addTupleType, Tuple} from "@synerty/vortexjs";
-import {docDbTuplePrefix} from "./PluginNames";
+import {docDbTuplePrefix} from "./_private/PluginNames";
 
 
 @addTupleType
-export class ModelSetTuple extends Tuple {
+export class DocDbModelSetTuple extends Tuple {
     public static readonly tupleName = docDbTuplePrefix + "DocDbModelSet";
 
     //  The unique key of this document
-    id: string;
+    id: number;
 
     //  The unique key of this document
     key: string;
@@ -16,6 +16,6 @@ export class ModelSetTuple extends Tuple {
     name: string;
 
     constructor() {
-        super(ModelSetTuple.tupleName)
+        super(DocDbModelSetTuple.tupleName)
     }
 }

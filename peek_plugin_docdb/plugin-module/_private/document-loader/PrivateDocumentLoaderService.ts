@@ -26,6 +26,7 @@ import {DocDbDocumentTypeTuple} from "../../DocDbDocumentTypeTuple";
 import {PrivateDocumentLoaderStatusTuple} from "./PrivateDocumentLoaderStatusTuple";
 
 import {OfflineConfigTuple} from "../tuples/OfflineConfigTuple";
+import {DocDbModelSetTuple} from "../../DocDbModelSetTuple";
 
 // ----------------------------------------------------------------------------
 
@@ -120,7 +121,6 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
     private index = new DocumentUpdateDateTuple();
 
     private _hasServerLoaded = false;
-    private _hasDocTypeLoaded = false;
 
     private _hasLoadedSubject = new Subject<void>();
     private storage: TupleOfflineStorageService;
@@ -129,6 +129,10 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
     private _status = new PrivateDocumentLoaderStatusTuple();
 
     private objectTypesByIds: { [id: number]: DocDbDocumentTypeTuple } = {};
+    private _hasDocTypeLoaded = false;
+
+    private modelSetByIds: { [id: number]: DocDbModelSetTuple } = {};
+    private _hasModelSetLoaded = false;
 
     private offlineConfig: OfflineConfigTuple = new OfflineConfigTuple();
 
@@ -151,9 +155,9 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                 this._notifyStatus();
             });
 
-        let ts = new TupleSelector(DocDbDocumentTypeTuple.tupleName, {});
+        let objTypeTs = new TupleSelector(DocDbDocumentTypeTuple.tupleName, {});
         this.tupleService.offlineObserver
-            .subscribeToTupleSelector(ts)
+            .subscribeToTupleSelector(objTypeTs)
             .takeUntil(this.onDestroyEvent)
             .subscribe((tuples: DocDbDocumentTypeTuple[]) => {
                 this.objectTypesByIds = {};
@@ -161,6 +165,19 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                     this.objectTypesByIds[item.id] = item;
                 }
                 this._hasDocTypeLoaded = true;
+                this._notifyReady();
+            });
+
+        let modelSetTs = new TupleSelector(DocDbModelSetTuple.tupleName, {});
+        this.tupleService.offlineObserver
+            .subscribeToTupleSelector(modelSetTs)
+            .takeUntil(this.onDestroyEvent)
+            .subscribe((tuples: DocDbModelSetTuple[]) => {
+                this.modelSetByIds = {};
+                for (let item of tuples) {
+                    this.modelSetByIds[item.id] = item;
+                }
+                this._hasModelSetLoaded = true;
                 this._notifyReady();
             });
 
@@ -189,7 +206,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
     }
 
     private _notifyReady(): void {
-        if (this._hasDocTypeLoaded && this._hasServerLoaded)
+        if (this._hasDocTypeLoaded && this._hasModelSetLoaded && this._hasServerLoaded)
             this._hasLoadedSubject.next();
     }
 
@@ -236,7 +253,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
         this.vortexService.createEndpointObservable(this, clientDocumentWatchUpdateFromDeviceFilt)
             .takeUntil(this.onDestroyEvent)
             .subscribe((payloadEnvelope: PayloadEnvelope) => {
-                this.processDocumentesFromServer(payloadEnvelope);
+                this.processDocumentsFromServer(payloadEnvelope);
             });
 
         // If the vortex service comes back online, update the watch grids.
@@ -271,7 +288,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
      *
      * Process the grids the server has sent us.
      */
-    private processDocumentesFromServer(payloadEnvelope: PayloadEnvelope) {
+    private processDocumentsFromServer(payloadEnvelope: PayloadEnvelope) {
 
         this._status.lastCheck = new Date();
 
@@ -299,7 +316,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
             .then((payload: Payload) => this.storeDocumentPayload(payload))
             .then(() => this._notifyStatus())
             .catch(e =>
-                `DocumentCache.processDocumentesFromServer failed: ${e}`
+                `DocumentCache.processDocumentsFromServer failed: ${e}`
             );
 
     }
@@ -378,7 +395,10 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
 
             let isOnlinePromise: any = this.vortexStatusService.snapshot.isOnline ?
                 Promise.resolve() :
-                this.vortexStatusService.isOnline.filter(online => online).toPromise();
+                this.vortexStatusService.isOnline
+                    .filter(online => online)
+                    .first()
+                    .toPromise();
 
             return isOnlinePromise
                 .then(() => this.tupleService.offlineObserver.pollForTuples(ts, false))
@@ -390,6 +410,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                 .then(docs => this._populateAndIndexObjectTypes(docs));
 
         return this.isReadyObservable()
+            .first()
             .toPromise()
             .then(() => this.getDocumentsWhenReady(modelSetKey, keys))
             .then(docs => this._populateAndIndexObjectTypes(docs));
@@ -490,7 +511,8 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                             foundDocuments.push(newObject);
 
                             newObject.key = key;
-                            newObject.modelSetId = thisModelSetId;
+                            newObject.modelSet = new DocDbModelSetTuple();
+                            newObject.modelSet.id = thisModelSetId;
                             newObject.documentType = new DocDbDocumentTypeTuple();
                             newObject.documentType.id = thisDocumentTypeId;
                             newObject.document = objectProps;
@@ -512,6 +534,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
         for (let doc of  docs) {
             objects[doc.key] = doc;
             doc.documentType = this.objectTypesByIds[doc.documentType.id];
+            doc.modelSet = this.modelSetByIds[doc.modelSet.id];
         }
         return objects;
     }

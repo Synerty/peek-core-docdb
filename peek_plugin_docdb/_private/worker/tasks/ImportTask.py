@@ -79,8 +79,8 @@ def _validateNewDocuments(newDocuments: List[ImportDocumentTuple]) -> None:
         if not doc.modelSetKey:
             raise Exception("modelSetKey is empty for %s" % doc)
 
-        if not doc.documentType:
-            raise Exception("documentType is empty for %s" % doc)
+        if not doc.documentTypeKey:
+            raise Exception("documentTypeKey is empty for %s" % doc)
 
         # if not doc.document:
         #     raise Exception("document is empty for %s" % doc)
@@ -133,8 +133,8 @@ def _prepareLookups(newDocuments: List[ImportDocumentTuple], modelSetId: int) ->
         propertyNames = set()
 
         for o in newDocuments:
-            o.documentType = o.documentType.lower()
-            docTypeNames.add(o.documentType)
+            o.documentTypeKey = o.documentTypeKey.lower()
+            docTypeNames.add(o.documentTypeKey)
 
             if o.document:
                 propertyNames.update([s.lower() for s in o.document])
@@ -242,7 +242,7 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
             importHashSet.add(importDocument.importGroupHash)
 
             existingObject = foundObjectByKey.get(importDocument.key)
-            importDocumentTypeId = docTypeIdsByName[importDocument.documentType]
+            importDocumentTypeId = docTypeIdsByName[importDocument.documentTypeKey]
 
             packedJsonDict = copy(importDocument.document)
             packedJsonDict['_dtid'] = importDocumentTypeId

@@ -1,6 +1,7 @@
 import {addTupleType, Tuple} from "@synerty/vortexjs";
 import {docDbTuplePrefix} from "./_private/PluginNames";
 import {DocDbDocumentTypeTuple} from "./DocDbDocumentTypeTuple";
+import {DocDbModelSetTuple} from "./DocDbModelSetTuple";
 
 
 @addTupleType
@@ -11,7 +12,7 @@ export class DocumentTuple extends Tuple {
     key: string;
 
     //  The modelSetId for this document.
-    modelSetId: number;
+    modelSet: DocDbModelSetTuple = new DocDbModelSetTuple();
 
     // This Document Type ID
     documentType: DocDbDocumentTypeTuple = new DocDbDocumentTypeTuple();

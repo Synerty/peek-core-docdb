@@ -10,6 +10,7 @@ from peek_plugin_docdb._private.client.controller.DocumentCacheController import
 from peek_plugin_docdb._private.storage.DocDbDocumentTypeTuple import \
     DocDbDocumentTypeTuple
 from peek_plugin_docdb._private.storage.DocDbEncodedChunk import DocDbEncodedChunk
+from peek_plugin_docdb._private.storage.DocDbModelSet import DocDbModelSet
 from peek_plugin_docdb._private.worker.tasks._CalcChunkKey import makeChunkKey
 from peek_plugin_docdb.tuples.DocumentTuple import DocumentTuple
 from vortex.DeferUtil import deferToThreadWrapWithLogger
@@ -66,7 +67,7 @@ class ClientDocumentTupleProvider(TuplesProviderABC):
                 foundDocuments.append(newObject)
 
                 newObject.key = subKey
-                newObject.modelSetId = thisModelSetId
+                newObject.modelSet = DocDbModelSet(id=thisModelSetId)
                 newObject.documentType = DocDbDocumentTypeTuple(id=thisDocumentTypeId)
                 newObject.document = objectProps
 

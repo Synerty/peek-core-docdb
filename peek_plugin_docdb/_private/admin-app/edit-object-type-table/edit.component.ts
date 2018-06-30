@@ -3,13 +3,13 @@ import {Ng2BalloonMsgService} from "@synerty/ng2-balloon-msg";
 import {
     ComponentLifecycleEventEmitter,
     extend,
+    TupleDataObserverService,
     TupleLoader,
-    VortexService,
     TupleSelector,
-    TupleDataObserverService
+    VortexService
 } from "@synerty/vortexjs";
-import {docDbFilt, ModelSetTuple} from "@peek/peek_plugin_docdb/_private";
-import {DocDbDocumentTypeTuple} from "@peek/peek_plugin_docdb";
+import {docDbFilt} from "@peek/peek_plugin_docdb/_private";
+import {DocDbDocumentTypeTuple, DocDbModelSetTuple} from "@peek/peek_plugin_docdb";
 
 
 @Component({
@@ -25,7 +25,8 @@ export class EditDocumentTypeComponent extends ComponentLifecycleEventEmitter {
     items: DocDbDocumentTypeTuple[] = [];
 
     loader: TupleLoader;
-    modelSetById: { [key: number]: ModelSetTuple } = {};
+    modelSetById: { [id: number]: DocDbModelSetTuple } = {};
+    documentTypeById: { [id: number]: DocDbDocumentTypeTuple } = {};
 
     constructor(private balloonMsg: Ng2BalloonMsgService,
                 vortexService: VortexService,
@@ -39,20 +40,37 @@ export class EditDocumentTypeComponent extends ComponentLifecycleEventEmitter {
         this.loader.observable
             .subscribe((tuples: DocDbDocumentTypeTuple[]) => this.items = tuples);
 
-        let ts = new TupleSelector(ModelSetTuple.tupleName, {});
-        this.tupleObserver.subscribeToTupleSelector(ts)
-            .takeUntil(this.onDestroyEvent)
-            .subscribe((tuples: ModelSetTuple[]) => {
-                this.modelSetById = {};
-                for (let tuple of tuples) {
-                    this.modelSetById[tuple.id] = tuple;
-                }
-            });
+        // let modelSetTs = new TupleSelector(ModelSetTuple.tupleName, {});
+        // this.tupleObserver.subscribeToTupleSelector(modelSetTs)
+        //     .takeUntil(this.onDestroyEvent)
+        //     .subscribe((tuples: ModelSetTuple[]) => {
+        //         this.modelSetById = {};
+        //         for (let tuple of tuples) {
+        //             this.modelSetById[tuple.id] = tuple;
+        //         }
+        //     });
+        //
+        // let documentTypeTs = new TupleSelector(DocDbDocumentTypeTuple.tupleName, {});
+        // this.tupleObserver.subscribeToTupleSelector(documentTypeTs)
+        //     .takeUntil(this.onDestroyEvent)
+        //     .subscribe((tuples: DocDbDocumentTypeTuple[]) => {
+        //         this.documentTypeById = {};
+        //         for (let tuple of tuples) {
+        //             this.documentTypeById[tuple.id] = tuple;
+        //         }
+        //     });
     }
 
     modelSetTitle(tuple: DocDbDocumentTypeTuple): string {
-        let modelSet = this.modelSetById[tuple.modelSetId];
-        return modelSet == null ? "" : modelSet.name;
+        // let modelSet = this.modelSetById[tuple.modelSetId];
+        // return modelSet == null ? "" : modelSet.name;
+        return "TODO";
+    }
+
+    documentTypeTitle(tuple: DocDbDocumentTypeTuple): string {
+        // let documentType = this.documentTypeById[tuple.doc];
+        // return documentType == null ? "" : documentType.name;
+        return "TODO";
     }
 
     save() {

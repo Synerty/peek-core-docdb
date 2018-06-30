@@ -151,7 +151,7 @@ class ServerEntryHook(PluginServerEntryHookABC,
         so1 = ImportDocumentTuple(
             key="doc1key",
             modelSetKey="testModel",
-            documentType="objectType1",
+            documentTypeKey="objectType1",
             importGroupHash='test load',
             document={
                 "name": "134 Ocean Parade, Circuit breaker 1",
@@ -166,7 +166,7 @@ class ServerEntryHook(PluginServerEntryHookABC,
         so2 = ImportDocumentTuple(
             key="doc2key",
             modelSetKey="testModel",
-            documentType="objectType2",
+            documentTypeKey="objectType2",
             importGroupHash='test load',
             document={
                 "name": "69 Sheep Farmers Rd Sub TX breaker",

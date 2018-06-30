@@ -76,7 +76,7 @@ export class DocDbService extends ComponentLifecycleEventEmitter {
         let props: DocPropT[] = [];
 
         for (let name of Object.keys(doc.document)) {
-            let propKey = this._makePropKey(doc.modelSetId, name);
+            let propKey = this._makePropKey(doc.modelSet.id, name);
             let prop = this.propertiesByName[propKey] || new DocDbPropertyTuple();
             props.push({
                 title: prop.title,

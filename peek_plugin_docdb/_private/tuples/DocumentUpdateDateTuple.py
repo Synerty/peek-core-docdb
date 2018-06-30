@@ -14,5 +14,8 @@ class DocumentUpdateDateTuple(Tuple):
     """
     __tupleType__ = docDbTuplePrefix + "DocumentUpdateDateTuple"
 
+    # Improve performance of the JSON serialisation
+    __rawJonableFields__ = ('initialLoadComplete', 'updateDateByChunkKey')
+
     initialLoadComplete: bool = TupleField()
     updateDateByChunkKey: Dict[str, str] = TupleField({})

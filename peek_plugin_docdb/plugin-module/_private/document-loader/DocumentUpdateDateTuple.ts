@@ -7,7 +7,7 @@ export class DocumentUpdateDateTuple extends Tuple {
     public static readonly tupleName = docDbTuplePrefix + "DocumentUpdateDateTuple";
 
     // Improve performance of the JSON serialisation
-    protected _rawJonableFields = ['updateDateByChunkKey'];
+    protected _rawJonableFields = ['initialLoadComplete', 'updateDateByChunkKey'];
 
     initialLoadComplete: boolean = false;
     updateDateByChunkKey: {} = {};

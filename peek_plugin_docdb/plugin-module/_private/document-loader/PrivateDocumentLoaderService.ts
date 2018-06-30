@@ -140,7 +140,8 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
         super();
 
         this.tupleService.offlineObserver
-            .subscribeToTupleSelector(new TupleSelector(OfflineConfigTuple.tupleName, {}))
+            .subscribeToTupleSelector(new TupleSelector(OfflineConfigTuple.tupleName, {}),
+                false, false, true)
             .takeUntil(this.onDestroyEvent)
             .filter(v => v.length != 0)
             .subscribe((tuples: OfflineConfigTuple[]) => {

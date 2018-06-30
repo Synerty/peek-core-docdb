@@ -30,7 +30,8 @@ export class DocdbCfgComponent extends ComponentLifecycleEventEmitter {
             .takeUntil(this.onDestroyEvent)
             .subscribe(value => this.lastStatus = value);
 
-        this.tupleService.offlineObserver.subscribeToTupleSelector(this.offlineTs)
+        this.tupleService.offlineObserver
+            .subscribeToTupleSelector(this.offlineTs, false, false, true)
             .takeUntil(this.onDestroyEvent)
             .subscribe((tuples: OfflineConfigTuple[]) => {
                 if (tuples.length == 0) {

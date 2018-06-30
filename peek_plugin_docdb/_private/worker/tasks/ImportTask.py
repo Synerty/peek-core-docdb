@@ -276,8 +276,7 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
         if importHashSet:
             conn.execute(
                 documentTable
-                    .delete()
-                    .where(documentTable.c.importGroupHash.in_(list(importHashSet)))
+                    .delete(documentTable.c.importGroupHash.in_(importHashSet))
             )
 
         # Insert the DocDb Objects

@@ -23,12 +23,6 @@ import {
     docDbTupleOfflineServiceName
 } from "./PluginNames";
 
-import {
-    PeekDmsIncidentFieldStatusEnum,
-    PeekDmsIncidentListItemTuple,
-    PeekDmsIncidentTuple
-} from "@peek/peek_plugin_data_dms";
-
 
 export function tupleDataObservableNameServiceFactory() {
     return new TupleDataObservableNameService(

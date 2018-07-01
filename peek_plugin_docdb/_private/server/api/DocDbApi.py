@@ -15,7 +15,7 @@ class DocDbApi(DocDbApiABC):
         pass
 
     def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> Deferred:
-        self._importController.createOrUpdateDocuments(documentsEncodedPayload)
+        return self._importController.createOrUpdateDocuments(documentsEncodedPayload)
 
     def deleteDocuments(self, modelSetKey: str, keys: List[str]) -> Deferred:
         pass

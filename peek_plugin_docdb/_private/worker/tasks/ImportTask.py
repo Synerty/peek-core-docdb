@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import List, Dict, Set, Tuple
 
 import pytz
-from sqlalchemy import select, bindparam
+from sqlalchemy import select, bindparam, and_
 from txcelery.defer import DeferrableTask
 
 from peek_plugin_base.worker import CeleryDbConn
@@ -222,7 +222,8 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
         results = list(conn.execute(select(
             columns=[documentTable.c.id, documentTable.c.key,
                      documentTable.c.chunkKey, documentTable.c.documentJson],
-            whereclause=documentTable.c.key.in_(objectKeys)
+            whereclause=and_(documentTable.c.key.in_(objectKeys),
+                             documentTable.c.modelSetId == modelSetId)
         )))
 
         foundObjectByKey = {o.key: o for o in results}

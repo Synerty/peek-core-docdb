@@ -40,6 +40,11 @@ class ClientDocumentTupleProvider(TuplesProviderABC):
 
         for chunkKey, subKeys in keysByChunkKey.items():
             chunk: DocDbEncodedChunk = self._cacheHandler.documentChunk(chunkKey)
+
+            if not chunk:
+                logger.warning("Document chunk %s is missing from cache", chunkKey)
+                continue
+
             docsByKeyStr = Payload().fromEncodedPayload(chunk.encodedData).tuples[0]
             docsByKey = json.loads(docsByKeyStr)
 

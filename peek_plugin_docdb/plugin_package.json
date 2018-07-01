@@ -2,7 +2,7 @@
     "plugin": {
         "title": "DocumentDB",
         "packageName": "peek_plugin_docdb",
-    "version":"1.0.0",
+    "version":"1.0.0.1",
         "buildNumber": "#PLUGIN_BUILD#",
         "buildDate": "#BUILD_DATE#",
         "creator": "Synerty Pty Ltd",

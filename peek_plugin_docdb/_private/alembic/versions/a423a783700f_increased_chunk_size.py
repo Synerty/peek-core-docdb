@@ -51,10 +51,11 @@ def upgrade():
     session.close()
 
     op.execute('TRUNCATE TABLE pl_docdb."DocDbEncodedChunkTuple" ')
+    op.execute('TRUNCATE TABLE pl_docdb."DocDbChunkQueue" ')
 
     op.execute('''INSERT INTO pl_docdb."DocDbChunkQueue"
-                            ("modelSetId", chunkKey")
-                            SELECT DISTINCT "modelSetId", chunkKey"
+                            ("modelSetId", "chunkKey")
+                            SELECT DISTINCT "modelSetId", "chunkKey"
                             FROM pl_docdb."DocDbDocument"
                          ''')
 

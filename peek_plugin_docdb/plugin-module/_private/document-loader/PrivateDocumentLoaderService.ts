@@ -73,7 +73,7 @@ class UpdateDateTupleSelector extends TupleSelector {
 // ----------------------------------------------------------------------------
 /** hash method
  */
-let BUCKET_COUNT = 1024;
+let BUCKET_COUNT = 8192;
 
 function keyChunk(modelSetKey: string, key: string): string {
     /** Object ID Chunk

@@ -2,12 +2,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+BUCKET_COUNT = 8192
 
 def makeChunkKey(modelSetKey: str, key: str) -> str:
     """ Make Chunk Key
 
     This is simple, and provides a reasonable distribution
-
+ß
     :param modelSetKey:
     :param key:
 
@@ -26,6 +27,7 @@ def makeChunkKey(modelSetKey: str, key: str) -> str:
         bucket = ((bucket << 5) - bucket) + ord(char)
         bucket = bucket | 0  # This is in the javascript code.
 
-    bucket = bucket & 1023  # 1024 buckets
+    bucket = bucket & (BUCKET_COUNT - 1)
 
     return '%s.%s' % (modelSetKey, bucket)
+

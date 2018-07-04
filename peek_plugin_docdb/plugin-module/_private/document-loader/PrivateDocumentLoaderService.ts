@@ -99,7 +99,7 @@ function keyChunk(modelSetKey: string, key: string): string {
         bucket |= 0; // Convert to 32bit integer
     }
 
-    bucket = bucket & (BUCKET_COUNT - 1); // 1024 buckets
+    bucket = bucket & (BUCKET_COUNT - 1);
 
     return `${modelSetKey}.${bucket}`;
 }

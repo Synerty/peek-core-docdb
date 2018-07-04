@@ -2,14 +2,14 @@
     <table class="table">
         <thead>
         <tr class="tr">
-            <th class="tr">{{doc.key}}</th>
-            <th class="tr">{{docTypeName}}</th>
+            <th class="th">{{doc.key}}</th>
+            <th class="th">{{docTypeName}}</th>
         </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let prop of docProps" class="tr">
-            <td class="tr">{{prop.title}}</td>
-            <td class="tr">{{prop.value}}</td>
+        <tr *ngFor="let item of docProps" class="tr">
+            <td class="td">{{item.title}}</td>
+            <td class="td">{{item.value}}</td>
         </tr>
         </tbody>
     </table>

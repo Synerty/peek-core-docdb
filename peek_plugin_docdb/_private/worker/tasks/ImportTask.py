@@ -213,6 +213,7 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
 
     try:
         importHashSet = set()
+        dontDeleteObjectIds=[]
         objectIdByKey: Dict[str, int] = {}
 
         objectKeys = [o.key for o in newDocuments]
@@ -257,6 +258,7 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
                          b_typeId=importDocumentTypeId,
                          b_documentJson=documentJson)
                 )
+                dontDeleteObjectIds.append(existingObject.id)
 
             else:
                 id_ = next(newIdGen)
@@ -277,7 +279,8 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
         if importHashSet:
             conn.execute(
                 documentTable
-                    .delete(documentTable.c.importGroupHash.in_(importHashSet))
+                    .delete(and_(~documentTable.c.id.in_(dontDeleteObjectIds),
+                                 documentTable.c.importGroupHash.in_(importHashSet)))
             )
 
         # Insert the DocDb Objects

@@ -25,7 +25,18 @@ from alembic import op
 from sqlalchemy import Column
 from sqlalchemy import Integer, String
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 __DeclarativeBase = declarative_base(metadata=MetaData(schema="pl_docdb"))
+
+
+class __DocDbModelSet(__DeclarativeBase):
+    __tablename__ = 'DocDbModelSet'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    key = Column(String, nullable=False, unique=True)
 
 
 class __DocDbDocument(__DeclarativeBase):
@@ -37,17 +48,36 @@ class __DocDbDocument(__DeclarativeBase):
     chunkKey = Column(String)
 
 
+def _loadSearchObjects(session):
+    FETCH_SIZE = 5000
+    lastOffset = 0
+    while True:
+        rows = (
+            session.query(__DocDbDocument)
+                .order_by(__DocDbDocument.id)
+                .offset(lastOffset)
+                .limit(FETCH_SIZE)
+                .yield_per(FETCH_SIZE)
+                .all()
+        )
+        if not rows: return
+        logger.info("Updating %s-%s for %s", lastOffset, lastOffset + FETCH_SIZE)
+        yield rows
+        lastOffset += FETCH_SIZE
+
 
 def upgrade():
     bind = op.get_bind()
     session = sessionmaker()(bind=bind)
 
+    modelKeysById = {o.id: o.key for o in session.query(__DocDbModelSet)}
 
+    for rows in _loadSearchObjects(session):
+        for item in rows:
+            item.chunkKey = makeChunkKey(modelKeysById[item.modelSetId], item.key)
+        session.commit()
+        session.expunge_all()
 
-    for item in session.query(__DocDbDocument):
-        item.chunkKey = makeChunkKey(item.modelSetId, item.key)
-
-    session.commit()
     session.close()
 
     op.execute('TRUNCATE TABLE pl_docdb."DocDbEncodedChunkTuple" ')

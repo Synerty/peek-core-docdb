@@ -117,10 +117,12 @@ function keyChunk(modelSetKey: string, key: string): string {
  */
 @Injectable()
 export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter {
+    private UPDATE_CHUNK_FETCH_SIZE = 5;
 
     private index = new DocumentUpdateDateTuple();
+    private askServerChunks: DocumentUpdateDateTuple[] = [];
 
-    private _hasServerLoaded = false;
+    private _hasLoaded = false;
 
     private _hasLoadedSubject = new Subject<void>();
     private storage: TupleOfflineStorageService;
@@ -186,11 +188,12 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
             new TupleOfflineStorageNameService(docDbCacheStorageName)
         );
 
+        this.setupVortexSubscriptions();
         this._notifyStatus();
     }
 
     isReady(): boolean {
-        return this._hasServerLoaded;
+        return this._hasLoaded;
     }
 
     isReadyObservable(): Observable<void> {
@@ -206,15 +209,19 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
     }
 
     private _notifyReady(): void {
-        if (this._hasDocTypeLoaded && this._hasModelSetLoaded && this._hasServerLoaded)
+        if (this._hasDocTypeLoaded && this._hasModelSetLoaded && this._hasLoaded)
             this._hasLoadedSubject.next();
     }
 
     private _notifyStatus(): void {
         this._status.cacheForOfflineEnabled = this.offlineConfig.cacheChunksForOffline;
         this._status.initialLoadComplete = this.index.initialLoadComplete;
-        this._status.loadProgress = Object.keys(this.index.updateDateByChunkKey).length;
-        this._status.loadTotal = BUCKET_COUNT;
+
+        let keys = Object.keys(this.index.updateDateByChunkKey);
+        this._status.loadProgress = keys.filter(
+            (key) => this.index.updateDateByChunkKey[key] != null
+        ).length;
+
         this._statusSubject.next(this._status);
     }
 
@@ -225,23 +232,20 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
     private initialLoad(): void {
 
         this.storage.loadTuples(new UpdateDateTupleSelector())
-            .then((tuples: DocumentUpdateDateTuple[]) => {
+            .then((tuplesAny: any[]) => {
+                let tuples: DocumentUpdateDateTuple[] = tuplesAny;
                 if (tuples.length != 0) {
                     this.index = tuples[0];
 
                     if (this.index.initialLoadComplete) {
-                        this._hasServerLoaded = true;
-                        this._hasLoadedSubject.next();
+                        this._hasLoaded = true;
                         this._notifyReady();
                     }
 
                 }
 
-                this._notifyStatus();
-
-                this.setupVortexSubscriptions();
                 this.askServerForUpdates();
-
+                this._notifyStatus();
             });
 
         this._notifyStatus();
@@ -264,6 +268,11 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
 
     }
 
+    private areWeTalkingToTheServer(): boolean {
+        return this.offlineConfig.cacheChunksForOffline
+            && this.vortexStatusService.snapshot.isOnline;
+    }
+
 
     /** Ask Server For Updates
      *
@@ -272,15 +281,76 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
      *
      */
     private askServerForUpdates() {
-        if (!this.offlineConfig.cacheChunksForOffline)
+        if (!this.areWeTalkingToTheServer()) return;
+
+
+        this.tupleService.observer
+            .pollForTuples(new UpdateDateTupleSelector())
+            .then((tuplesAny: any) => {
+                let serverIndex: DocumentUpdateDateTuple = tuplesAny[0];
+                let keys = Object.keys(serverIndex.updateDateByChunkKey);
+                let keysNeedingUpdate:string[] = [];
+
+                this._status.loadTotal = keys.length;
+
+                // Tuples is an array of strings
+                for (let chunkKey of keys) {
+                    if (!this.index.updateDateByChunkKey.hasOwnProperty(chunkKey)) {
+                        this.index.updateDateByChunkKey[chunkKey] = null;
+                        keysNeedingUpdate.push(chunkKey);
+
+                    } else if (this.index.updateDateByChunkKey[chunkKey]
+                        != serverIndex.updateDateByChunkKey[chunkKey]) {
+                        keysNeedingUpdate.push(chunkKey);
+                    }
+                }
+                this.queueChunksToAskServer(keysNeedingUpdate);
+            });
+    }
+
+
+    /** Queue Chunks To Ask Server
+     *
+     */
+    private queueChunksToAskServer(keysNeedingUpdate: string[]) {
+        if (!this.areWeTalkingToTheServer()) return;
+
+        this.askServerChunks = [];
+
+        let count = 0;
+        let indexChunk = new DocumentUpdateDateTuple();
+
+        for (let key of keysNeedingUpdate) {
+            indexChunk.updateDateByChunkKey[key] = this.index.updateDateByChunkKey[key];
+            count++;
+
+            if (count == this.UPDATE_CHUNK_FETCH_SIZE) {
+                this.askServerChunks.push(indexChunk);
+                count = 0;
+                indexChunk = new DocumentUpdateDateTuple();
+            }
+        }
+
+        if (count)
+            this.askServerChunks.push(indexChunk);
+
+        this.askServerForNextUpdateChunk();
+
+        this._status.lastCheck = new Date();
+    }
+
+    private askServerForNextUpdateChunk() {
+        if (!this.areWeTalkingToTheServer()) return;
+
+        if (this.askServerChunks.length == 0)
             return;
 
-        // There is no point talking to the server if it's offline
-        if (!this.vortexStatusService.snapshot.isOnline)
-            return;
-
-        let pl = new Payload(clientDocumentWatchUpdateFromDeviceFilt, [this.index]);
+        let indexChunk: DocumentUpdateDateTuple = this.askServerChunks.pop();
+        let pl = new Payload(clientDocumentWatchUpdateFromDeviceFilt, [indexChunk]);
         this.vortexService.sendPayload(pl);
+
+        this._status.lastCheck = new Date();
+        this._notifyStatus();
     }
 
 
@@ -290,30 +360,26 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
      */
     private processDocumentsFromServer(payloadEnvelope: PayloadEnvelope) {
 
-        this._status.lastCheck = new Date();
-
         if (payloadEnvelope.result != null && payloadEnvelope.result != true) {
             console.log(`ERROR: ${payloadEnvelope.result}`);
-            return;
-        }
-
-        if (payloadEnvelope.filt["finished"] == true) {
-            this.index.initialLoadComplete = true;
-
-            this.storage.saveTuples(new UpdateDateTupleSelector(), [this.index])
-                .then(() => {
-                    this._hasServerLoaded = true;
-                    this._hasLoadedSubject.next();
-                    this._notifyStatus();
-                })
-                .catch(err => console.log(`ERROR : ${err}`));
-
             return;
         }
 
         payloadEnvelope
             .decodePayload()
             .then((payload: Payload) => this.storeDocumentPayload(payload))
+            .then(() => {
+                if (this.askServerChunks.length == 0) {
+                    this.index.initialLoadComplete = true;
+                    this._hasLoaded = true;
+                    this._hasLoadedSubject.next();
+
+                } else {
+                    this.askServerForNextUpdateChunk();
+
+                }
+                this._notifyStatus();
+            })
             .then(() => this._notifyStatus())
             .catch(e =>
                 `DocumentCache.processDocumentsFromServer failed: ${e}`
@@ -323,14 +389,9 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
 
     private storeDocumentPayload(payload: Payload) {
 
-        let encodedDocumentChunkTuples: EncodedDocumentChunkTuple[] = <EncodedDocumentChunkTuple[]>payload.tuples;
-
-        let tuplesToSave: EncodedDocumentChunkTuple[] = [];
-
-        for (let item of encodedDocumentChunkTuples) {
-            tuplesToSave.push(item);
-        }
-
+        let tuplesToSave: EncodedDocumentChunkTuple[] = <EncodedDocumentChunkTuple[]>payload.tuples;
+        if (tuplesToSave.length == 0)
+            return;
 
         // 2) Store the index
         this.storeDocumentChunkTuples(tuplesToSave)

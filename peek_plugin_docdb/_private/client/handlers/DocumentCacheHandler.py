@@ -101,7 +101,8 @@ class DocumentCacheHandler(object):
 
         yield self._replyToObserve(payload.filt,
                                    updateDatesTuples.updateDateByChunkKey,
-                                   sendResponse)
+                                   sendResponse,
+                                   vortexUuid)
 
     # ---------------
     # Reply to device observe
@@ -109,7 +110,8 @@ class DocumentCacheHandler(object):
     @inlineCallbacks
     def _replyToObserve(self, filt,
                         lastUpdateByDocumentKey: Dict[str, str],
-                        sendResponse: SendVortexMsgResponseCallable) -> None:
+                        sendResponse: SendVortexMsgResponseCallable,
+                        vortexUuid: str) -> None:
         """ Reply to Observe
 
         The client has told us that it's observing a new set of documents, and the lastUpdate
@@ -122,23 +124,15 @@ class DocumentCacheHandler(object):
         :returns: None
 
         """
+        yield None
 
         documentTuplesToSend = []
-        documentKeys = self._cacheController.documentKeys()
-
-        def sendChunk(documentTuplesToSend):
-            if not documentTuplesToSend:
-                return
-
-            payload = Payload(filt=filt, tuples=documentTuplesToSend)
-            d: Deferred = payload.makePayloadEnvelopeDefer()
-            d.addCallback(lambda payloadEnvelope: payloadEnvelope.toVortexMsgDefer())
-            d.addCallback(sendResponse)
-            d.addErrback(vortexLogFailure, logger, consumeError=True)
 
         # Check and send any updates
-        for documentKey in documentKeys:
-            lastUpdate = lastUpdateByDocumentKey.get(documentKey)
+        for documentKey, lastUpdate in lastUpdateByDocumentKey.items():
+            if vortexUuid not in VortexFactory.getRemoteVortexUuids():
+                logger.debug("Vortex %s is offline, stopping update")
+                return
 
             # NOTE: lastUpdate can be null.
             encodedDocumentTuple = self._cacheController.documentChunk(documentKey)
@@ -158,15 +152,9 @@ class DocumentCacheHandler(object):
             documentTuplesToSend.append(encodedDocumentTuple)
             logger.debug("Sending document %s from the cache" % documentKey)
 
-            if len(documentTuplesToSend) == 200:
-                sendChunk(documentTuplesToSend)
-                documentTuplesToSend = []
-
-        if documentTuplesToSend:
-            sendChunk(documentTuplesToSend)
-
-        # Tell the client the initial load is complete.
-        finishedFilt = {'finished': True}
-        finishedFilt.update(filt)
-        vortexMsg = yield PayloadEnvelope(filt=finishedFilt).toVortexMsgDefer()
-        yield sendResponse(vortexMsg)
+        # Send the payload to the frontend
+        payload = Payload(filt=filt, tuples=documentTuplesToSend)
+        d: Deferred = payload.makePayloadEnvelopeDefer()
+        d.addCallback(lambda payloadEnvelope: payloadEnvelope.toVortexMsgDefer())
+        d.addCallback(sendResponse)
+        d.addErrback(vortexLogFailure, logger, consumeError=True)

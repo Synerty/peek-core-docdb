@@ -41,6 +41,8 @@ let clientDocumentWatchUpdateFromDeviceFilt = extend(
     docDbFilt
 );
 
+const cacheAll = "cacheAll";
+
 // ----------------------------------------------------------------------------
 /** DocumentChunkTupleSelector
  *
@@ -299,7 +301,7 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
             .then((tuplesAny: any) => {
                 let serverIndex: DocumentUpdateDateTuple = tuplesAny[0];
                 let keys = Object.keys(serverIndex.updateDateByChunkKey);
-                let keysNeedingUpdate:string[] = [];
+                let keysNeedingUpdate: string[] = [];
 
                 this._status.loadTotal = keys.length;
 
@@ -356,7 +358,9 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
             return;
 
         let indexChunk: DocumentUpdateDateTuple = this.askServerChunks.pop();
-        let pl = new Payload(clientDocumentWatchUpdateFromDeviceFilt, [indexChunk]);
+        let filt = extend({}, clientDocumentWatchUpdateFromDeviceFilt);
+        filt[cacheAll] = true;
+        let pl = new Payload(filt, [indexChunk]);
         this.vortexService.sendPayload(pl);
 
         this._status.lastCheck = new Date();
@@ -384,11 +388,11 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                     this._hasLoaded = true;
                     this._hasLoadedSubject.next();
 
-                } else {
+                } else if (payloadEnvelope.filt[cacheAll] == true) {
                     this.askServerForNextUpdateChunk();
 
                 }
-                this._notifyStatus();
+
             })
             .then(() => this._notifyStatus())
             .catch(e =>

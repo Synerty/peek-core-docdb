@@ -462,7 +462,9 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
             throw new Error("We've been passed a null/empty keys");
         }
 
-        if (!this.offlineConfig.cacheChunksForOffline) {
+        // If there is no offline support, or we're online
+        if (!this.offlineConfig.cacheChunksForOffline
+            || this.vortexStatusService.snapshot.isOnline) {
             let ts = new TupleSelector(DocumentTuple.tupleName, {
                 "modelSetKey": modelSetKey,
                 "keys": keys
@@ -480,6 +482,8 @@ export class PrivateDocumentLoaderService extends ComponentLifecycleEventEmitter
                 .then((docs: DocumentTuple[]) => this._populateAndIndexObjectTypes(docs));
         }
 
+
+        // If we do have offline support
         if (this.isReady())
             return this.getDocumentsWhenReady(modelSetKey, keys)
                 .then(docs => this._populateAndIndexObjectTypes(docs));

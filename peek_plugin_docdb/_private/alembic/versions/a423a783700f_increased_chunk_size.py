@@ -61,7 +61,9 @@ def _loadSearchObjects(session):
                 .all()
         )
         if not rows: return
-        logger.info("Updating %s-%s for %s", lastOffset, lastOffset + FETCH_SIZE)
+        logger.info("Loading %s-%s for %s",
+                    lastOffset, lastOffset+FETCH_SIZE,
+                    __DocDbDocument.__name__)
         yield rows
         lastOffset += FETCH_SIZE
 

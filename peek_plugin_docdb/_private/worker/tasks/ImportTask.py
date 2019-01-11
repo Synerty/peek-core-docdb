@@ -217,7 +217,7 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
         objectIdByKey: Dict[str, int] = {}
 
         objectKeys = [o.key for o in newDocuments]
-        chunkKeysForQueue: Set[Tuple(str, str)] = set()
+        chunkKeysForQueue: Set[Tuple[str, str]] = set()
 
         # Query existing objects
         results = list(conn.execute(select(

@@ -13,5 +13,6 @@ when presenting a menu to the user.
     :caption: Contents:
 
     overview
+    status/status
     admin_tasks/admin_tasks
 

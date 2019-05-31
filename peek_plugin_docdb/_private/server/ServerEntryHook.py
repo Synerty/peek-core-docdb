@@ -18,11 +18,14 @@ from peek_plugin_docdb._private.server.controller.ImportController import Import
 from peek_plugin_docdb._private.server.controller.StatusController import StatusController
 from peek_plugin_docdb._private.storage import DeclarativeBase
 from peek_plugin_docdb._private.storage.DeclarativeBase import loadStorageTuples
+from peek_plugin_docdb._private.storage.Setting import INDEX_COMPILER_ENABLED, \
+    globalSetting, globalProperties
 from peek_plugin_docdb._private.tuples import loadPrivateTuples
 from peek_plugin_docdb.tuples import loadPublicTuples
 from peek_plugin_docdb.tuples.DocumentTuple import DocumentTuple
 from peek_plugin_docdb.tuples.ImportDocumentTuple import ImportDocumentTuple
-from vortex.DeferUtil import vortexLogFailure
+from twisted.internet.defer import inlineCallbacks
+from vortex.DeferUtil import vortexLogFailure, deferToThreadWrapWithLogger
 from vortex.Payload import Payload
 from .TupleActionProcessor import makeTupleActionProcessorHandler
 from .TupleDataObservable import makeTupleDataObservableHandler
@@ -61,6 +64,7 @@ class ServerEntryHook(PluginServerEntryHookABC,
     def dbMetadata(self):
         return DeclarativeBase.metadata
 
+    @inlineCallbacks
     def start(self):
         """ Start
 
@@ -114,12 +118,12 @@ class ServerEntryHook(PluginServerEntryHookABC,
 
         # ----------------
         # Search Object Controller
-        searchObjectChunkCompilerQueueController = ChunkCompilerQueueController(
+        chunkCompilerQueueController = ChunkCompilerQueueController(
             dbSessionCreator=self.dbSessionCreator,
             statusController=statusController,
             clientChunkUpdateHandler=clientChunkUpdateHandler
         )
-        self._loadedObjects.append(searchObjectChunkCompilerQueueController)
+        self._loadedObjects.append(chunkCompilerQueueController)
 
         # ----------------
         # Import Controller
@@ -138,7 +142,11 @@ class ServerEntryHook(PluginServerEntryHookABC,
 
         # ----------------
         # Start the compiler controllers
-        searchObjectChunkCompilerQueueController.start()
+
+        settings = yield self._loadSettings()
+
+        if settings[INDEX_COMPILER_ENABLED]:
+            chunkCompilerQueueController.start()
 
         # self._test()
 
@@ -221,3 +229,14 @@ class ServerEntryHook(PluginServerEntryHookABC,
     def celeryApp(self) -> Celery:
         from peek_plugin_docdb._private.worker.CeleryApp import celeryApp
         return celeryApp
+
+    @deferToThreadWrapWithLogger(logger)
+    def _loadSettings(self):
+        dbSession = self.dbSessionCreator()
+        try:
+            return {globalProperties[p.key]: p.value
+                    for p in globalSetting(dbSession).propertyObjects}
+
+        finally:
+            dbSession.close()
+

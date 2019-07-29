@@ -1,0 +1,73 @@
+<div>
+
+    <nz-dropdown-menu #summaryView="nzDropdownMenu"
+                      (nzVisibleChange)="TEST($event)"
+                      nzOverlayClassName="peek-docdb-popup-summary">
+
+        <div *ngIf="params != null">
+
+            <nz-card [nzTitle]="params.objectKey">
+
+                <div *ngIf="params.details.length != 0">
+                    <nz-table #detailsTable [nzData]="params.details"
+                              nzFrontPagination="false"
+                              nzSize="small">
+                        <tbody>
+                        <tr *ngFor="let data of detailsTable.data">
+                            <td>
+                                {{data.title}}
+                            </td>
+                            <td>
+                                {{data.value}}
+                            </td>
+                        </tr>
+                        </tbody>
+                    </nz-table>
+                </div>
+
+                <div class="buttons">
+                    <div class="dynamic-buttons">
+                        <button *ngFor="let item of params.actions"
+                                nzSize="large" nz-button nzType="default"
+                                style="white-space: normal;"
+                                (click)="actionClicked(item)"
+                                nz-tooltip [nzTitle]="item.tooltip">
+                            <fa *ngIf="item.icon != null" [name]="item.icon"></fa>
+                            {{item.name}}
+                        </button>
+
+                    </div>
+                    <div class="details-buttons">
+                        <button nzSize="large" nz-button nzType="default"
+                                style="white-space: normal;"
+                                (click)="showDetailsPopup()"
+                                nz-tooltip nzTitle="Full Details">
+                            <fa name="info"></fa>
+                        </button>
+                    </div>
+                </div>
+            </nz-card>
+        </div>
+
+    </nz-dropdown-menu>
+
+    <!-- Show sub menu options -->
+    <nz-modal [nzVisible]="shouldShowModal()"
+              (nzVisible)="closeModal()"
+              [nzFooter]="null"
+              [nzTitle]="modalName()"
+              (nzOnCancel)="closeModal()">
+
+        <div class="child-menu-items">
+            <ul nz-menu>
+                <li nz-menu-item *ngFor="let child of modalChildActions()"
+                    (click)="actionClicked(child)">
+                    <fa *ngIf="child.icon != null" [name]="child.icon"></fa>
+                    {{child.name}}
+                </li>
+            </ul>
+        </div>
+    </nz-modal>
+
+
+</div>

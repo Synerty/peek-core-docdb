@@ -1,39 +1,30 @@
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Params} from "@angular/router";
-import {docDbBaseUrl} from "@peek/peek_plugin_docdb/_private";
 import {TitleService} from "@synerty/peek-util";
 
-import {
-    ComponentLifecycleEventEmitter,
-    TupleActionPushService,
-    TupleDataObserverService,
-    TupleDataOfflineObserverService,
-    TupleSelector,
-    VortexStatusService
-} from "@synerty/vortexjs";
+import {ComponentLifecycleEventEmitter, VortexStatusService} from "@synerty/vortexjs";
 
 import {
-    DocDbDocumentTypeTuple,
-    DocDbPropertyTuple,
     DocDbService,
     DocPropT,
     DocumentResultI,
     DocumentTuple
 } from "@peek/peek_plugin_docdb";
-import {Observable} from "rxjs/Observable";
-import {extend} from "@synerty/vortexjs/src/vortex/UtilMisc";
 
 
 @Component({
-    selector: 'plugin-docDb-result',
-    templateUrl: 'view.component.web.html',
+    selector: 'plugin-docdb-popup-debug',
+    templateUrl: 'debug-page.component.web.html',
     moduleId: module.id
 })
-export class ViewDocComponent extends ComponentLifecycleEventEmitter implements OnInit {
+export class DocDbPopupComponent extends ComponentLifecycleEventEmitter implements OnInit {
 
     doc: DocumentTuple = new DocumentTuple();
     docProps: DocPropT[] = [];
     docTypeName: string = '';
+
+
+    itemKey = '';
 
     constructor(private route: ActivatedRoute,
                 private docDbService: DocDbService,

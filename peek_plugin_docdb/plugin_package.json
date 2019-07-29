@@ -47,9 +47,9 @@
         "cfgModule": "docdb-cfg.module#DocDBCfgModule",
         "showHomeLink": false,
         "appDir": "_private/both-app",
-        "appModule": "docdb.module#DocDbModule",
+        "appModule": "debug-page/debug-page.module#DocDbPopupDebugModule",
         "assetDir": "_private/both-assets",
-        "icon": "/assets/peek_plugin_docdb/icon.png",
+        "icon": "/assets/peek_plugin_object_popup/icon.png",
         "moduleDir": "plugin-module",
         "rootServices": [
             {
@@ -64,6 +64,34 @@
             {
                 "file": "DocDbService",
                 "class": "DocDbService"
+            },
+            {
+                "file": "DocDbPopupService",
+                "class": "DocDbPopupService",
+                "useExistingClass": "PrivateDocDbPopupService"
+            },
+            {
+                "file": "_private/services/PrivateDocDbPopupService",
+                "class": "PrivateDocDbPopupService",
+                "persistent": true
+            }
+        ],
+        "rootModules": [
+            {
+                "locatedInAppDir": true,
+                "file": "docdb-popup.module",
+                "class": "DocDbPopupModule"
+            }
+        ],
+        "rootComponents": [
+            {
+                "selector": "plugin-docdb-popup-tooltip-popup"
+            },
+            {
+                "selector": "plugin-docdb-popup-summary-popup"
+            },
+            {
+                "selector": "plugin-docdb-popup-detail-popup"
             }
         ]
     },
@@ -72,9 +100,9 @@
         "cfgModule": "docdb-cfg.module#DocDBCfgModule",
         "showHomeLink": false,
         "appDir": "_private/both-app",
-        "appModule": "docdb.module#DocDbModule",
+        "appModule": "debug-page/debug-page.module#DocDbPopupDebugModule",
         "assetDir": "_private/both-assets",
-        "icon": "/assets/peek_plugin_docdb/icon.png",
+        "icon": "/assets/peek_plugin_object_popup/icon.png",
         "moduleDir": "plugin-module",
         "rootServices": [
             {
@@ -89,6 +117,34 @@
             {
                 "file": "DocDbService",
                 "class": "DocDbService"
+            },
+            {
+                "file": "DocDbPopupService",
+                "class": "DocDbPopupService",
+                "useExistingClass": "PrivateDocDbPopupService"
+            },
+            {
+                "file": "_private/services/PrivateDocDbPopupService",
+                "class": "PrivateDocDbPopupService",
+                "persistent": true
+            }
+        ],
+        "rootModules": [
+            {
+                "locatedInAppDir": true,
+                "file": "docdb-popup.module",
+                "class": "DocDbPopupModule"
+            }
+        ],
+        "rootComponents": [
+            {
+                "selector": "plugin-docdb-popup-tooltip-popup"
+            },
+            {
+                "selector": "plugin-docdb-popup-summary-popup"
+            },
+            {
+                "selector": "plugin-docdb-popup-detail-popup"
             }
         ]
     }

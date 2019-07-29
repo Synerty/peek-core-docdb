@@ -41,6 +41,7 @@ export function tupleOfflineStorageNameServiceFactory() {
     return new TupleOfflineStorageNameService(docDbTupleOfflineServiceName);
 }
 
+import { NzSwitchModule } from 'ng-zorro-antd/switch';
 // Define the routes for this Angular module
 export const pluginRoutes: Routes = [
     {
@@ -55,7 +56,8 @@ export const pluginRoutes: Routes = [
     imports: [
         CommonModule,
         RouterModule.forChild(pluginRoutes),
-        FormsModule
+        FormsModule,
+        NzSwitchModule
     ],
     exports: [],
     providers: [

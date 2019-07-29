@@ -21,6 +21,15 @@ export class DocDbPropertyTuple extends Tuple {
     //  The order of the document property
     order: number;
 
+    // Show on Tooltip Popup
+    showOnTooltip:boolean;
+
+    // Show on Summary Popup
+    showOnSummary:boolean;
+
+    // Show on Detail Popup
+    showOnDetail:boolean;
+
     constructor() {
         super(DocDbPropertyTuple.tupleName)
     }

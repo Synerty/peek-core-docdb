@@ -1,17 +1,6 @@
 import {Injectable} from "@angular/core";
 
-import {
-    ComponentLifecycleEventEmitter,
-    Payload,
-    TupleActionPushService,
-    TupleDataObserverService,
-    TupleDataOfflineObserverService,
-    TupleSelector,
-    VortexStatusService
-} from "@synerty/vortexjs";
-
-import {Subject} from "rxjs/Subject";
-import {Observable} from "rxjs/Observable";
+import {ComponentLifecycleEventEmitter, TupleSelector} from "@synerty/vortexjs";
 import {DocumentResultI, PrivateDocumentLoaderService} from "./_private/document-loader";
 import {DocumentTuple} from "./DocumentTuple";
 import {DocDbTupleService} from "./_private";
@@ -21,6 +10,10 @@ export interface DocPropT {
     title: string;
     value: string;
     order: number;
+}
+
+export interface DocDbPropertyTypeFilterI {
+    (propType:DocDbPropertyTuple) : boolean;
 }
 
 // ----------------------------------------------------------------------------
@@ -72,12 +65,15 @@ export class DocDbService extends ComponentLifecycleEventEmitter {
         return this.documentLoader.getDocuments(modelSetKey, keys);
     }
 
-    getNiceOrderedProperties(doc: DocumentTuple): DocPropT[] {
+    getNiceOrderedProperties(doc: DocumentTuple,
+                             filter:DocDbPropertyTypeFilterI | null = null): DocPropT[] {
         let props: DocPropT[] = [];
 
         for (let name of Object.keys(doc.document)) {
             let propKey = this._makePropKey(doc.modelSet.id, name);
             let prop = this.propertiesByName[propKey] || new DocDbPropertyTuple();
+            if (filter != null && !filter(prop))
+                continue;
             props.push({
                 title: prop.title,
                 order: prop.order,

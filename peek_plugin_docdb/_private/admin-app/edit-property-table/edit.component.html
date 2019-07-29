@@ -18,6 +18,9 @@
                 <th>Name</th>
                 <th>Order</th>
                 <th>Title</th>
+                <th>Tooltip</th>
+                <th>Summary</th>
+                <th>Detail</th>
             </tr>
             <tr *ngFor="let item of items">
                 <td>
@@ -35,6 +38,15 @@
                     <input [(ngModel)]="item.title"
                            class="form-control input-sm"
                            type="text"/>
+                </td>
+                <td>
+                    <nz-switch [(ngModel)]="item.showOnTooltip"></nz-switch>
+                </td>
+                <td>
+                    <nz-switch [(ngModel)]="item.showOnSummary"></nz-switch>
+                </td>
+                <td>
+                    <nz-switch [(ngModel)]="item.showOnDetail"></nz-switch>
                 </td>
             </tr>
         </table>

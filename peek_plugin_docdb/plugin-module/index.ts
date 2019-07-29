@@ -1,3 +1,5 @@
+export {DocDbPropertyTypeFilterI} from "./DocDbService";
+
 export {DocDbService, DocPropT} from "./DocDbService";
 export {DocumentTuple} from "./DocumentTuple";
 export {DocDbPropertyTuple} from "./DocDbPropertyTuple";

@@ -87,7 +87,7 @@ export class DetailPopupComponent { // This is a root/global component
         } else {
             item.callback();
         }
-        if (item.closeOnCallback)
+        if (item.closeOnCallback == null || item.closeOnCallback === true)
             this.closePopup();
     }
 

@@ -1,8 +1,8 @@
 import {Injectable, NgZone} from "@angular/core";
 import {
     DocDbPopupActionI,
-    DocDbPopupDetailI,
     DocDbPopupContextI,
+    DocDbPopupDetailI,
     DocDbPopupService,
     DocDbPopupTypeE,
     ObjectTriggerOptionsI,
@@ -17,7 +17,7 @@ import {
     DocDbService,
     DocumentResultI
 } from "@peek/peek_plugin_docdb";
-import {assert} from "@synerty/vortexjs";
+import {assert, sortText} from "@synerty/vortexjs";
 
 export class PopupTriggeredParams {
 
@@ -184,7 +184,10 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
                             triggeredByPlugin: params.triggeredByPlugin,
                             options: params.options,
                             addAction: (item: DocDbPopupActionI) => {
-                                this.zone.run(() => params.actions.push(item));
+                                this.zone.run(() => {
+                                    params.actions.push(item);
+                                    params.actions = this.sortActions(params.actions);
+                                });
                             },
                             addDetails: (items: DocDbPopupDetailI[]) => {
                                 this.zone.run(() => params.details.add(items));
@@ -221,5 +224,18 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
                 clearTimeout(loadTimeoutHandle);
             });
 
+    }
+
+    private sortActions(actions: DocDbPopupActionI[]): DocDbPopupActionI[] {
+        actions = sortText(actions, (action) => {
+            return action.name != null
+                ? action.name
+                : action.tooltip != null
+                    ? action.tooltip
+                    : ''
+        });
+        for (const action of actions)
+            action.children = this.sortActions(action.children || []);
+        return actions;
     }
 }

@@ -33,10 +33,13 @@ export interface DocDbPopupActionI {
  *
  * This interface represents some some detail that another plugin wants to appear
  * on the diagram item select popup.
+ *
  */
 export interface DocDbPopupDetailI {
     title: string;
     value: string; // TODO: Add support for tables, etc.
+    order: number;
+    showInHeader: boolean;
 }
 
 /** Object Trigger Position

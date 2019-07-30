@@ -9,6 +9,7 @@ import {
     PrivateDocDbPopupService
 } from "@peek/peek_plugin_docdb/_private/services/PrivateDocDbPopupService";
 import {NzContextMenuService} from "ng-zorro-antd";
+import {DocDbPopupDetailI} from "@peek/peek_plugin_docdb";
 
 
 @Component({
@@ -90,6 +91,21 @@ export class SummaryPopupComponent { // This is a root/global component
                 params.modelSetKey,
                 params.objectKey,
                 params.options);
+    }
+
+    headerDetails(): string {
+        return this.params.details
+            .filter(d => d.showInHeader)
+            .map(d => d.value)
+            .join(', ');
+    }
+
+    hasBodyDetails() :boolean  {
+        return this.bodyDetails().length != 0;
+    }
+
+    bodyDetails(): DocDbPopupDetailI[] {
+        return this.params.details.filter(d => !d.showInHeader);
     }
 
     actionClicked(item: DocDbPopupActionI): void {

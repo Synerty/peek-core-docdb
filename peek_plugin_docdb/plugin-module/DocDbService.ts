@@ -10,10 +10,11 @@ export interface DocPropT {
     title: string;
     value: string;
     order: number;
+    showInHeader: boolean;
 }
 
 export interface DocDbPropertyTypeFilterI {
-    (propType:DocDbPropertyTuple) : boolean;
+    (propType: DocDbPropertyTuple): boolean;
 }
 
 // ----------------------------------------------------------------------------
@@ -66,7 +67,7 @@ export class DocDbService extends ComponentLifecycleEventEmitter {
     }
 
     getNiceOrderedProperties(doc: DocumentTuple,
-                             filter:DocDbPropertyTypeFilterI | null = null): DocPropT[] {
+                             filter: DocDbPropertyTypeFilterI | null = null): DocPropT[] {
         let props: DocPropT[] = [];
 
         for (let name of Object.keys(doc.document)) {
@@ -76,8 +77,9 @@ export class DocDbService extends ComponentLifecycleEventEmitter {
                 continue;
             props.push({
                 title: prop.title,
+                value: doc.document[name],
                 order: prop.order,
-                value: doc.document[name]
+                showInHeader: prop.showInHeader
             });
         }
         props.sort((a, b) => a.order - b.order);

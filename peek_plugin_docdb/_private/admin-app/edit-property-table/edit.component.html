@@ -18,6 +18,7 @@
                 <th>Name</th>
                 <th>Order</th>
                 <th>Title</th>
+                <th>Header</th>
                 <th>Tooltip</th>
                 <th>Summary</th>
                 <th>Detail</th>
@@ -38,6 +39,9 @@
                     <input [(ngModel)]="item.title"
                            class="form-control input-sm"
                            type="text"/>
+                </td>
+                <td>
+                    <nz-switch [(ngModel)]="item.showInHeader"></nz-switch>
                 </td>
                 <td>
                     <nz-switch [(ngModel)]="item.showOnTooltip"></nz-switch>

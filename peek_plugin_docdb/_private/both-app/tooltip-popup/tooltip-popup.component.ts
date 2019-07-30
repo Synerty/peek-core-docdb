@@ -6,6 +6,7 @@ import {
     PopupTriggeredParams,
     PrivateDocDbPopupService
 } from "@peek/peek_plugin_docdb/_private/services/PrivateDocDbPopupService";
+import {DocDbPopupDetailI} from "@peek/peek_plugin_docdb";
 
 
 @Component({
@@ -58,6 +59,21 @@ export class TooltipPopupComponent { // This is a root/global component
 
         // Discard the integration additions
         this.params = null;
+    }
+
+    headerDetails(): string {
+        return this.params.details
+            .filter(d => d.showInHeader)
+            .map(d => d.value)
+            .join(', ');
+    }
+
+    hasBodyDetails() :boolean  {
+        return this.bodyDetails().length != 0;
+    }
+
+    bodyDetails(): DocDbPopupDetailI[] {
+        return this.params.details.filter(d => !d.showInHeader);
     }
 
 

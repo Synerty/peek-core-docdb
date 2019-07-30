@@ -6,10 +6,10 @@
 
         <div *ngIf="params != null">
 
-            <nz-card [nzTitle]="params.objectKey">
+            <nz-card [nzTitle]="headerDetails()">
 
-                <div *ngIf="params.details.length != 0">
-                    <nz-table #detailsTable [nzData]="params.details"
+                <div *ngIf="hasBodyDetails()">
+                    <nz-table #detailsTable [nzData]="bodyDetails()"
                               nzFrontPagination="false"
                               nzSize="small">
                         <tbody>

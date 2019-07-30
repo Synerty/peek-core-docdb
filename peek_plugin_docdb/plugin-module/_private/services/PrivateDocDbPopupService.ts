@@ -190,7 +190,11 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
                                 });
                             },
                             addDetails: (items: DocDbPopupDetailI[]) => {
-                                this.zone.run(() => params.details.add(items));
+                                this.zone.run(() => {
+                                    params.details.add(items);
+                                    params.details = this.sortDetails(params.details);
+
+                                });
                             }
                         };
 
@@ -237,5 +241,28 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         for (const action of actions)
             action.children = this.sortActions(action.children || []);
         return actions;
+    }
+
+    private sortDetails(details: DocDbPopupDetailI[]): DocDbPopupDetailI[] {
+        return details.sort((a, b) => {
+            const ao = a.order || 0;
+            const bo = b.order || 0;
+            if (ao != bo)
+                return ao < bo ? -1 : 1;
+
+            const an = a.title || '';
+            const bn = b.title || '';
+
+            if (an != bn)
+                return an < bn ? -1 : 1;
+
+            const av = a.value || '';
+            const bv = b.value || '';
+
+            if (av != bv)
+                return av < bv ? -1 : 1;
+
+            return 0
+        });
     }
 }

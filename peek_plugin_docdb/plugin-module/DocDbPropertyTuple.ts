@@ -30,6 +30,9 @@ export class DocDbPropertyTuple extends Tuple {
     // Show on Detail Popup
     showOnDetail:boolean;
 
+    // Show on the header of any popup screen
+    showInHeader:boolean;
+
     constructor() {
         super(DocDbPropertyTuple.tupleName)
     }

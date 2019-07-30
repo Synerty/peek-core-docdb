@@ -8,6 +8,7 @@ from typing import List, Dict, Set, Tuple
 import pytz
 from sqlalchemy import select, bindparam, and_
 from txcelery.defer import DeferrableTask
+from vortex.Payload import Payload
 
 from peek_plugin_base.worker import CeleryDbConn
 from peek_plugin_docdb._private.storage.DocDbCompilerQueue import DocDbCompilerQueue
@@ -19,7 +20,6 @@ from peek_plugin_docdb._private.storage.DocDbPropertyTuple import DocDbPropertyT
 from peek_plugin_docdb._private.worker.CeleryApp import celeryApp
 from peek_plugin_docdb._private.worker.tasks._CalcChunkKey import makeChunkKey
 from peek_plugin_docdb.tuples.ImportDocumentTuple import ImportDocumentTuple
-from vortex.Payload import Payload
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,6 @@ def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> None:
         raise self.retry(exc=e, countdown=3)
 
 
-
 def _validateNewDocuments(newDocuments: List[ImportDocumentTuple]) -> None:
     for doc in newDocuments:
         if not doc.key:
@@ -116,7 +115,8 @@ def _makeModelSet(modelSetKey: str) -> int:
         dbSession.close()
 
 
-def _prepareLookups(newDocuments: List[ImportDocumentTuple], modelSetId: int) -> Dict[str, int]:
+def _prepareLookups(newDocuments: List[ImportDocumentTuple], modelSetId: int) -> Dict[
+    str, int]:
     """ Check Or Insert Search Properties
 
     Make sure the search properties exist.
@@ -133,6 +133,7 @@ def _prepareLookups(newDocuments: List[ImportDocumentTuple], modelSetId: int) ->
         propertyNames = set()
 
         for o in newDocuments:
+            o.document["key"] = o.key
             o.documentTypeKey = o.documentTypeKey.lower()
             docTypeNames.add(o.documentTypeKey)
 
@@ -145,6 +146,7 @@ def _prepareLookups(newDocuments: List[ImportDocumentTuple], modelSetId: int) ->
                 .filter(DocDbPropertyTuple.modelSetId == modelSetId)
                 .all()
         )
+
         propertyNames -= set([o.name for o in dbProps])
 
         if propertyNames:
@@ -213,7 +215,7 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
 
     try:
         importHashSet = set()
-        dontDeleteObjectIds=[]
+        dontDeleteObjectIds = []
         objectIdByKey: Dict[str, int] = {}
 
         objectKeys = [o.key for o in newDocuments]

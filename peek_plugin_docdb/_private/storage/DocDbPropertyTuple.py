@@ -25,9 +25,10 @@ class DocDbPropertyTuple(Tuple, DeclarativeBase):
     title = Column(String, nullable=False)
     order = Column(Integer, nullable=False, server_default='0')
 
-    showOnTooltip = Column(Boolean, nullable=False)
-    showOnSummary = Column(Boolean, nullable=False)
-    showOnDetail = Column(Boolean, nullable=False)
+    showOnTooltip = Column(Boolean, nullable=False, server_default='0')
+    showOnSummary = Column(Boolean, nullable=False, server_default='0')
+    showOnDetail = Column(Boolean, nullable=False, server_default='1')
+    showInHeader = Column(Boolean, nullable=False, server_default='0')
 
     __table_args__ = (
         Index("idx_DocDbProp_model_name", modelSetId, name, unique=True),

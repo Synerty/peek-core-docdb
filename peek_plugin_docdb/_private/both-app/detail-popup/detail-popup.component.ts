@@ -9,7 +9,7 @@ import {
     PrivateDocDbPopupService
 } from "@peek/peek_plugin_docdb/_private/services/PrivateDocDbPopupService";
 import {NzContextMenuService} from "ng-zorro-antd";
-import {DocDbPopupDetailI} from "@peek/peek_plugin_docdb";
+import {DocDbPopupClosedReasonE, DocDbPopupDetailI} from "@peek/peek_plugin_docdb";
 
 
 @Component({
@@ -38,7 +38,7 @@ export class DetailPopupComponent { // This is a root/global component
 
         this.popupService
             .hideDetailPopupSubject
-            .subscribe(() => this.closePopup());
+            .subscribe(() => this.closePopup(DocDbPopupClosedReasonE.closedByApiCall));
 
     }
 
@@ -60,7 +60,8 @@ export class DetailPopupComponent { // This is a root/global component
             return;
 
         if (!this.detailView.open && this.modalAction == null)
-            this.popupService.hidePopup(DocDbPopupTypeE.detailPopup);
+            this.popupService.hidePopupWithReason(DocDbPopupTypeE.detailPopup,
+                DocDbPopupClosedReasonE.userDismissedPopup);
 
         setTimeout(() => this.startClosedCheckTimer(), 50);
     }
@@ -72,12 +73,14 @@ export class DetailPopupComponent { // This is a root/global component
         this.startClosedCheckTimer();
     }
 
-    closePopup(): void {
+    closePopup(reason: DocDbPopupClosedReasonE): void {
+        if (this.params == null)
+            return;
 
         this.nzContextMenuService.close();
         this.reset();
 
-
+        this.popupService.hidePopupWithReason(DocDbPopupTypeE.detailPopup, reason);
     }
 
     headerDetails(): string {
@@ -87,7 +90,7 @@ export class DetailPopupComponent { // This is a root/global component
             .join(', ');
     }
 
-    hasBodyDetails() :boolean  {
+    hasBodyDetails(): boolean {
         return this.bodyDetails().length != 0;
     }
 
@@ -104,7 +107,7 @@ export class DetailPopupComponent { // This is a root/global component
             item.callback();
         }
         if (item.closeOnCallback == null || item.closeOnCallback === true)
-            this.closePopup();
+            this.closePopup(DocDbPopupClosedReasonE.userClickedAction);
     }
 
     modalName(): string {
@@ -124,7 +127,6 @@ export class DetailPopupComponent { // This is a root/global component
     modalChildActions(): DocDbPopupActionI[] {
         return this.modalAction == null ? [] : this.modalAction.children;
     }
-
 
 
 }

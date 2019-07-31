@@ -61,6 +61,13 @@ export enum DocDbPopupTypeE {
     detailPopup
 }
 
+export enum DocDbPopupClosedReasonE {
+    userClickedAction,
+    userDismissedPopup,
+    closedByApiCall,
+    other
+}
+
 
 /** Object Trigger Options
  *
@@ -142,6 +149,13 @@ export abstract class DocDbPopupService {
      * popup is triggered.
      */
     abstract popupObservable(popupType: DocDbPopupTypeE): Observable<DocDbPopupContextI> ;
+
+    /** Object Popup Closed Observable
+     *
+     * This method returns an observable that is fired when a popup is closed.
+     */
+    abstract popupClosedObservable(popupType: DocDbPopupTypeE)
+        : Observable<DocDbPopupClosedReasonE> ;
 
 
 }

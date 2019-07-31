@@ -9,7 +9,7 @@ import {
     PrivateDocDbPopupService
 } from "@peek/peek_plugin_docdb/_private/services/PrivateDocDbPopupService";
 import {NzContextMenuService} from "ng-zorro-antd";
-import {DocDbPopupDetailI} from "@peek/peek_plugin_docdb";
+import {DocDbPopupClosedReasonE, DocDbPopupDetailI} from "@peek/peek_plugin_docdb";
 
 
 @Component({
@@ -38,7 +38,7 @@ export class SummaryPopupComponent { // This is a root/global component
 
         this.popupService
             .hideSummaryPopupSubject
-            .subscribe(() => this.closePopup());
+            .subscribe(() => this.closePopup(DocDbPopupClosedReasonE.closedByApiCall));
 
     }
 
@@ -60,7 +60,8 @@ export class SummaryPopupComponent { // This is a root/global component
             return;
 
         if (!this.summaryView.open && this.modalAction == null)
-            this.popupService.hidePopup(DocDbPopupTypeE.summaryPopup);
+            this.popupService.hidePopupWithReason(DocDbPopupTypeE.summaryPopup,
+                DocDbPopupClosedReasonE.userDismissedPopup);
 
         setTimeout(() => this.startClosedCheckTimer(), 50);
     }
@@ -72,17 +73,21 @@ export class SummaryPopupComponent { // This is a root/global component
         this.startClosedCheckTimer();
     }
 
-    closePopup(): void {
+    closePopup(reason: DocDbPopupClosedReasonE): void {
+        if (this.params == null)
+            return;
 
         this.nzContextMenuService.close();
         this.reset();
 
-
+        this.popupService.hidePopupWithReason(DocDbPopupTypeE.summaryPopup, reason);
     }
 
     showDetailsPopup(): void {
         const params = this.params; // this will be reset
-        this.popupService.hidePopup(DocDbPopupTypeE.summaryPopup);
+        this.popupService.hidePopupWithReason(DocDbPopupTypeE.summaryPopup,
+            DocDbPopupClosedReasonE.userDismissedPopup);
+
         this.popupService
             .showPopup(
                 DocDbPopupTypeE.detailPopup,
@@ -100,7 +105,7 @@ export class SummaryPopupComponent { // This is a root/global component
             .join(', ');
     }
 
-    hasBodyDetails() :boolean  {
+    hasBodyDetails(): boolean {
         return this.bodyDetails().length != 0;
     }
 
@@ -117,7 +122,7 @@ export class SummaryPopupComponent { // This is a root/global component
             item.callback();
         }
         if (item.closeOnCallback == null || item.closeOnCallback === true)
-            this.closePopup();
+            this.closePopup(DocDbPopupClosedReasonE.userClickedAction);
     }
 
     modalName(): string {

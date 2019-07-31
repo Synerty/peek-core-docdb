@@ -1,6 +1,7 @@
 import {Injectable, NgZone} from "@angular/core";
 import {
     DocDbPopupActionI,
+    DocDbPopupClosedReasonE,
     DocDbPopupContextI,
     DocDbPopupDetailI,
     DocDbPopupService,
@@ -38,18 +39,21 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
 
     // Tooltip
     private tooltipPopupSubject = new Subject<DocDbPopupContextI>();
+    private tooltipPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>();
 
     showTooltipPopupSubject = new Subject<PopupTriggeredParams>();
     hideTooltipPopupSubject = new Subject<void>();
 
     // Summary
     private summaryPopupSubject = new Subject<DocDbPopupContextI>();
+    private summaryPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>();
 
     showSummaryPopupSubject = new Subject<PopupTriggeredParams>();
     hideSummaryPopupSubject = new Subject<void>();
 
     // Details
     private detailPopupSubject = new Subject<DocDbPopupContextI>();
+    private detailPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>();
 
     showDetailPopupSubject = new Subject<PopupTriggeredParams>();
     hideDetailPopupSubject = new Subject<void>();
@@ -113,6 +117,13 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
     }
 
     hidePopup(popupType: DocDbPopupTypeE): void {
+        this.hidePopupWithReason(popupType, DocDbPopupClosedReasonE.closedByApiCall);
+    }
+
+
+
+    hidePopupWithReason(popupType: DocDbPopupTypeE,
+                        reason:DocDbPopupClosedReasonE): void {
         if (this.shownPopup != popupType)
             return;
 
@@ -120,12 +131,15 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
 
         if (popupType == DocDbPopupTypeE.tooltipPopup) {
             this.hideTooltipPopupSubject.next();
+            this.tooltipPopupClosedSubject.next(reason);
 
         } else if (popupType == DocDbPopupTypeE.summaryPopup) {
             this.hideSummaryPopupSubject.next();
+            this.summaryPopupClosedSubject.next(reason);
 
         } else if (popupType == DocDbPopupTypeE.detailPopup) {
             this.hideDetailPopupSubject.next();
+            this.detailPopupClosedSubject.next(reason);
 
         } else {
             throw new Error(`hidePopup:Unhandled popup type ${popupType}`);
@@ -142,6 +156,23 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
 
         } else if (popupType == DocDbPopupTypeE.detailPopup) {
             return this.detailPopupSubject.asObservable();
+
+        } else {
+            throw new Error(`popupObservable:Unhandled popup type ${popupType}`);
+        }
+    }
+
+    popupClosedObservable(popupType: DocDbPopupTypeE)
+        : Observable<DocDbPopupClosedReasonE> {
+
+        if (popupType == DocDbPopupTypeE.tooltipPopup) {
+            return this.tooltipPopupClosedSubject.asObservable();
+
+        } else if (popupType == DocDbPopupTypeE.summaryPopup) {
+            return this.summaryPopupClosedSubject.asObservable();
+
+        } else if (popupType == DocDbPopupTypeE.detailPopup) {
+            return this.detailPopupClosedSubject.asObservable();
 
         } else {
             throw new Error(`popupObservable:Unhandled popup type ${popupType}`);

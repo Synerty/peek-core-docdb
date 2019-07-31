@@ -14,5 +14,6 @@ export {
     DocDbPopupActionI,
     DocDbPopupDetailI,
     DocDbPopupContextI,
-    DocDbPopupTypeE
+    DocDbPopupTypeE,
+    DocDbPopupClosedReasonE
 } from "./DocDbPopupService";

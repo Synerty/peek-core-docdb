@@ -4,6 +4,7 @@ import {
     DocDbPopupActionI,
     DocDbPopupTypeE
 } from "@peek/peek_plugin_docdb/DocDbPopupService";
+import * as $ from "jquery";
 import {
     PopupTriggeredParams,
     PrivateDocDbPopupService
@@ -141,6 +142,13 @@ export class SummaryPopupComponent { // This is a root/global component
 
     modalChildActions(): DocDbPopupActionI[] {
         return this.modalAction == null ? [] : this.modalAction.children;
+    }
+
+    modalAfterOpen(): void {
+        // This is a tooltip, So make it transparent to the mouse
+        $('#pl-docdb-summary-popup')
+            .parents('.cdk-overlay-pane')
+            .css("z-index", "1001");
     }
 
 

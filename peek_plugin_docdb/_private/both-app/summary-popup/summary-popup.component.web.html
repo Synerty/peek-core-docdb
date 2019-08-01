@@ -1,7 +1,6 @@
 <div>
 
     <nz-dropdown-menu #summaryView="nzDropdownMenu"
-                      (nzVisibleChange)="TEST($event)"
                       nzOverlayClassName="peek-docdb-popup-summary">
 
         <div *ngIf="params != null">
@@ -56,9 +55,10 @@
               (nzVisible)="closeModal()"
               [nzFooter]="null"
               [nzTitle]="modalName()"
+              (nzAfterOpen)="modalAfterOpen()"
               (nzOnCancel)="closeModal()">
 
-        <div class="child-menu-items">
+        <div class="child-menu-items" id="pl-docdb-summary-popup">
             <ul nz-menu>
                 <li nz-menu-item *ngFor="let child of modalChildActions()"
                     (click)="actionClicked(child)">

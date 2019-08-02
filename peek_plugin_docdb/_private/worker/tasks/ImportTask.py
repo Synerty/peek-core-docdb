@@ -40,6 +40,7 @@ def removeDocumentTask(self, modelSetKey: str, keys: List[str]) -> None:
 @DeferrableTask
 @celeryApp.task(bind=True)
 def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> None:
+    startTime = datetime.now(pytz.utc)
     # Decode arguments
     newDocuments: List[ImportDocumentTuple] = (
         Payload().fromEncodedPayload(documentsEncodedPayload).tuples
@@ -64,6 +65,10 @@ def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> None:
 
             docTypeIdsByName = _prepareLookups(docs, modelSetId)
             _insertOrUpdateObjects(docs, modelSetId, docTypeIdsByName)
+
+        logger.debug("Imported %s Documents in %s",
+                    len(newDocuments),
+                    datetime.now(pytz.utc) - startTime)
 
     except Exception as e:
         logger.debug("Retrying import docDb objects, %s", e)

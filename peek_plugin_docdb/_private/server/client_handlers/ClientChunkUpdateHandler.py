@@ -85,7 +85,7 @@ class ClientChunkUpdateHandler:
 
             return (
                 Payload(filt=clientDocumentUpdateFromServerFilt, tuples=results)
-                    .makePayloadEnvelope().toVortexMsg()
+                    .makePayloadEnvelope(compressionLevel=3).toVortexMsg()
             )
 
         finally:

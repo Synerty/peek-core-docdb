@@ -121,9 +121,8 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
     }
 
 
-
     hidePopupWithReason(popupType: DocDbPopupTypeE,
-                        reason:DocDbPopupClosedReasonE): void {
+                        reason: DocDbPopupClosedReasonE): void {
         if (this.shownPopup != popupType)
             return;
 
@@ -202,7 +201,9 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         const loadTimeoutHandle = setTimeout(
             () => {
 
-                this.docDbService.getObjects(params.modelSetKey, [params.objectKey])
+                // FIXME: This doesn't work because all the data is under pofDiagram
+                // this.docDbService.getObjects(params.modelSetKey, [params.objectKey])
+                this.docDbService.getObjects('pofDiagram', [params.objectKey])
                     .then((docs: DocumentResultI) => {
                         if (loadCancelled)
                             return;

@@ -3,7 +3,7 @@
     <nz-dropdown-menu #summaryView="nzDropdownMenu"
                       nzOverlayClassName="peek-docdb-popup-summary">
 
-        <div *ngIf="params != null">
+        <div *ngIf="showPopup()">
 
             <nz-card [nzTitle]="headerDetails()">
 

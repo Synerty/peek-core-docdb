@@ -76,5 +76,9 @@ export class TooltipPopupComponent { // This is a root/global component
         return this.params.details.filter(d => !d.showInHeader);
     }
 
+    showPopup():boolean {
+        return this.params != null && this.params.details.length != 0;
+    }
+
 
 }

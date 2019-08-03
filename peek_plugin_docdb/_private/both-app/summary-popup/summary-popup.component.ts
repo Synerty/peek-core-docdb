@@ -151,5 +151,10 @@ export class SummaryPopupComponent { // This is a root/global component
             .css("z-index", "1001");
     }
 
+    showPopup(): boolean {
+        return this.params != null
+            && (this.params.details.length != 0 || this.params.actions.length != 0);
+    }
+
 
 }

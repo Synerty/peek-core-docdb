@@ -5,7 +5,7 @@
         <div id="peek-plugin-docdb-popup-summary-mouse-events"
              style="pointer-events:none">
 
-            <div *ngIf="params !=null">
+            <div *ngIf="showPopup()">
                 <nz-card [nzTitle]="headerDetails()">
 
                     <div *ngIf="hasBodyDetails()">

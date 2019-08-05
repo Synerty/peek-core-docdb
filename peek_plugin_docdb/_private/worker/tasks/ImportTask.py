@@ -1,7 +1,6 @@
 import json
 import logging
 from collections import defaultdict
-from copy import copy
 from datetime import datetime
 from typing import List, Dict, Set, Tuple
 
@@ -67,8 +66,8 @@ def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> None:
             _insertOrUpdateObjects(docs, modelSetId, docTypeIdsByName)
 
         logger.debug("Imported %s Documents in %s",
-                    len(newDocuments),
-                    datetime.now(pytz.utc) - startTime)
+                     len(newDocuments),
+                     datetime.now(pytz.utc) - startTime)
 
     except Exception as e:
         logger.debug("Retrying import docDb objects, %s", e)
@@ -253,7 +252,9 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
             existingObject = foundObjectByKey.get(importDocument.key)
             importDocumentTypeId = docTypeIdsByName[importDocument.documentTypeKey]
 
-            packedJsonDict = copy(importDocument.document)
+            packedJsonDict = {k: v
+                              for k, v in importDocument.document.items()
+                              if v is not None and v is not ''}  # 0 / false allowed
             packedJsonDict['_dtid'] = importDocumentTypeId
             packedJsonDict['_msid'] = modelSetId
             documentJson = json.dumps(packedJsonDict, sort_keys=True)

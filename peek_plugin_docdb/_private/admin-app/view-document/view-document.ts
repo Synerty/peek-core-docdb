@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {
     ComponentLifecycleEventEmitter,
     extend,
@@ -6,7 +6,7 @@ import {
     VortexService
 } from "@synerty/vortexjs";
 import {docDbFilt} from "@peek/peek_plugin_docdb/_private";
-import { DocumentTuple} from "@peek/peek_plugin_docdb";
+import {DocumentTuple} from "@peek/peek_plugin_docdb";
 import {Ng2BalloonMsgService} from "@synerty/ng2-balloon-msg";
 
 
@@ -23,7 +23,7 @@ export class ViewDocumentComponent extends ComponentLifecycleEventEmitter {
     docKey: string = '';
     modelSetKey: string = '';
 
-    doc: DocumentTuple = new DocumentTuple();
+    doc: {} = {};
 
     loader: TupleLoader;
 
@@ -40,15 +40,29 @@ export class ViewDocumentComponent extends ComponentLifecycleEventEmitter {
         this.loader.observable
             .subscribe((tuples: DocumentTuple[]) => {
                 if (tuples.length == 0)
-                    this.doc = new DocumentTuple();
+                    this.doc = {};
                 else
                     this.doc = tuples[0];
             });
     }
 
+    docJson(): any {
+        let doc = JSON.parse(this.doc["documentJson"]);
+        for (const key of Object.keys(doc)) {
+            if (key[0] == '_')
+                delete doc[key];
+        }
+        return doc;
+    }
+
     resetClicked() {
         this.loader.load()
-            .then(() => this.balloonMsg.showSuccess("Reset Successful"))
+            .then(() => {
+                if (this.doc.key != null)
+                    this.balloonMsg.showSuccess("Fetch Successful");
+                else
+                    this.balloonMsg.showInfo("No matching document");
+            })
             .catch(e => this.balloonMsg.showError(e));
     }
 

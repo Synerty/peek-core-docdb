@@ -23,7 +23,7 @@ export class ViewDocumentComponent extends ComponentLifecycleEventEmitter {
     docKey: string = '';
     modelSetKey: string = '';
 
-    doc: {} = {};
+    doc: any = {};
 
     loader: TupleLoader;
 

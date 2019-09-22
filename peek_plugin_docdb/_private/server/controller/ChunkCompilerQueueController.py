@@ -9,7 +9,7 @@ from peek_plugin_docdb._private.server.controller.StatusController import \
     StatusController
 from peek_plugin_docdb._private.storage.DocDbCompilerQueue import DocDbCompilerQueue
 from sqlalchemy import asc
-from twisted.internet import task
+from twisted.internet import task, reactor
 from twisted.internet.defer import inlineCallbacks
 from vortex.DeferUtil import deferToThreadWrapWithLogger, vortexLogFailure
 
@@ -66,9 +66,6 @@ class ChunkCompilerQueueController:
 
     @inlineCallbacks
     def _poll(self):
-        from peek_plugin_docdb._private.worker.tasks.ChunkCompilerTask import \
-            compileDocumentChunk
-
         # We queue the grids in bursts, reducing the work we have to do.
         if self._queueCount > self.QUEUE_MIN:
             return
@@ -80,21 +77,41 @@ class ChunkCompilerQueueController:
 
         # Send the tasks to the peek worker
         for start in range(0, len(queueItems), self.ITEMS_PER_TASK):
-
             items = queueItems[start: start + self.ITEMS_PER_TASK]
 
             # Set the watermark
             self._lastQueueId = items[-1].id
 
-            d = compileDocumentChunk.delay(items)
-            d.addCallback(self._pollCallback, datetime.now(pytz.utc), len(items))
-            d.addErrback(self._pollErrback, datetime.now(pytz.utc))
+            # This should never fail
+            d = self._sendToWorker(items)
+            d.addErrback(vortexLogFailure, logger)
 
             self._queueCount += 1
             if self._queueCount >= self.QUEUE_MAX:
                 break
 
         yield self._dedupeQueue()
+
+    @inlineCallbacks
+    def _sendToWorker(self, items: List[DocDbCompilerQueue]):
+        from peek_plugin_docdb._private.worker.tasks.ChunkCompilerTask import \
+            compileDocumentChunk
+
+        startTime = datetime.now(pytz.utc)
+
+        try:
+            chunkKeys = yield compileDocumentChunk.delay(items)
+            logger.debug("Time Taken = %s" % (datetime.now(pytz.utc) - startTime))
+            self._queueCount -= 1
+            self._clientChunkUpdateHandler.sendChunks(chunkKeys)
+            self._statusController.addToCompilerTotal(len(items))
+            self._statusController.setCompilerStatus(True, self._queueCount)
+
+        except Exception as e:
+            self._statusController.setCompilerError(str(e))
+            logger.warning("Retrying compile : %s", str(e))
+            reactor.callLater(2.0, self._sendToWorker, items)
+            return
 
     @deferToThreadWrapWithLogger(logger)
     def _grabQueueChunk(self):
@@ -134,17 +151,3 @@ class ChunkCompilerQueueController:
             session.commit()
         finally:
             session.close()
-
-    def _pollCallback(self, chunkKeys: List[str], startTime, processedCount):
-        self._queueCount -= 1
-        logger.debug("Time Taken = %s" % (datetime.now(pytz.utc) - startTime))
-        self._clientChunkUpdateHandler.sendChunks(chunkKeys)
-        self._statusController.addToCompilerTotal(processedCount)
-        self._statusController.setCompilerStatus(True, self._queueCount)
-
-    def _pollErrback(self, failure, startTime):
-        self._queueCount -= 1
-        self._statusController.setCompilerError(str(failure.value))
-        self._statusController.setCompilerStatus(True, self._queueCount)
-        logger.debug("Time Taken = %s" % (datetime.now(pytz.utc) - startTime))
-        vortexLogFailure(failure, logger)

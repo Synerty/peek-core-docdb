@@ -65,7 +65,7 @@ def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> None:
             docTypeIdsByName = _prepareLookups(docs, modelSetId)
             _insertOrUpdateObjects(docs, modelSetId, docTypeIdsByName)
 
-        logger.debug("Imported %s Documents in %s",
+        logger.info("Imported %s Documents in %s",
                      len(newDocuments),
                      datetime.now(pytz.utc) - startTime)
 
@@ -218,7 +218,6 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
     transaction = conn.begin()
 
     try:
-        importHashSet = set()
         dontDeleteObjectIds = []
         objectIdByKey: Dict[str, int] = {}
 
@@ -244,10 +243,14 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
         # Create state arrays
         inserts = []
         updates = []
+        processedKeys = set()
 
         # Work out which objects have been updated or need inserting
         for importDocument in newDocuments:
-            importHashSet.add(importDocument.importGroupHash)
+            if importDocument.key in processedKeys:
+                raise Exception("Key %s exists in import data twice"
+                                % importDocument.key)
+            processedKeys.add(importDocument.key)
 
             existingObject = foundObjectByKey.get(importDocument.key)
             importDocumentTypeId = docTypeIdsByName[importDocument.documentTypeKey]
@@ -283,13 +286,6 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
 
             objectIdByKey[existingObject.key] = existingObject.id
             chunkKeysForQueue.add((modelSetId, existingObject.chunkKey))
-
-        if importHashSet:
-            conn.execute(
-                documentTable
-                    .delete(and_(~documentTable.c.id.in_(dontDeleteObjectIds),
-                                 documentTable.c.importGroupHash.in_(importHashSet)))
-            )
 
         # Insert the DocDb Objects
         if inserts:

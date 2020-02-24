@@ -225,11 +225,6 @@ class ServerEntryHook(PluginServerEntryHookABC,
 
     ###### Implement PluginServerWorkerEntryHookABC
 
-    @property
-    def celeryApp(self) -> Celery:
-        from peek_plugin_docdb._private.worker.CeleryApp import celeryApp
-        return celeryApp
-
     @deferToThreadWrapWithLogger(logger)
     def _loadSettings(self):
         dbSession = self.dbSessionCreator()

@@ -16,7 +16,7 @@ from peek_plugin_docdb._private.storage.DocDbCompilerQueue import \
 from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
 from peek_plugin_docdb._private.storage.DocDbEncodedChunk import \
     DocDbEncodedChunk
-from peek_plugin_docdb._private.worker.CeleryApp import celeryApp
+from peek_plugin_base.worker.CeleryApp import celeryApp
 from vortex.Payload import Payload
 
 logger = logging.getLogger(__name__)

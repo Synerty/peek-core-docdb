@@ -29,8 +29,3 @@ class WorkerEntryHook(PluginWorkerEntryHookABC):
     def celeryAppIncludes(self):
         return [ImportTask.__name__,
                 ChunkCompilerTask.__name__]
-
-    @property
-    def celeryApp(self):
-        from .CeleryApp import celeryApp
-        return celeryApp

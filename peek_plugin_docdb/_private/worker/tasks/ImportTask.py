@@ -16,7 +16,7 @@ from peek_plugin_docdb._private.storage.DocDbDocumentTypeTuple import \
     DocDbDocumentTypeTuple
 from peek_plugin_docdb._private.storage.DocDbModelSet import DocDbModelSet
 from peek_plugin_docdb._private.storage.DocDbPropertyTuple import DocDbPropertyTuple
-from peek_plugin_docdb._private.worker.CeleryApp import celeryApp
+from peek_plugin_base.worker.CeleryApp import celeryApp
 from peek_plugin_docdb._private.worker.tasks._CalcChunkKey import makeChunkKey
 from peek_plugin_docdb.tuples.ImportDocumentTuple import ImportDocumentTuple
 

@@ -7,8 +7,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import Index
 from vortex.Tuple import Tuple, addTupleType
 
-from peek_abstract_chunked_index.private.tuples.ChunkedIndexEncodedChunkTupleABC import \
-    ChunkedIndexEncodedChunkTupleABC
+from peek_abstract_chunked_index.private.tuples.ACIEncodedChunkTupleABC import \
+    ACIEncodedChunkTupleABC
 from peek_plugin_docdb._private.PluginNames import docDbTuplePrefix
 from peek_plugin_docdb._private.storage.DocDbModelSet import DocDbModelSet
 from .DeclarativeBase import DeclarativeBase
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 @addTupleType
 class DocDbEncodedChunk(Tuple, DeclarativeBase,
-                        ChunkedIndexEncodedChunkTupleABC):
+                        ACIEncodedChunkTupleABC):
     __tablename__ = 'DocDbEncodedChunkTuple'
     __tupleType__ = docDbTuplePrefix + 'DocDbEncodedChunk'
 

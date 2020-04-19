@@ -3,8 +3,8 @@ from typing import List
 
 from vortex.rpc.RPC import vortexRPC
 
-from peek_abstract_chunked_index.private.server.client_handlers.ChunkedIndexChunkLoadRpcABC import \
-    ChunkedIndexChunkLoadRpcABC
+from peek_abstract_chunked_index.private.server.client_handlers.ACIChunkLoadRpcABC import \
+    ACIChunkLoadRpcABC
 from peek_plugin_base.PeekVortexUtil import peekServerName, peekClientName
 from peek_plugin_docdb._private.PluginNames import docDbFilt
 from peek_plugin_docdb._private.storage.DocDbEncodedChunk import DocDbEncodedChunk
@@ -12,7 +12,7 @@ from peek_plugin_docdb._private.storage.DocDbEncodedChunk import DocDbEncodedChu
 logger = logging.getLogger(__name__)
 
 
-class ClientChunkLoadRpc(ChunkedIndexChunkLoadRpcABC):
+class ClientChunkLoadRpc(ACIChunkLoadRpcABC):
 
     def makeHandlers(self):
         """ Make Handlers

@@ -3,16 +3,19 @@ import logging
 from sqlalchemy import Column
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer, String
-
-from peek_plugin_docdb._private.PluginNames import docDbTuplePrefix
 from vortex.Tuple import Tuple, addTupleType
+
+from peek_abstract_chunked_index.private.tuples.ACIProcessorQueueTupleABC import \
+    ACIProcessorQueueTupleABC
+from peek_plugin_docdb._private.PluginNames import docDbTuplePrefix
 from .DeclarativeBase import DeclarativeBase
 
 logger = logging.getLogger(__name__)
 
 
 @addTupleType
-class DocDbCompilerQueue(Tuple, DeclarativeBase):
+class DocDbCompilerQueue(Tuple, DeclarativeBase,
+                         ACIProcessorQueueTupleABC):
     __tupleType__ = docDbTuplePrefix + 'DocDbChunkQueueTuple'
     __tablename__ = 'DocDbChunkQueue'
 
@@ -23,3 +26,11 @@ class DocDbCompilerQueue(Tuple, DeclarativeBase):
                         nullable=False)
 
     chunkKey = Column(String, primary_key=True)
+
+    @classmethod
+    def sqlCoreLoad(cls, row):
+        return DocDbCompilerQueue(id=row.id, modelSetId=row.modelSetId,
+                                  chunkKey=row.chunkKey)
+
+    def ckiUniqueKey(self):
+        return self.chunkKey

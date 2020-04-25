@@ -1,13 +1,12 @@
 import logging
-from typing import List
-
-from vortex.rpc.RPC import vortexRPC
+from typing import Optional
 
 from peek_abstract_chunked_index.private.server.client_handlers.ACIChunkLoadRpcABC import \
     ACIChunkLoadRpcABC
 from peek_plugin_base.PeekVortexUtil import peekServerName, peekClientName
 from peek_plugin_docdb._private.PluginNames import docDbFilt
 from peek_plugin_docdb._private.storage.DocDbEncodedChunk import DocDbEncodedChunk
+from vortex.rpc.RPC import vortexRPC
 
 logger = logging.getLogger(__name__)
 
@@ -29,10 +28,10 @@ class ClientChunkLoadRpc(ACIChunkLoadRpcABC):
     # -------------
     @vortexRPC(peekServerName, acceptOnlyFromVortex=peekClientName, timeoutSeconds=60,
                additionalFilt=docDbFilt, deferToThread=True)
-    def loadDocumentChunks(self, offset: int, count: int) -> List[DocDbEncodedChunk]:
+    def loadDocumentChunks(self, offset: int, count: int) -> Optional[bytes]:
         """ Update Page Loader Status
 
         Tell the server of the latest status of the loader
 
         """
-        return self.ckiInitialLoadChunksBlocking(offset, count, DocDbEncodedChunk)
+        return self.ckiInitialLoadChunksPayloadBlocking(offset, count, DocDbEncodedChunk)

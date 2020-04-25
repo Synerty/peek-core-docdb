@@ -39,7 +39,7 @@ class ClientDocumentTupleProvider(TuplesProviderABC):
             keysByChunkKey[makeChunkKey(modelSetKey, key)].append(key)
 
         for chunkKey, subKeys in keysByChunkKey.items():
-            chunk: DocDbEncodedChunk = self._cacheHandler.documentChunk(chunkKey)
+            chunk: DocDbEncodedChunk = self._cacheHandler.encodedChunk(chunkKey)
 
             if not chunk:
                 logger.warning("Document chunk %s is missing from cache", chunkKey)

@@ -23,8 +23,8 @@ class ClientDocumentUpdateDateTupleProvider(TuplesProviderABC):
                       tupleSelector: TupleSelector) -> Union[Deferred, bytes]:
         tuple_ = DocumentUpdateDateTuple()
         tuple_.updateDateByChunkKey = {
-            key:self._cacheHandler.documentChunk(key).lastUpdate
-            for key in self._cacheHandler.documentKeys()
+            key:self._cacheHandler.encodedChunk(key).lastUpdate
+            for key in self._cacheHandler.encodedChunkKeys()
         }
         payload = Payload(filt, tuples=[tuple_])
         payloadEnvelope = yield payload.makePayloadEnvelopeDefer()

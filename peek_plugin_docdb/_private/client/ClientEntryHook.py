@@ -104,7 +104,7 @@ class ClientEntryHook(PluginClientEntryHookABC):
 
         # ----------------
         # Set the caches reference to the handler
-        documentCacheController.setDocumentCacheHandler(documentHandler)
+        documentCacheController.setCacheHandler(documentHandler)
 
         # ----------------
         # Create the Tuple Observer

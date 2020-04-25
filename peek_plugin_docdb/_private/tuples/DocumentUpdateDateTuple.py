@@ -1,11 +1,13 @@
 from typing import Dict
 
+from peek_abstract_chunked_index.private.tuples.ACIUpdateDateTupleABC import \
+    ACIUpdateDateTupleABC
 from peek_plugin_docdb._private.PluginNames import docDbTuplePrefix
 from vortex.Tuple import addTupleType, TupleField, Tuple
 
 
 @addTupleType
-class DocumentUpdateDateTuple(Tuple):
+class DocumentUpdateDateTuple(Tuple, ACIUpdateDateTupleABC):
     """ DocDb Object Update Date Tuple
 
     This tuple represents the state of the chunks in the cache.
@@ -19,3 +21,7 @@ class DocumentUpdateDateTuple(Tuple):
 
     initialLoadComplete: bool = TupleField()
     updateDateByChunkKey: Dict[str, str] = TupleField({})
+
+    @property
+    def ckiUpdateDateByChunkKey(self):
+        return self.updateDateByChunkKey

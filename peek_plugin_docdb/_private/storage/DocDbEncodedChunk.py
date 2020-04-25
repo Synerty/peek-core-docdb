@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 @addTupleType
 class DocDbEncodedChunk(Tuple, DeclarativeBase,
                         ACIEncodedChunkTupleABC):
+
     __tablename__ = 'DocDbEncodedChunkTuple'
     __tupleType__ = docDbTuplePrefix + 'DocDbEncodedChunk'
 
@@ -41,6 +42,10 @@ class DocDbEncodedChunk(Tuple, DeclarativeBase,
     @property
     def ckiChunkKey(self):
         return self.chunkKey
+
+    @property
+    def ckiLastUpdate(self):
+        return self.lastUpdate
 
     @classmethod
     def ckiCreateDeleteEncodedChunk(cls, chunkKey: str):

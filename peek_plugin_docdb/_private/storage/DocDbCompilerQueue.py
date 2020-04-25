@@ -32,5 +32,6 @@ class DocDbCompilerQueue(Tuple, DeclarativeBase,
         return DocDbCompilerQueue(id=row.id, modelSetId=row.modelSetId,
                                   chunkKey=row.chunkKey)
 
+    @property
     def ckiUniqueKey(self):
         return self.chunkKey

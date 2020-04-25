@@ -68,7 +68,7 @@ class ChunkCompilerQueueController(ACIProcessorQueueControllerABC):
         from peek_plugin_docdb._private.worker.tasks.ChunkCompilerTask import \
             compileDocumentChunk
 
-        return compileDocumentChunk.delay(block.items)
+        return compileDocumentChunk.delay(block.itemsEncodedPayload)
 
     def _processWorkerResults(self, results):
         self._clientChunkUpdateHandler.sendChunks(results)

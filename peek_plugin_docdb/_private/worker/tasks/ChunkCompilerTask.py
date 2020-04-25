@@ -9,15 +9,15 @@ from typing import List, Dict
 import pytz
 from sqlalchemy import select
 from txcelery.defer import DeferrableTask
+from vortex.Payload import Payload
 
 from peek_plugin_base.worker import CeleryDbConn
+from peek_plugin_base.worker.CeleryApp import celeryApp
 from peek_plugin_docdb._private.storage.DocDbCompilerQueue import \
     DocDbCompilerQueue
 from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
 from peek_plugin_docdb._private.storage.DocDbEncodedChunk import \
     DocDbEncodedChunk
-from peek_plugin_base.worker.CeleryApp import celeryApp
-from vortex.Payload import Payload
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +33,20 @@ Compile the docDb indexes
 
 @DeferrableTask
 @celeryApp.task(bind=True)
-def compileDocumentChunk(self, queueItems) -> List[int]:
+def compileDocumentChunk(self, payloadEncodedArgs: bytes) -> List[int]:
     """ Compile DocDb Index Task
 
-    :param queueItems: An encoded payload containing the queue tuples.
+    :param self: The reference to this celery task
+    :param payloadEncodedArgs: An encoded payload containing the queue tuples.
     :returns: A list of grid keys that have been updated.
     """
+    argData = Payload().fromEncodedPayload(payloadEncodedArgs).tuples
+    queueItems = argData[0]
+    queueItemIds: List[int] = argData[1]
+
+    engine = CeleryDbConn.getDbEngine()
+    conn = engine.connect()
+    transaction = conn.begin()
     try:
         queueItemsByModelSetId = defaultdict(list)
 
@@ -46,102 +54,95 @@ def compileDocumentChunk(self, queueItems) -> List[int]:
             queueItemsByModelSetId[queueItem.modelSetId].append(queueItem)
 
         for modelSetId, modelSetQueueItems in queueItemsByModelSetId.items():
-            _compileDocumentChunk(modelSetId, modelSetQueueItems)
+            _compileDocumentChunk(conn, transaction, modelSetId, modelSetQueueItems)
 
+        queueTable = DocDbCompilerQueue.__table__
+
+        transaction = conn.begin()
+        conn.execute(queueTable.delete(queueTable.c.id.in_(queueItemIds)))
+        transaction.commit()
 
     except Exception as e:
+        transaction.rollback()
         logger.debug("RETRYING task - %s", e)
         raise self.retry(exc=e, countdown=10)
+
+    finally:
+        conn.close()
 
     return list(set([i.chunkKey for i in queueItems]))
 
 
-def _compileDocumentChunk(modelSetId: int,
+def _compileDocumentChunk(conn, transaction,
+                          modelSetId: int,
                           queueItems: List[DocDbCompilerQueue]) -> None:
     chunkKeys = list(set([i.chunkKey for i in queueItems]))
 
-    queueTable = DocDbCompilerQueue.__table__
     compiledTable = DocDbEncodedChunk.__table__
     lastUpdate = datetime.now(pytz.utc).isoformat()
 
     startTime = datetime.now(pytz.utc)
 
-    engine = CeleryDbConn.getDbEngine()
-    conn = engine.connect()
+    logger.debug("Staring compile of %s queueItems in %s",
+                 len(queueItems), (datetime.now(pytz.utc) - startTime))
+
+    # Get Model Sets
+
+    total = 0
+    existingHashes = _loadExistingHashes(conn, chunkKeys)
+    encKwPayloadByChunkKey = _buildIndex(chunkKeys)
+    chunksToDelete = []
+
+    inserts = []
+    for chunkKey, docDbIndexChunkEncodedPayload in encKwPayloadByChunkKey.items():
+        m = hashlib.sha256()
+        m.update(docDbIndexChunkEncodedPayload)
+        encodedHash = b64encode(m.digest()).decode()
+
+        # Compare the hash, AND delete the chunk key
+        if chunkKey in existingHashes:
+            # At this point we could decide to do an update instead,
+            # but inserts are quicker
+            if encodedHash == existingHashes.pop(chunkKey):
+                continue
+
+        chunksToDelete.append(chunkKey)
+        inserts.append(dict(
+            modelSetId=modelSetId,
+            chunkKey=chunkKey,
+            encodedData=docDbIndexChunkEncodedPayload,
+            encodedHash=encodedHash,
+            lastUpdate=lastUpdate))
+
+    # Add any chnuks that we need to delete that we don't have new data for, here
+    chunksToDelete.extend(list(existingHashes))
+
+    if chunksToDelete:
+        # Delete the old chunks
+        conn.execute(
+            compiledTable.delete(compiledTable.c.chunkKey.in_(chunksToDelete))
+        )
+
+    if inserts:
+        newIdGen = CeleryDbConn.prefetchDeclarativeIds(DocDbDocument, len(inserts))
+        for insert in inserts:
+            insert["id"] = next(newIdGen)
+
+    transaction.commit()
     transaction = conn.begin()
-    try:
 
-        logger.debug("Staring compile of %s queueItems in %s",
-                     len(queueItems), (datetime.now(pytz.utc) - startTime))
+    if inserts:
+        conn.execute(compiledTable.insert(), inserts)
 
-        # Get Model Sets
+    logger.debug("Compiled %s Documents, %s missing, in %s",
+                 len(inserts),
+                 len(chunkKeys) - len(inserts), (datetime.now(pytz.utc) - startTime))
 
-        total = 0
-        existingHashes = _loadExistingHashes(conn, chunkKeys)
-        encKwPayloadByChunkKey = _buildIndex(chunkKeys)
-        chunksToDelete = []
+    total += len(inserts)
 
-        inserts = []
-        for chunkKey, docDbIndexChunkEncodedPayload in encKwPayloadByChunkKey.items():
-            m = hashlib.sha256()
-            m.update(docDbIndexChunkEncodedPayload)
-            encodedHash = b64encode(m.digest()).decode()
-
-            # Compare the hash, AND delete the chunk key
-            if chunkKey in existingHashes:
-                # At this point we could decide to do an update instead,
-                # but inserts are quicker
-                if encodedHash == existingHashes.pop(chunkKey):
-                    continue
-
-            chunksToDelete.append(chunkKey)
-            inserts.append(dict(
-                modelSetId=modelSetId,
-                chunkKey=chunkKey,
-                encodedData=docDbIndexChunkEncodedPayload,
-                encodedHash=encodedHash,
-                lastUpdate=lastUpdate))
-
-        # Add any chnuks that we need to delete that we don't have new data for, here
-        chunksToDelete.extend(list(existingHashes))
-
-        if chunksToDelete:
-            # Delete the old chunks
-            conn.execute(
-                compiledTable.delete(compiledTable.c.chunkKey.in_(chunksToDelete))
-            )
-
-        if inserts:
-            newIdGen = CeleryDbConn.prefetchDeclarativeIds(DocDbDocument, len(inserts))
-            for insert in inserts:
-                insert["id"] = next(newIdGen)
-
-        transaction.commit()
-        transaction = conn.begin()
-
-        if inserts:
-            conn.execute(compiledTable.insert(), inserts)
-
-        logger.debug("Compiled %s Documents, %s missing, in %s",
-                     len(inserts),
-                     len(chunkKeys) - len(inserts), (datetime.now(pytz.utc) - startTime))
-
-        total += len(inserts)
-
-        queueItemIds = [o.id for o in queueItems]
-        conn.execute(queueTable.delete(queueTable.c.id.in_(queueItemIds)))
-
-        transaction.commit()
-        logger.info("Compiled and Committed %s EncodedDocumentChunks in %s",
-                     total, (datetime.now(pytz.utc) - startTime))
-
-
-    except Exception:
-        transaction.rollback()
-        raise
-
-    finally:
-        conn.close()
+    transaction.commit()
+    logger.info("Compiled and Committed %s EncodedDocumentChunks in %s",
+                total, (datetime.now(pytz.utc) - startTime))
 
 
 def _loadExistingHashes(conn, chunkKeys: List[str]) -> Dict[str, str]:

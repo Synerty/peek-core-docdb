@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Index, ForeignKey
+from sqlalchemy import Column, Index, ForeignKey, BigInteger
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship
 
@@ -16,7 +16,7 @@ class DocDbDocument(Tuple, DeclarativeBase):
     __tablename__ = 'DocDbDocument'
 
     #:  The unique ID of this document (database generated)
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
 
     #:  The model set for this document
     modelSetId = Column(Integer,

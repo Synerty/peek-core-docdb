@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import Column, LargeBinary
+from sqlalchemy import Column, LargeBinary, BigInteger
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship
@@ -23,7 +23,7 @@ class DocDbEncodedChunk(Tuple, DeclarativeBase,
     __tablename__ = 'DocDbEncodedChunkTuple'
     __tupleType__ = docDbTuplePrefix + 'DocDbEncodedChunk'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
 
     modelSetId = Column(Integer,
                         ForeignKey('DocDbModelSet.id', ondelete='CASCADE'),

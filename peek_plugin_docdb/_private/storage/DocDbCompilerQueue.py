@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import Column
+from sqlalchemy import Column, BigInteger
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer, String
 from vortex.Tuple import Tuple, addTupleType
@@ -19,7 +19,7 @@ class DocDbCompilerQueue(Tuple, DeclarativeBase,
     __tupleType__ = docDbTuplePrefix + 'DocDbChunkQueueTuple'
     __tablename__ = 'DocDbChunkQueue'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
 
     modelSetId = Column(Integer,
                         ForeignKey('DocDbModelSet.id', ondelete='CASCADE'),

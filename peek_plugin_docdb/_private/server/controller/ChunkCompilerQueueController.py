@@ -11,6 +11,8 @@ from peek_plugin_docdb._private.server.client_handlers.ClientChunkUpdateHandler 
 from peek_plugin_docdb._private.server.controller.StatusController import \
     StatusController
 from peek_plugin_docdb._private.storage.DocDbCompilerQueue import DocDbCompilerQueue
+from peek_plugin_docdb._private.storage.DocDbDocument import DocDbDocument
+from peek_plugin_docdb._private.storage.DocDbEncodedChunk import DocDbEncodedChunk
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +56,7 @@ class ChunkCompilerQueueController(ACIProcessorQueueControllerABC):
 
     _logger = logger
     _QueueDeclarative: ACIProcessorQueueTupleABC = DocDbCompilerQueue
+    _VacuumDeclaratives = (DocDbCompilerQueue, DocDbDocument, DocDbEncodedChunk)
 
     def __init__(self, dbSessionCreator,
                  statusController: StatusController,

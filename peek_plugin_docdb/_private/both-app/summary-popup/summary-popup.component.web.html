@@ -31,7 +31,7 @@
                                 style="white-space: normal;"
                                 (click)="actionClicked(item)"
                                 nz-tooltip [nzTitle]="item.tooltip">
-                            <fa *ngIf="item.icon != null" [name]="item.icon"></fa>
+                            <fa-icon *ngIf="item.icon != null" [icon]="['fas', item.icon]"></fa-icon>
                             {{item.name}}
                         </button>
 
@@ -41,7 +41,7 @@
                                 style="white-space: normal;"
                                 (click)="showDetailsPopup()"
                                 nz-tooltip nzTitle="Full Details">
-                            <fa name="info"></fa>
+                            <fa-icon [icon]="['fas', 'info']"></fa-icon>
                         </button>
                     </div>
                 </div>
@@ -62,7 +62,7 @@
             <ul nz-menu>
                 <li nz-menu-item *ngFor="let child of modalChildActions()"
                     (click)="actionClicked(child)">
-                    <fa *ngIf="child.icon != null" [name]="child.icon"></fa>
+                    <fa-icon *ngIf="child.icon != null" [icon]="['fas', child.icon]"></fa-icon>
                     {{child.name}}
                 </li>
             </ul>

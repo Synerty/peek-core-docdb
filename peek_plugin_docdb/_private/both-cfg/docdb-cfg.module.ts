@@ -1,8 +1,9 @@
 import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
 import {Routes} from "@angular/router";
-// Import a small abstraction library to switch between nativescript and web
-import {PeekModuleFactory} from "@synerty/peek-util-web";
+import {FormsModule} from "@angular/forms";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {RouterModule} from "@angular/router";
 // Import the default route component
 import {DocdbCfgComponent} from "./docdb-cfg.component";
 // Import global modules, for example, the canvas extensions.
@@ -28,14 +29,13 @@ export const pluginRoutes: Routes = [
 @NgModule({
     imports: [
         CommonModule,
-        PeekModuleFactory.RouterModule,
-        PeekModuleFactory.RouterModule.forChild(pluginRoutes),
-        ...PeekModuleFactory.FormsModules,
+        RouterModule.forChild(pluginRoutes),
+        FormsModule,
+        FontAwesomeModule,
     ],
     exports: [],
     providers: [],
     declarations: [DocdbCfgComponent]
 })
-export class DocDBCfgModule {
-}
+export class DocDBCfgModule { }
 

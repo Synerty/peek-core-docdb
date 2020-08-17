@@ -1,7 +1,9 @@
 import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
 import {Routes} from "@angular/router";
-import {PeekModuleFactory} from "@synerty/peek-util-web";
+import {FormsModule} from "@angular/forms";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {RouterModule} from "@angular/router";
 import {DocDbPopupComponent} from "./debug-page.component";
 
 
@@ -21,9 +23,9 @@ export const pluginRoutes: Routes = [
 @NgModule({
     imports: [
         CommonModule,
-        PeekModuleFactory.RouterModule,
-        PeekModuleFactory.RouterModule.forChild(pluginRoutes),
-        ...PeekModuleFactory.FormsModules,
+        RouterModule.forChild(pluginRoutes),
+        FormsModule,
+        FontAwesomeModule,
     ],
     exports: [],
     providers: [],

@@ -31,7 +31,7 @@
                                 style="white-space: normal;"
                                 (click)="actionClicked(item)"
                                 nz-tooltip [nzTitle]="item.tooltip">
-                            <fa *ngIf="item.icon != null" [name]="item.icon"></fa>
+                            <fa-icon *ngIf="item.icon != null" [icon]="item.icon"></fa-icon>
                             {{item.name}}
                         </button>
 

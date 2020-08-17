@@ -2,7 +2,7 @@ import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
 import {TooltipPopupComponent} from "./tooltip-popup/tooltip-popup.component";
 import {NzDropDownModule} from 'ng-zorro-antd/dropdown';
-import {AngularFontAwesomeModule} from "angular-font-awesome";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {NzTableModule} from 'ng-zorro-antd/table';
 import {SummaryPopupComponent} from "./summary-popup/summary-popup.component";
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
@@ -21,7 +21,7 @@ import {DetailPopupComponent} from "./detail-popup/detail-popup.component";
         NzCardModule,
         NzMenuModule,
         NzModalModule,
-        AngularFontAwesomeModule
+        FontAwesomeModule
     ],
     exports: [TooltipPopupComponent, SummaryPopupComponent, DetailPopupComponent],
     providers: [],

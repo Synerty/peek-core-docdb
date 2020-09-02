@@ -1,5 +1,5 @@
 import {Component, OnInit} from "@angular/core";
-import {Ng2BalloonMsgService} from "@synerty/ng2-balloon-msg";
+import { BalloonMsgService } from "@synerty/peek-plugin-base-js"
 import {
     ComponentLifecycleEventEmitter,
     extend,
@@ -28,7 +28,7 @@ export class EditDocumentTypeComponent extends ComponentLifecycleEventEmitter {
     modelSetById: { [id: number]: DocDbModelSetTuple } = {};
     documentTypeById: { [id: number]: DocDbDocumentTypeTuple } = {};
 
-    constructor(private balloonMsg: Ng2BalloonMsgService,
+    constructor(private balloonMsg: BalloonMsgService,
                 vortexService: VortexService,
                 private tupleObserver: TupleDataObserverService) {
         super();

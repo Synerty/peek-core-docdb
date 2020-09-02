@@ -7,7 +7,7 @@ import {
 } from "@synerty/vortexjs";
 import {docDbFilt} from "@peek/peek_plugin_docdb/_private";
 import {DocumentTuple} from "@peek/peek_plugin_docdb";
-import {Ng2BalloonMsgService} from "@synerty/ng2-balloon-msg";
+import { BalloonMsgService } from "@synerty/peek-plugin-base-js"
 
 
 @Component({
@@ -27,7 +27,7 @@ export class ViewDocumentComponent extends ComponentLifecycleEventEmitter {
 
     loader: TupleLoader;
 
-    constructor(private balloonMsg: Ng2BalloonMsgService,
+    constructor(private balloonMsg: BalloonMsgService,
                 vortexService: VortexService) {
         super();
 

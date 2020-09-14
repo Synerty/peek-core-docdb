@@ -1,10 +1,10 @@
-import {Injectable} from "@angular/core";
-
-import {ComponentLifecycleEventEmitter, TupleSelector} from "@synerty/vortexjs";
-import {DocumentResultI, PrivateDocumentLoaderService} from "./_private/document-loader";
-import {DocumentTuple} from "./DocumentTuple";
-import {DocDbTupleService} from "./_private";
-import {DocDbPropertyTuple} from "./DocDbPropertyTuple";
+import { Injectable } from "@angular/core"
+import { NgLifeCycleEvents } from "@synerty/peek-plugin-base-js"
+import { TupleSelector } from "@synerty/vortexjs"
+import { DocumentResultI, PrivateDocumentLoaderService } from "./_private/document-loader"
+import { DocumentTuple } from "./DocumentTuple"
+import { DocDbTupleService } from "./_private"
+import { DocDbPropertyTuple } from "./DocDbPropertyTuple"
 
 export interface DocPropT {
     title: string;
@@ -28,63 +28,74 @@ export interface DocDbPropertyTypeFilterI {
  *
  */
 @Injectable()
-export class DocDbService extends ComponentLifecycleEventEmitter {
-
-    propertiesByName: { [key: string]: DocDbPropertyTuple; } = {};
-
-    constructor(private documentLoader: PrivateDocumentLoaderService,
-                private tupleService: DocDbTupleService) {
-        super();
-
-
-        let propTs = new TupleSelector(DocDbPropertyTuple.tupleName, {});
+export class DocDbService extends NgLifeCycleEvents {
+    
+    propertiesByName: { [key: string]: DocDbPropertyTuple; } = {}
+    
+    constructor(
+        private documentLoader: PrivateDocumentLoaderService,
+        private tupleService: DocDbTupleService
+    ) {
+        super()
+        
+        let propTs = new TupleSelector(DocDbPropertyTuple.tupleName, {})
         this.tupleService.offlineObserver
             .subscribeToTupleSelector(propTs)
             .takeUntil(this.onDestroyEvent)
             .subscribe((tuples: DocDbPropertyTuple[]) => {
-                this.propertiesByName = {};
-
+                this.propertiesByName = {}
+                
                 for (let item of tuples) {
-                    let propKey = this._makePropKey(item.modelSetId, item.name);
-                    this.propertiesByName[propKey] = item;
+                    let propKey = this._makePropKey(item.modelSetId, item.name)
+                    this.propertiesByName[propKey] = item
                 }
-            });
-
+            })
+        
     }
-
-    private _makePropKey(modelSetId: number, name: string): string {
-        return `${modelSetId}.${name.toLowerCase()}`;
-    }
-
-
+    
     /** Get Locations
      *
      * Get the objects with matching keywords from the index..
      *
      */
-    getObjects(modelSetKey: string, keys: string[]): Promise<DocumentResultI> {
-        return this.documentLoader.getDocuments(modelSetKey, keys);
+    getObjects(
+        modelSetKey: string,
+        keys: string[]
+    ): Promise<DocumentResultI> {
+        return this.documentLoader.getDocuments(modelSetKey, keys)
     }
-
-    getNiceOrderedProperties(doc: DocumentTuple,
-                             filter: DocDbPropertyTypeFilterI | null = null): DocPropT[] {
-        let props: DocPropT[] = [];
-
+    
+    getNiceOrderedProperties(
+        doc: DocumentTuple,
+        filter: DocDbPropertyTypeFilterI | null = null
+    ): DocPropT[] {
+        let props: DocPropT[] = []
+        
         for (let name of Object.keys(doc.document)) {
-            let propKey = this._makePropKey(doc.modelSet.id, name);
-            let prop = this.propertiesByName[propKey] || new DocDbPropertyTuple();
+            let propKey = this._makePropKey(doc.modelSet.id, name)
+            let prop = this.propertiesByName[propKey] || new DocDbPropertyTuple()
             if (filter != null && !filter(prop))
-                continue;
+                continue
             props.push({
                 title: prop.title,
                 value: doc.document[name],
                 order: prop.order,
                 showInHeader: prop.showInHeader
-            });
+            })
         }
-        props.sort((a, b) => a.order - b.order);
-
-        return props;
+        props.sort((
+            a,
+            b
+        ) => a.order - b.order)
+        
+        return props
     }
-
+    
+    private _makePropKey(
+        modelSetId: number,
+        name: string
+    ): string {
+        return `${modelSetId}.${name.toLowerCase()}`
+    }
+    
 }

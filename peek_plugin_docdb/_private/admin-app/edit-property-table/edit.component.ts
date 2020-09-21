@@ -1,8 +1,8 @@
 import { Component } from "@angular/core"
 import { BalloonMsgService, NgLifeCycleEvents } from "@synerty/peek-plugin-base-js"
 import { extend, TupleDataObserverService, TupleLoader, TupleSelector, VortexService } from "@synerty/vortexjs"
-import { DocDbModelSetTuple, DocDbPropertyTuple } from "@peek/peek_plugin_docdb"
-import { docDbFilt } from "@peek/peek_plugin_docdb/_private"
+import { DocDbModelSetTuple, DocDbPropertyTuple } from "@_peek/peek_plugin_docdb"
+import { docDbFilt } from "@_peek/peek_plugin_docdb/_private"
 
 @Component({
     selector: "pl-docdb-edit-property",

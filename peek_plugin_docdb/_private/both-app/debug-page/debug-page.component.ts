@@ -2,7 +2,7 @@ import { Component, OnInit } from "@angular/core"
 import { ActivatedRoute, Params } from "@angular/router"
 import { NgLifeCycleEvents, TitleService } from "@synerty/peek-plugin-base-js"
 import { VortexStatusService } from "@synerty/vortexjs"
-import { DocDbService, DocPropT, DocumentResultI, DocumentTuple } from "@peek/peek_plugin_docdb"
+import { DocDbService, DocPropT, DocumentResultI, DocumentTuple } from "@_peek/peek_plugin_docdb"
 
 @Component({
     selector: "plugin-docdb-popup-debug",

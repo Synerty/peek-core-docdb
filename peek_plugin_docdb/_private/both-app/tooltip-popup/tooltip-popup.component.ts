@@ -5,8 +5,8 @@ import * as $ from "jquery";
 import {
     PopupTriggeredParams,
     PrivateDocDbPopupService
-} from "@peek/peek_plugin_docdb/_private/services/PrivateDocDbPopupService";
-import {DocDbPopupDetailI} from "@peek/peek_plugin_docdb";
+} from "@_peek/peek_plugin_docdb/_private/services/PrivateDocDbPopupService";
+import {DocDbPopupDetailI} from "@_peek/peek_plugin_docdb";
 
 
 @Component({

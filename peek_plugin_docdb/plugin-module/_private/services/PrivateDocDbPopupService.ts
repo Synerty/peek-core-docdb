@@ -17,7 +17,7 @@ import {
     DocDbPropertyTypeFilterI,
     DocDbService,
     DocumentResultI
-} from "@peek/peek_plugin_docdb";
+} from "@_peek/peek_plugin_docdb";
 import {assert, sortText} from "@synerty/vortexjs";
 
 export class PopupTriggeredParams {

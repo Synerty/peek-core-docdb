@@ -3,14 +3,14 @@ import {Component, NgZone, ViewChild} from "@angular/core";
 import {
     DocDbPopupActionI,
     DocDbPopupTypeE
-} from "@peek/peek_plugin_docdb/DocDbPopupService";
+} from "@_peek/peek_plugin_docdb/DocDbPopupService";
 import * as $ from "jquery";
 import {
     PopupTriggeredParams,
     PrivateDocDbPopupService
-} from "@peek/peek_plugin_docdb/_private/services/PrivateDocDbPopupService";
+} from "@_peek/peek_plugin_docdb/_private/services/PrivateDocDbPopupService";
 import {NzContextMenuService} from "ng-zorro-antd";
-import {DocDbPopupClosedReasonE, DocDbPopupDetailI} from "@peek/peek_plugin_docdb";
+import {DocDbPopupClosedReasonE, DocDbPopupDetailI} from "@_peek/peek_plugin_docdb";
 
 
 @Component({

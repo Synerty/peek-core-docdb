@@ -22,7 +22,7 @@ import {
     docDbFilt,
     docDbObservableName,
     docDbTupleOfflineServiceName
-} from "@_peek/peek_plugin_docdb/_private";
+} from "@peek/peek_plugin_docdb/_private";
 import {EditPropertyComponent} from "./edit-property-table/edit.component";
 import {EditDocumentTypeComponent} from "./edit-object-type-table/edit.component";
 

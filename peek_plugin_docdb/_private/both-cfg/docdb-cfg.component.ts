@@ -1,11 +1,11 @@
 import { Component } from "@angular/core"
 import { NgLifeCycleEvents } from "@synerty/peek-plugin-base-js"
 import { TupleSelector } from "@synerty/vortexjs"
-import { DocDbTupleService, OfflineConfigTuple } from "@_peek/peek_plugin_docdb/_private"
+import { DocDbTupleService, OfflineConfigTuple } from "@peek/peek_plugin_docdb/_private"
 import {
     PrivateDocumentLoaderService,
     PrivateDocumentLoaderStatusTuple
-} from "@_peek/peek_plugin_docdb/_private/document-loader"
+} from "@peek/peek_plugin_docdb/_private/document-loader"
 
 @Component({
     selector: "peek-plugin-docdb-cfg",

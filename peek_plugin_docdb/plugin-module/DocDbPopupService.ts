@@ -1,5 +1,5 @@
 import {Observable} from "rxjs/Observable";
-import {DocumentTuple} from "@_peek/peek_plugin_docdb";
+import {DocumentTuple} from "@peek/peek_plugin_docdb";
 
 /** Object Action Item Callback Interface
  *

@@ -4,10 +4,6 @@
 @import '~@synerty/peek-plugin-base-js/src/styles/_mixins';
 @import '~@synerty/peek-plugin-base-js/src/styles/_variables';
 
-//.ant-card-body {
-//    padding: 8px;
-//}
-
 $margin: 8px;
 
 .buttons {
@@ -15,11 +11,9 @@ $margin: 8px;
   display: flex;
 }
 
-
 .dynamic-buttons > button {
   margin-right: $margin;
 }
-
 
 .child-menu-items {
   height: 400px;

@@ -6,7 +6,8 @@ import { DocDbService, DocPropT, DocumentResultI, DocumentTuple } from "@peek/pe
 
 @Component({
     selector: "plugin-docdb-popup-debug",
-    templateUrl: "debug-page.component.web.html",
+    templateUrl: "debug-page.component.html",
+    styles: [``],
     moduleId: module.id
 })
 export class DocDbPopupComponent extends NgLifeCycleEvents implements OnInit {
@@ -19,7 +20,7 @@ export class DocDbPopupComponent extends NgLifeCycleEvents implements OnInit {
         private route: ActivatedRoute,
         private docDbService: DocDbService,
         private vortexStatus: VortexStatusService,
-        private titleService: TitleService
+        private titleService: TitleService,
     ) {
         super()
         
@@ -48,15 +49,10 @@ export class DocDbPopupComponent extends NgLifeCycleEvents implements OnInit {
                 
                 this.docDbService.getObjects(modelSetKey, [key])
                     .then((docs: DocumentResultI) => this.loadDoc(docs[key], key))
-                
             })
-        
     }
     
-    private loadDoc(
-        doc: DocumentTuple,
-        key: string
-    ) {
+    private loadDoc(doc: DocumentTuple, key: string) {
         doc = doc || new DocumentTuple()
         this.doc = doc
         this.docTypeName = ""
@@ -72,5 +68,4 @@ export class DocDbPopupComponent extends NgLifeCycleEvents implements OnInit {
         this.docProps = this.docDbService.getNiceOrderedProperties(this.doc)
         this.docTypeName = this.doc.documentType.title
     }
-    
 }

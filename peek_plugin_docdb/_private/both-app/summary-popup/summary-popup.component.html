@@ -38,13 +38,12 @@
                 nz-tooltip
                 [nzTitle]="item.tooltip"
               >
-                <!-- <i
-                    nz-icon
-                    nzType="{{item.icon}}"
-                    nzTheme="outline"
-                    *ngIf="item.icon"
-                ></i> -->
-                {{item.name}}
+                <i
+                  nz-icon
+                  nzType="{{item.icon}}"
+                  nzTheme="outline"
+                  *ngIf="item.icon"
+                ></i>
               </button>
             </div>
             <div class="details-buttons">
@@ -81,13 +80,12 @@
           (click)="actionClicked(child)"
           *ngFor="let child of modalChildActions()"
         >
-          <!-- <i
-              nz-icon
-              nzType="{{child.icon}}"
-              nzTheme="outline"
-              *ngIf="child.icon"
-          ></i> -->
-          {{child.name}}
+          <i
+            nz-icon
+            nzType="{{child.icon}}"
+            nzTheme="outline"
+            *ngIf="child.icon"
+          ></i>
         </li>
       </ul>
     </div>

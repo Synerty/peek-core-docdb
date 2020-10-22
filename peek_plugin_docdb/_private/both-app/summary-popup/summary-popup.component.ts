@@ -1,4 +1,4 @@
-import { Component, NgZone, ViewChild } from "@angular/core"
+import { Component, ViewChild } from "@angular/core"
 import { DocDbPopupActionI, DocDbPopupTypeE } from "@peek/peek_plugin_docdb/DocDbPopupService"
 import {
     PopupTriggeredParams,
@@ -22,7 +22,6 @@ export class SummaryPopupComponent {
     constructor(
         private nzContextMenuService: NzContextMenuService,
         private popupService: PrivateDocDbPopupService,
-        private zone: NgZone,
     ) {
         this.popupService
             .showSummaryPopupSubject
@@ -80,8 +79,12 @@ export class SummaryPopupComponent {
         else {
             item.callback()
         }
-        if (item.closeOnCallback == null || item.closeOnCallback === true)
+        if (
+            item.closeOnCallback == null
+            || item.closeOnCallback === true
+        ) {
             this.closePopup(DocDbPopupClosedReasonE.userClickedAction)
+        }
     }
     
     modalName(): string {

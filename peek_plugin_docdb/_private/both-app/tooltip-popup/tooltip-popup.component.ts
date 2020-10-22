@@ -19,7 +19,7 @@ export class TooltipPopupComponent {
     
     constructor(
         private nzContextMenuService: NzContextMenuService,
-        private popupService: PrivateDocDbPopupService
+        private popupService: PrivateDocDbPopupService,
     ) {
         
         this.popupService

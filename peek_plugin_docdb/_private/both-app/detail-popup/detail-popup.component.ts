@@ -1,4 +1,4 @@
-import { Component, NgZone, ViewChild } from "@angular/core"
+import { Component, ViewChild } from "@angular/core"
 import { DocDbPopupActionI, DocDbPopupTypeE } from "@peek/peek_plugin_docdb/DocDbPopupService"
 import {
     PopupTriggeredParams,
@@ -22,7 +22,6 @@ export class DetailPopupComponent { // This is a root/global component
     constructor(
         private nzContextMenuService: NzContextMenuService,
         private popupService: PrivateDocDbPopupService,
-        private zone: NgZone,
     ) {
         this.popupService
             .showDetailPopupSubject
@@ -64,8 +63,12 @@ export class DetailPopupComponent { // This is a root/global component
         else {
             item.callback()
         }
-        if (item.closeOnCallback == null || item.closeOnCallback === true)
+        if (
+            item.closeOnCallback == null
+            || item.closeOnCallback === true
+        ) {
             this.closePopup(DocDbPopupClosedReasonE.userClickedAction)
+        }
     }
     
     modalName(): string {
@@ -94,17 +97,17 @@ export class DetailPopupComponent { // This is a root/global component
         this.params = params
         setTimeout(() => {
             this.nzContextMenuService.create(
-                this.makeMouseEvent(),
+                this.makeMouseEvent(params),
                 this.detailView
             )
         }, 100)
     }
     
-    private makeMouseEvent(): MouseEvent {
+    private makeMouseEvent(params: PopupTriggeredParams): MouseEvent {
         return <any>{
             preventDefault: () => false,
-            x: this.params.position.x,
-            y: this.params.position.y
+            x: params.position.x,
+            y: params.position.y
         }
     }
     

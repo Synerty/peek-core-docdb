@@ -15,6 +15,7 @@ import { DocDbPopupDetailI } from "@peek/peek_plugin_docdb"
 export class TooltipPopupComponent {
     @ViewChild("tooltipView", {static: true}) tooltipView
     
+    // Integration additions for popups
     params: PopupTriggeredParams | null = null
     
     constructor(

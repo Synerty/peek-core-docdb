@@ -33,7 +33,10 @@ export class SummaryPopupComponent {
     }
     
     closePopup(reason: DocDbPopupClosedReasonE): void {
-        if (this.params == null) return
+        if (this.params == null) {
+            return
+        }
+        
         this.nzContextMenuService.close()
         this.reset()
         this.popupService.hidePopupWithReason(DocDbPopupTypeE.summaryPopup, reason)
@@ -45,6 +48,7 @@ export class SummaryPopupComponent {
             DocDbPopupTypeE.summaryPopup,
             DocDbPopupClosedReasonE.userDismissedPopup
         )
+        
         this.popupService.showPopup(
             DocDbPopupTypeE.detailPopup,
             params.triggeredByPlugin,
@@ -76,9 +80,9 @@ export class SummaryPopupComponent {
             this.modalAction = item
             return
         }
-        else {
-            item.callback()
-        }
+        
+        item.callback()
+        
         if (
             item.closeOnCallback == null
             || item.closeOnCallback === true
@@ -88,7 +92,10 @@ export class SummaryPopupComponent {
     }
     
     modalName(): string {
-        if (this.modalAction == null) return null
+        if (this.modalAction == null) {
+            return null
+        }
+        
         return this.modalAction.name || this.modalAction.tooltip
     }
     
@@ -105,12 +112,16 @@ export class SummaryPopupComponent {
     }
     
     showPopup(): boolean {
-        return this.params != null
+        return (
+            this.params != null
+            && (this.params.details.length != 0 || this.params.actions.length != 0)
+        )
     }
     
     protected openPopup(params: PopupTriggeredParams) {
         this.reset()
         this.params = params
+        
         setTimeout(() => {
             this.nzContextMenuService.create(
                 this.makeMouseEvent(params),

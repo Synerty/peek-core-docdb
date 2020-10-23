@@ -7,13 +7,14 @@ import {
 import { NzContextMenuService } from "ng-zorro-antd"
 import { DocDbPopupClosedReasonE, DocDbPopupDetailI } from "@peek/peek_plugin_docdb"
 
+// This is a root/global component
 @Component({
     selector: "plugin-docdb-popup-detail-popup",
     templateUrl: "detail-popup.component.html",
     styleUrls: ["detail-popup.component.scss"],
     moduleId: module.id
 })
-export class DetailPopupComponent { // This is a root/global component
+export class DetailPopupComponent {
     @ViewChild("detailView", {static: true}) detailView
     
     params: PopupTriggeredParams | null = null
@@ -33,7 +34,10 @@ export class DetailPopupComponent { // This is a root/global component
     }
     
     closePopup(reason: DocDbPopupClosedReasonE): void {
-        if (this.params == null) return
+        if (this.params == null) {
+            return
+        }
+        
         this.nzContextMenuService.close()
         this.reset()
         this.popupService.hidePopupWithReason(DocDbPopupTypeE.detailPopup, reason)
@@ -60,9 +64,9 @@ export class DetailPopupComponent { // This is a root/global component
             this.modalAction = item
             return
         }
-        else {
-            item.callback()
-        }
+        
+        item.callback()
+        
         if (
             item.closeOnCallback == null
             || item.closeOnCallback === true
@@ -72,7 +76,10 @@ export class DetailPopupComponent { // This is a root/global component
     }
     
     modalName(): string {
-        if (this.modalAction == null) return null
+        if (this.modalAction == null) {
+            return null
+        }
+        
         return this.modalAction.name || this.modalAction.tooltip
     }
     
@@ -89,12 +96,16 @@ export class DetailPopupComponent { // This is a root/global component
     }
     
     showPopup(): boolean {
-        return this.params != null
+        return (
+            this.params != null
+            && (this.params.details.length != 0 || this.params.actions.length != 0)
+        )
     }
     
     protected openPopup(params: PopupTriggeredParams) {
         this.reset()
         this.params = params
+        
         setTimeout(() => {
             this.nzContextMenuService.create(
                 this.makeMouseEvent(params),

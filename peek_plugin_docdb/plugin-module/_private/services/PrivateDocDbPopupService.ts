@@ -21,6 +21,7 @@ import {
 import { assert, sortText } from "@synerty/vortexjs"
 
 export class PopupTriggeredParams {
+    
     actions: DocDbPopupActionI[] = []
     details: DocDbPopupDetailI[] = []
     
@@ -36,6 +37,7 @@ export class PopupTriggeredParams {
 
 @Injectable()
 export class PrivateDocDbPopupService extends DocDbPopupService {
+    
     showTooltipPopupSubject = new Subject<PopupTriggeredParams>()
     hideTooltipPopupSubject = new Subject<void>()
     showSummaryPopupSubject = new Subject<PopupTriggeredParams>()
@@ -58,9 +60,10 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
     
     constructor(
         private docDbService: DocDbService,
-        protected zone: NgZone,
+        protected zone: NgZone
     ) {
         super()
+        
     }
     
     showPopup(
@@ -71,6 +74,7 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         objectKey: string,
         options: ObjectTriggerOptionsI = {}
     ): void {
+        
         const params = new PopupTriggeredParams(
             triggeredByPlugin,
             position,
@@ -111,6 +115,7 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         else {
             throw new Error(`showPopup:Unhandled popup type ${popupType}`)
         }
+        
     }
     
     hidePopup(popupType: DocDbPopupTypeE): void {
@@ -149,6 +154,7 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
     }
     
     popupObservable(popupType: DocDbPopupTypeE): Observable<DocDbPopupContextI> {
+        
         if (popupType == DocDbPopupTypeE.tooltipPopup) {
             return this.tooltipPopupSubject.asObservable()
             
@@ -166,18 +172,20 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         }
     }
     
-    popupClosedObservable(
-        popupType: DocDbPopupTypeE
-    ): Observable<DocDbPopupClosedReasonE> {
+    popupClosedObservable(popupType: DocDbPopupTypeE)
+        : Observable<DocDbPopupClosedReasonE> {
         
         if (popupType == DocDbPopupTypeE.tooltipPopup) {
             return this.tooltipPopupClosedSubject.asObservable()
+            
         }
         else if (popupType == DocDbPopupTypeE.summaryPopup) {
             return this.summaryPopupClosedSubject.asObservable()
+            
         }
         else if (popupType == DocDbPopupTypeE.detailPopup) {
             return this.detailPopupClosedSubject.asObservable()
+            
         }
         else {
             throw new Error(`popupObservable:Unhandled popup type ${popupType}`)

@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core"
 import { ActivatedRoute, Params } from "@angular/router"
-import { NgLifeCycleEvents, TitleService } from "@synerty/peek-plugin-base-js"
+import { NgLifeCycleEvents, HeaderService } from "@synerty/peek-plugin-base-js"
 import { VortexStatusService } from "@synerty/vortexjs"
 import { DocDbService, DocPropT, DocumentResultI, DocumentTuple } from "@peek/peek_plugin_docdb"
 
@@ -20,11 +20,11 @@ export class DocDbPopupComponent extends NgLifeCycleEvents implements OnInit {
         private route: ActivatedRoute,
         private docDbService: DocDbService,
         private vortexStatus: VortexStatusService,
-        private titleService: TitleService,
+        private headerService: HeaderService,
     ) {
         super()
         
-        titleService.setTitle("Loading Document ...")
+        headerService.setTitle("Loading Document ...")
     }
     
     ngOnInit() {
@@ -59,11 +59,11 @@ export class DocDbPopupComponent extends NgLifeCycleEvents implements OnInit {
         this.docProps = []
         
         if (this.doc.key == null) {
-            this.titleService.setTitle(`Document ${key} Not Found`)
+            this.headerService.setTitle(`Document ${key} Not Found`)
             return
         }
         
-        this.titleService.setTitle(`Document ${key}`)
+        this.headerService.setTitle(`Document ${key}`)
         
         this.docProps = this.docDbService.getNiceOrderedProperties(this.doc)
         this.docTypeName = this.doc.documentType.title

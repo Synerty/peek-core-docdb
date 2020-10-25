@@ -4,7 +4,7 @@ import {
     PopupTriggeredParams,
     PrivateDocDbPopupService
 } from "@peek/peek_plugin_docdb/_private/services/PrivateDocDbPopupService"
-import { NzContextMenuService } from "ng-zorro-antd"
+import { NzContextMenuService } from "ng-zorro-antd/dropdown"
 import { DocDbPopupClosedReasonE, DocDbPopupDetailI } from "@peek/peek_plugin_docdb"
 
 @Component({

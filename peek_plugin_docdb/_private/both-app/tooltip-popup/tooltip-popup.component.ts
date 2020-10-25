@@ -1,5 +1,5 @@
 import { Component, ViewChild } from "@angular/core"
-import { NzContextMenuService } from "ng-zorro-antd"
+import { NzContextMenuService } from "ng-zorro-antd/dropdown"
 import {
     PopupTriggeredParams,
     PrivateDocDbPopupService

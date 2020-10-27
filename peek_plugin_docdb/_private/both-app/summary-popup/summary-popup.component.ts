@@ -51,7 +51,7 @@ export class SummaryPopupComponent {
         this.popupService.showPopup(
             DocDbPopupTypeE.detailPopup,
             params.triggeredByPlugin,
-            this.makePositionEvent(params),
+            this.makeMouseEvent(params),
             params.modelSetKey,
             params.objectKey,
             params.options
@@ -123,15 +123,16 @@ export class SummaryPopupComponent {
         
         setTimeout(() => {
             this.nzContextMenuService.create(
-                this.makePositionEvent(params),
+                this.makeMouseEvent(params),
                 this.summaryView
             )
         }, 100)
     }
     
-    private makePositionEvent(params) {
+    private makeMouseEvent(params) {
         let x = 0
         let y = 0
+        
         if (params.position.changedTouches) {
             x = params.position.changedTouches[0].clientX
             y = params.position.changedTouches[0].clientY
@@ -140,6 +141,7 @@ export class SummaryPopupComponent {
            x = params.position.x,
            y = params.position.y
         }
+        
         return <any>{
             preventDefault: () => false,
             x,

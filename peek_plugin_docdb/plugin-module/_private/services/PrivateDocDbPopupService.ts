@@ -132,29 +132,15 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         ) return
         
         this.shownPopup = null
-        
-        if (popupType == DocDbPopupTypeE.tooltipPopup) {
-            this.hideTooltipPopupSubject.next()
-            this.tooltipPopupClosedSubject.next(reason)
-            
-        }
-        else if (popupType == DocDbPopupTypeE.summaryPopup) {
-            this.hideSummaryPopupSubject.next()
-            this.summaryPopupClosedSubject.next(reason)
-            
-        }
-        else if (popupType == DocDbPopupTypeE.detailPopup) {
-            this.hideDetailPopupSubject.next()
-            this.detailPopupClosedSubject.next(reason)
-            
-        }
-        else {
-            throw new Error(`hidePopup:Unhandled popup type ${popupType}`)
-        }
+        this.hideTooltipPopupSubject.next()
+        this.tooltipPopupClosedSubject.next(reason)
+        this.hideSummaryPopupSubject.next()
+        this.summaryPopupClosedSubject.next(reason)
+        this.hideDetailPopupSubject.next()
+        this.detailPopupClosedSubject.next(reason)
     }
     
     popupObservable(popupType: DocDbPopupTypeE): Observable<DocDbPopupContextI> {
-        
         if (popupType == DocDbPopupTypeE.tooltipPopup) {
             return this.tooltipPopupSubject.asObservable()
             

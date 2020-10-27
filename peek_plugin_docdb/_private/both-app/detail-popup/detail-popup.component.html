@@ -34,8 +34,8 @@
                 nzType="default"
                 style="white-space: normal;"
                 (click)="actionClicked(item)"
-                nz-tooltip
-                [nzTitle]="item.tooltip"
+                nz-tooltip="item.tooltip"
+                [nzTooltipTitle]="item.tooltip"
               >
                 <i
                   nz-icon

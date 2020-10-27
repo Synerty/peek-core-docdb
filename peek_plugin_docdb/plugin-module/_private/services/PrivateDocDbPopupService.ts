@@ -9,7 +9,7 @@ import {
     ObjectTriggerOptionsI,
     ObjectTriggerPositionI
 } from "../../DocDbPopupService"
-import { Subject } from "rxjs/Subject"
+import { Subject } from "rxjs"
 import { Observable } from "rxjs/Observable"
 
 import {

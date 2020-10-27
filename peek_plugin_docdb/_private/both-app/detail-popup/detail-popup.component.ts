@@ -11,8 +11,7 @@ import { DocDbPopupClosedReasonE, DocDbPopupDetailI } from "@peek/peek_plugin_do
 @Component({
     selector: "plugin-docdb-popup-detail-popup",
     templateUrl: "detail-popup.component.html",
-    styleUrls: ["detail-popup.component.scss"],
-    moduleId: module.id
+    styleUrls: ["detail-popup.component.scss"]
 })
 export class DetailPopupComponent {
     @ViewChild("detailView", {static: true}) detailView

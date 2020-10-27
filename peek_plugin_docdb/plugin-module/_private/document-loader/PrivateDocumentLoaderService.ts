@@ -15,7 +15,7 @@ import {
 import { docDbCacheStorageName, docDbFilt, docDbTuplePrefix } from "../PluginNames"
 
 import { Subject } from "rxjs"
-import { Observable } from "rxjs/Observable"
+import { Observable } from "rxjs"
 import { EncodedDocumentChunkTuple } from "./EncodedDocumentChunkTuple"
 import { DocumentUpdateDateTuple } from "./DocumentUpdateDateTuple"
 import { DocumentTuple } from "../../DocumentTuple"

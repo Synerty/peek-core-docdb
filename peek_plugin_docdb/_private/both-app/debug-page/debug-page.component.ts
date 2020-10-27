@@ -7,8 +7,7 @@ import { DocDbService, DocPropT, DocumentResultI, DocumentTuple } from "@peek/pe
 @Component({
     selector: "plugin-docdb-popup-debug",
     templateUrl: "debug-page.component.html",
-    styles: [``],
-    moduleId: module.id
+    styles: [``]
 })
 export class DocDbPopupComponent extends NgLifeCycleEvents implements OnInit {
     doc: DocumentTuple = new DocumentTuple()

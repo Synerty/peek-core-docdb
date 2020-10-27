@@ -9,8 +9,7 @@ import {
 
 @Component({
     selector: "peek-plugin-docdb-cfg",
-    templateUrl: "docdb-cfg.component.web.html",
-    moduleId: module.id
+    templateUrl: "docdb-cfg.component.web.html"
 })
 export class DocdbCfgComponent extends NgLifeCycleEvents {
     lastStatus: PrivateDocumentLoaderStatusTuple = new PrivateDocumentLoaderStatusTuple()

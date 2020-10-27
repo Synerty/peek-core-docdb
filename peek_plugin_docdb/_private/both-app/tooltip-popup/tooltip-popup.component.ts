@@ -9,8 +9,7 @@ import { DocDbPopupDetailI } from "@peek/peek_plugin_docdb"
 @Component({
     selector: "plugin-docdb-popup-tooltip-popup",
     templateUrl: "tooltip-popup.component.html",
-    styleUrls: ["tooltip-popup.component.scss"],
-    moduleId: module.id
+    styleUrls: ["tooltip-popup.component.scss"]
 })
 export class TooltipPopupComponent {
     @ViewChild("tooltipView", {static: true}) tooltipView

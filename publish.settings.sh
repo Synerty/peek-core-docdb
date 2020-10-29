@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PY_PACKAGE="peek_plugin_docdb"
+PY_PACKAGE="peek_core_docdb"
 PYPI_PUBLISH="1"
 
 

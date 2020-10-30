@@ -14,9 +14,8 @@
         "agent",
         "storage",
         "admin",
-        "client",
-        "mobile",
-        "desktop",
+        "field",
+        "office",
         "doc-dev",
         "doc-admin"
     ],
@@ -40,9 +39,8 @@
         "appModule": "docDb.module#DocDbModule",
         "moduleDir": "plugin-module"
     },
-    "client": {
-    },
-    "mobile": {
+
+    "field": {
         "cfgDir": "_private/both-cfg",
         "cfgModule": "docdb-cfg.module#DocDBCfgModule",
         "showHomeLink": false,
@@ -95,7 +93,7 @@
             }
         ]
     },
-    "desktop": {
+    "office": {
         "cfgDir": "_private/both-cfg",
         "cfgModule": "docdb-cfg.module#DocDBCfgModule",
         "showHomeLink": false,

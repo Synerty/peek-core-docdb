@@ -74,9 +74,9 @@ def _alterColumnPkBigInt(schemaName, tableName):
 
 
 def upgrade():
-    op.execute(_alterColumnPkBigInt("pl_docdb", "DocDbChunkQueue"))
-    op.execute(_alterColumnPkBigInt("pl_docdb", "DocDbDocument"))
-    op.execute(_alterColumnPkBigInt("pl_docdb", "DocDbEncodedChunkTuple"))
+    op.execute(_alterColumnPkBigInt("core_docdb", "DocDbChunkQueue"))
+    op.execute(_alterColumnPkBigInt("core_docdb", "DocDbDocument"))
+    op.execute(_alterColumnPkBigInt("core_docdb", "DocDbEncodedChunkTuple"))
 
 
 def downgrade():

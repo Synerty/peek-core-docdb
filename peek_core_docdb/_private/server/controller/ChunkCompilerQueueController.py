@@ -80,7 +80,7 @@ class ChunkCompilerQueueController(ACIProcessorQueueControllerABC):
         return '''
                  with sq_raw as (
                     SELECT "id", "chunkKey"
-                    FROM pl_docdb."DocDbChunkQueue"
+                    FROM core_docdb."DocDbChunkQueue"
                     WHERE id > %(id)s
                     LIMIT %(limit)s
                 ), sq as (
@@ -90,10 +90,10 @@ class ChunkCompilerQueueController(ACIProcessorQueueControllerABC):
                     HAVING count("chunkKey") > 1
                 )
                 DELETE
-                FROM pl_docdb."DocDbChunkQueue"
+                FROM core_docdb."DocDbChunkQueue"
                      USING sq sq1
-                WHERE pl_docdb."DocDbChunkQueue"."id" != sq1."minId"
-                    AND pl_docdb."DocDbChunkQueue"."id" > %(id)s
-                    AND pl_docdb."DocDbChunkQueue"."chunkKey" = sq1."chunkKey"
+                WHERE core_docdb."DocDbChunkQueue"."id" != sq1."minId"
+                    AND core_docdb."DocDbChunkQueue"."id" > %(id)s
+                    AND core_docdb."DocDbChunkQueue"."chunkKey" = sq1."chunkKey"
 
             ''' % {'id': lastFetchedId, 'limit': dedupeLimit}

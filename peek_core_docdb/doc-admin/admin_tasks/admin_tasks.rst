@@ -70,13 +70,13 @@ Each model set has it's own document index.
 
 
         -- Delete the existing index data.
-        DELETE FROM pl_docdb."DocDbChunkQueue" WHERE "modelSetId" = <ID>;
-        DELETE FROM pl_docdb."DocDbEncodedChunkTuple" WHERE "modelSetId" = <ID>;
+        DELETE FROM core_docdb."DocDbChunkQueue" WHERE "modelSetId" = <ID>;
+        DELETE FROM core_docdb."DocDbEncodedChunkTuple" WHERE "modelSetId" = <ID>;
 
         -- Queue the chunks for compiling.
-        INSERT INTO pl_docdb."DocDbChunkQueue" ("modelSetId", "indexBucket")
+        INSERT INTO core_docdb."DocDbChunkQueue" ("modelSetId", "indexBucket")
         SELECT DISTINCT "modelSetId", "indexBucket"
-        FROM pl_docdb."DocDbDocument"
+        FROM core_docdb."DocDbDocument"
         WHERE "modelSetId" = <ID>;
 
 

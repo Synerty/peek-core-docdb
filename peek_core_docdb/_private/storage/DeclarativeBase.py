@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import MetaData
 from txhttputil.util.ModuleUtil import filterModules
 
-metadata = MetaData(schema="pl_docdb")
+metadata = MetaData(schema="core_docdb")
 DeclarativeBase = declarative_base(metadata=metadata)
 
 

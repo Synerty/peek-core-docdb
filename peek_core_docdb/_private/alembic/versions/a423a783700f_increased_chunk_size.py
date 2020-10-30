@@ -29,7 +29,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-__DeclarativeBase = declarative_base(metadata=MetaData(schema="pl_docdb"))
+__DeclarativeBase = declarative_base(metadata=MetaData(schema="core_docdb"))
 
 
 class __DocDbModelSet(__DeclarativeBase):
@@ -82,13 +82,13 @@ def upgrade():
 
     session.close()
 
-    op.execute('TRUNCATE TABLE pl_docdb."DocDbEncodedChunkTuple" ')
-    op.execute('TRUNCATE TABLE pl_docdb."DocDbChunkQueue" ')
+    op.execute('TRUNCATE TABLE core_docdb."DocDbEncodedChunkTuple" ')
+    op.execute('TRUNCATE TABLE core_docdb."DocDbChunkQueue" ')
 
-    op.execute('''INSERT INTO pl_docdb."DocDbChunkQueue"
+    op.execute('''INSERT INTO core_docdb."DocDbChunkQueue"
                             ("modelSetId", "chunkKey")
                             SELECT DISTINCT "modelSetId", "chunkKey"
-                            FROM pl_docdb."DocDbDocument"
+                            FROM core_docdb."DocDbDocument"
                          ''')
 
 

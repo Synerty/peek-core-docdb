@@ -1,6 +1,9 @@
 import logging
+import os
 
 from celery import Celery
+from jsoncfg.value_mappers import require_string
+from sqlalchemy import MetaData
 
 from peek_plugin_base.server.PluginServerEntryHookABC import PluginServerEntryHookABC
 from peek_plugin_base.server.PluginServerStorageEntryHookABC import \
@@ -27,6 +30,7 @@ from peek_core_docdb.tuples.ImportDocumentTuple import ImportDocumentTuple
 from twisted.internet.defer import inlineCallbacks
 from vortex.DeferUtil import vortexLogFailure, deferToThreadWrapWithLogger
 from vortex.Payload import Payload
+from peek_plugin_base.storage.DbConnection import DbConnection
 from .TupleActionProcessor import makeTupleActionProcessorHandler
 from .TupleDataObservable import makeTupleDataObservableHandler
 from .admin_backend import makeAdminBackendHandlers
@@ -47,6 +51,52 @@ class ServerEntryHook(PluginServerEntryHookABC,
         self._loadedObjects = []
 
         self._api = None
+
+    def _migrateStorageSchema(self, metadata: MetaData) -> None:
+        """ Migrate Storage Schema
+
+        Rename the schema
+
+        """
+
+        relDir = self._packageCfg.config.storage.alembicDir(require_string)
+        alembicDir = os.path.join(self.rootDir, relDir)
+        if not os.path.isdir(alembicDir): raise NotADirectoryError(alembicDir)
+
+        dbConn = DbConnection(
+            dbConnectString=self.platform.dbConnectString,
+            metadata=metadata,
+            alembicDir=alembicDir,
+            enableCreateAll=False
+        )
+
+        # Rename the plugin schema to core.
+        renameToCoreSql = '''
+            DO $$
+            BEGIN
+                IF EXISTS(
+                    SELECT schema_name
+                      FROM information_schema.schemata
+                      WHERE schema_name = 'pl_search'
+                  )
+                THEN
+                  EXECUTE ' DROP SCHEMA IF EXISTS  core_search CASCADE ';
+                  EXECUTE ' ALTER SCHEMA pl_search RENAME TO core_search ';
+                END IF;
+            END
+            $$;
+        '''
+
+        dbSession = dbConn.ormSessionCreator()
+        try:
+            dbSession.execute(renameToCoreSql)
+            dbSession.commit()
+
+        finally:
+            dbSession.close()
+            dbConn.dbEngine.dispose()
+
+        PluginServerStorageEntryHookABC._migrateStorageSchema(self, metadata)
 
     def load(self) -> None:
         """ Load

@@ -77,11 +77,11 @@ class ServerEntryHook(PluginServerEntryHookABC,
                 IF EXISTS(
                     SELECT schema_name
                       FROM information_schema.schemata
-                      WHERE schema_name = 'pl_search'
+                      WHERE schema_name = 'pl_docdb'
                   )
                 THEN
-                  EXECUTE ' DROP SCHEMA IF EXISTS  core_search CASCADE ';
-                  EXECUTE ' ALTER SCHEMA pl_search RENAME TO core_search ';
+                  EXECUTE ' DROP SCHEMA IF EXISTS  core_docdb CASCADE ';
+                  EXECUTE ' ALTER SCHEMA pl_docdb RENAME TO core_docdb ';
                 END IF;
             END
             $$;

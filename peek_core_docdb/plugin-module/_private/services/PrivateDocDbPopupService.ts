@@ -9,9 +9,8 @@ import {
     ObjectTriggerOptionsI,
     ObjectTriggerPositionI
 } from "../../DocDbPopupService"
-import { Subject } from "rxjs"
-import { Observable } from "rxjs"
-
+import { fromEvent, Observable, Subject } from "rxjs"
+import { debounceTime } from "rxjs/operators"
 import {
     DocDbPropertyTuple,
     DocDbPropertyTypeFilterI,
@@ -21,7 +20,6 @@ import {
 import { assert, sortText } from "@synerty/vortexjs"
 
 export class PopupTriggeredParams {
-    
     actions: DocDbPopupActionI[] = []
     details: DocDbPopupDetailI[] = []
     
@@ -31,19 +29,21 @@ export class PopupTriggeredParams {
         public modelSetKey: string,
         public objectKey: string,
         public options: ObjectTriggerOptionsI
-    ) {
-    }
+    ) { }
 }
 
 @Injectable()
 export class PrivateDocDbPopupService extends DocDbPopupService {
-    
     showTooltipPopupSubject = new Subject<PopupTriggeredParams>()
     hideTooltipPopupSubject = new Subject<void>()
     showSummaryPopupSubject = new Subject<PopupTriggeredParams>()
     hideSummaryPopupSubject = new Subject<void>()
     showDetailPopupSubject = new Subject<PopupTriggeredParams>()
     hideDetailPopupSubject = new Subject<void>()
+    private readonly DATA_LOAD_LEAD_TIME_MS = 200
+    private readonly TOOLTIP_POPUP_DELAY_TIME_MS = 700
+    private shownPopup: DocDbPopupTypeE | null = null
+    
     // Tooltip
     private tooltipPopupSubject = new Subject<DocDbPopupContextI>()
     private tooltipPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
@@ -53,17 +53,47 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
     // Details
     private detailPopupSubject = new Subject<DocDbPopupContextI>()
     private detailPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
-    private readonly DATA_LOAD_LEAD_TIME_MS = 200
-    private readonly TOOLTIP_POPUP_DELAY_TIME_MS = 700
-    
-    private shownPopup: DocDbPopupTypeE | null = null
     
     constructor(
         private docDbService: DocDbService,
         protected zone: NgZone
     ) {
         super()
-        
+        this.handleClosePopups()
+    }
+    
+    handleClosePopups(): void {
+        fromEvent(document, 'mousemove')
+            .pipe(debounceTime(10))
+            .subscribe((event: any) => {
+                if (this.shownPopup !== DocDbPopupTypeE.tooltipPopup)
+                    return
+                console.log(event)
+                for (const el of event.path) {
+                    if (el.id === "peek-core-docdb-tooltip-popup") {
+                        return
+                    }
+                }
+                this.hidePopup(DocDbPopupTypeE.tooltipPopup)
+            })
+        fromEvent(document, 'click').subscribe((event: any) => {
+            if (
+                this.shownPopup !== DocDbPopupTypeE.summaryPopup
+                && this.shownPopup !== DocDbPopupTypeE.detailPopup
+            )
+                return
+            console.log(event)
+            for (const el of event.path) {
+                if (el.id === "peek-core-docdb-summary-popup") {
+                    return
+                }
+                if (el.id === "peek-core-docdb-details-popup") {
+                    return
+                }
+            }
+            this.hidePopup(DocDbPopupTypeE.summaryPopup)
+            this.hidePopup(DocDbPopupTypeE.detailPopup)
+        })
     }
     
     showPopup(
@@ -74,13 +104,13 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         objectKey: string,
         options: ObjectTriggerOptionsI = {}
     ): void {
-        
         const params = new PopupTriggeredParams(
             triggeredByPlugin,
             position,
             modelSetKey,
             objectKey,
-            Object.assign({popupDelayMs: 0}, options))
+            Object.assign({popupDelayMs: 0}, options)
+        )
         
         if (popupType == DocDbPopupTypeE.tooltipPopup) {
             params.options.popupDelayMs =

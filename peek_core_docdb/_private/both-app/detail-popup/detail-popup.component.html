@@ -1,5 +1,5 @@
 <nz-dropdown-menu #detailView="nzDropdownMenu">
-  <div *ngIf="params$ | async">
+  <div id="peek-core-docdb-details-popup" *ngIf="params$ | async">
     <nz-card [nzTitle]="headerDetails()">
       <div *ngIf="hasBodyDetails()">
         <nz-table

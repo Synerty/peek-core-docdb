@@ -1,33 +1,25 @@
-<div>
-  <nz-dropdown-menu
-    #tooltipView="nzDropdownMenu"
-    nzOverlayClassName="peek-docdb-popup-tooltip"
-  >
-    <div
-      id="peek-plugin-docdb-popup-summary-mouse-events"
-    >
-      <div *ngIf="showPopup()">
-        <nz-card [nzTitle]="headerDetails()">
-          <div *ngIf="hasBodyDetails()">
-            <nz-table
-              #detailsTable [nzData]="bodyDetails()"
-              nzFrontPagination="false"
-              nzSize="small"
-            >
-              <tbody>
-              <tr *ngFor="let data of detailsTable.data">
-                <td>
-                  {{data.title}}
-                </td>
-                <td>
-                  {{data.value}}
-                </td>
-              </tr>
-              </tbody>
-            </nz-table>
-          </div>
-        </nz-card>
+<nz-dropdown-menu #tooltipView="nzDropdownMenu">
+  <div *ngIf="params$ | async">
+    <nz-card [nzTitle]="headerDetails()">
+      <div *ngIf="hasBodyDetails()">
+        <nz-table
+          #detailsTable
+          [nzData]="bodyDetails()"
+          nzFrontPagination="false"
+          nzSize="small"
+        >
+          <tbody>
+          <tr *ngFor="let data of detailsTable.data">
+            <td>
+              {{data.title}}
+            </td>
+            <td>
+              {{data.value}}
+            </td>
+          </tr>
+          </tbody>
+        </nz-table>
       </div>
-    </div>
-  </nz-dropdown-menu>
-</div>
+    </nz-card>
+  </div>
+</nz-dropdown-menu>

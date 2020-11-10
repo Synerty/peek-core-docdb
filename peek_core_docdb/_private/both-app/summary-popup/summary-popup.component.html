@@ -1,93 +1,85 @@
-<div>
-  <nz-dropdown-menu
-    #summaryView="nzDropdownMenu"
-    nzOverlayClassName="peek-docdb-popup-summary"
-  >
-    <div>
-      <div *ngIf="showPopup()">
-        <nz-card [nzTitle]="headerDetails()">
-          <div *ngIf="hasBodyDetails()">
-            <nz-table
-              #detailsTable
-              [nzData]="bodyDetails()"
-              nzFrontPagination="false"
-              nzSize="small"
-            >
-              <tbody>
-              <tr *ngFor="let data of detailsTable.data">
-                <td>
-                  {{data.title}}
-                </td>
-                <td>
-                  {{data.value}}
-                </td>
-              </tr>
-              </tbody>
-            </nz-table>
-          </div>
-          <div class="buttons">
-            <div class="dynamic-buttons">
-              <button
-                *ngFor="let item of params.actions"
-                nzSize="large"
-                nz-button
-                nzType="default"
-                style="white-space: normal;"
-                (click)="actionClicked(item)"
-                nz-tooltip
-                [nzTooltipTitle]="item.tooltip"
-              >
-                <i
-                  nz-icon
-                  nzType="{{item.icon}}"
-                  nzTheme="outline"
-                  *ngIf="item.icon"
-                ></i>
-              </button>
-            </div>
-            <div class="details-buttons">
-              <button
-                nzSize="large"
-                nz-button
-                nzType="default"
-                style="white-space: normal;"
-                (click)="showDetailsPopup()"
-                nz-tooltip
-                [nzTooltipTitle]="'Full Details'"
-              >
-                <i nz-icon nzType="info" nzTheme="outline"></i>
-              </button>
-            </div>
-          </div>
-        </nz-card>
-      </div>
-    </div>
-  </nz-dropdown-menu>
-  
-  <!-- Show sub menu options -->
-  <nz-modal
-    [nzVisible]="shouldShowModal()"
-    (nzVisible)="closeModal()"
-    [nzFooter]="null"
-    [nzTitle]="modalName()"
-    (nzOnCancel)="closeModal()"
-  >
-    <div class="child-menu-items" id="pl-docdb-summary-popup">
-      <ul nz-menu>
-        <li
-          nz-menu-item
-          (click)="actionClicked(child)"
-          *ngFor="let child of modalChildActions()"
+<nz-dropdown-menu #summaryView="nzDropdownMenu">
+  <div *ngIf="params$ | async">
+    <nz-card [nzTitle]="headerDetails()">
+      <div *ngIf="hasBodyDetails()">
+        <nz-table
+          #detailsTable
+          [nzData]="bodyDetails()"
+          nzFrontPagination="false"
+          nzSize="small"
         >
-          <i
-            nz-icon
-            nzType="{{child.icon}}"
-            nzTheme="outline"
-            *ngIf="child.icon"
-          ></i>
-          {{child.name}}
-        </li>
-      </ul>
-    </div>
-  </nz-modal>
-</div>
+          <tbody>
+          <tr *ngFor="let data of detailsTable.data">
+            <td>
+              {{data.title}}
+            </td>
+            <td>
+              {{data.value}}
+            </td>
+          </tr>
+          </tbody>
+        </nz-table>
+      </div>
+      <div class="buttons">
+        <div class="dynamic-buttons">
+          <button
+            *ngFor="let item of params.actions"
+            nzSize="large"
+            nz-button
+            nzType="default"
+            style="white-space: normal;"
+            (click)="actionClicked(item)"
+            nz-tooltip
+            [nzTooltipTitle]="item.tooltip"
+          >
+            <i
+              nz-icon
+              nzType="{{item.icon}}"
+              nzTheme="outline"
+              *ngIf="item.icon"
+            ></i>
+          </button>
+        </div>
+        <div class="details-buttons">
+          <button
+            nzSize="large"
+            nz-button
+            nzType="default"
+            style="white-space: normal;"
+            (click)="showDetailsPopup()"
+            nz-tooltip
+            [nzTooltipTitle]="'Full Details'"
+          >
+            <i nz-icon nzType="info" nzTheme="outline"></i>
+          </button>
+        </div>
+      </div>
+    </nz-card>
+  </div>
+</nz-dropdown-menu>
+
+<nz-modal
+  [nzVisible]="modalAction$ | async"
+  (nzVisible)="closeModal()"
+  [nzFooter]="null"
+  [nzTitle]="modalName()"
+  (nzOnCancel)="closeModal()"
+>
+  <div class="child-menu-items" id="pl-docdb-summary-popup">
+    <ul nz-menu>
+      <li
+        nz-menu-item
+        (click)="actionClicked(child)"
+        *ngFor="let child of modalChildActions()"
+      >
+        <i
+          nz-icon
+          nzType="{{child.icon}}"
+          nzTheme="outline"
+          *ngIf="child.icon"
+        ></i>
+        {{child.name}}
+      </li>
+    </ul>
+  </div>
+</nz-modal>

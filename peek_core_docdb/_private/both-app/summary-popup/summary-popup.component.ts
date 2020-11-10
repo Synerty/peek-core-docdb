@@ -1,4 +1,4 @@
-import { Component, ViewChild } from "@angular/core"
+import { Component, ViewChild, ChangeDetectionStrategy } from "@angular/core"
 import { DocDbPopupActionI, DocDbPopupTypeE } from "@peek/peek_core_docdb/DocDbPopupService"
 import {
     PopupTriggeredParams,
@@ -6,17 +6,37 @@ import {
 } from "@peek/peek_core_docdb/_private/services/PrivateDocDbPopupService"
 import { NzContextMenuService } from "ng-zorro-antd/dropdown"
 import { DocDbPopupClosedReasonE, DocDbPopupDetailI } from "@peek/peek_core_docdb"
+import { BehaviorSubject } from "rxjs"
 
+// This is a root/global component
 @Component({
     selector: "plugin-docdb-popup-summary-popup",
     templateUrl: "summary-popup.component.html",
-    styleUrls: ["summary-popup.component.scss"]
+    styleUrls: ["summary-popup.component.scss"],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SummaryPopupComponent {
-    @ViewChild("summaryView", {static: true}) summaryView
+    @ViewChild("summaryView", {static: true})
+    summaryView: any
     
-    params: PopupTriggeredParams | null = null
-    modalAction: DocDbPopupActionI | null = null
+    params$ = new BehaviorSubject<PopupTriggeredParams>(null)
+    modalAction$ = new BehaviorSubject<DocDbPopupActionI>(null)
+    
+    get params() {
+        return this.params$.getValue()
+    }
+    
+    set params(value) {
+        this.params$.next(value)
+    }
+    
+    get modalAction() {
+        return this.modalAction$.getValue()
+    }
+    
+    set modalAction(value) {
+        this.modalAction$.next(value)
+    }
     
     constructor(
         private nzContextMenuService: NzContextMenuService,
@@ -98,10 +118,6 @@ export class SummaryPopupComponent {
         return this.modalAction.name || this.modalAction.tooltip
     }
     
-    shouldShowModal(): boolean {
-        return this.modalAction != null
-    }
-    
     closeModal(): void {
         this.modalAction = null
     }
@@ -110,18 +126,11 @@ export class SummaryPopupComponent {
         return this.modalAction == null ? [] : this.modalAction.children
     }
     
-    showPopup(): boolean {
-        return (
-            this.params != null
-            && (this.params.details.length != 0 || this.params.actions.length != 0)
-        )
-    }
-    
     protected openPopup(params: PopupTriggeredParams) {
         this.reset()
-        this.params = params
         
         setTimeout(() => {
+            this.params = params
             this.nzContextMenuService.create(
                 this.makeMouseEvent(params),
                 this.summaryView

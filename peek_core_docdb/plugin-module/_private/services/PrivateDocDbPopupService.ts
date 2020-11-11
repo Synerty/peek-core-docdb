@@ -9,7 +9,7 @@ import {
     ObjectTriggerOptionsI,
     ObjectTriggerPositionI
 } from "../../DocDbPopupService"
-import { fromEvent, Observable, Subject } from "rxjs"
+import { fromEvent, Observable, Subject, BehaviorSubject } from "rxjs"
 import { debounceTime } from "rxjs/operators"
 import {
     DocDbPropertyTuple,
@@ -40,48 +40,60 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
     hideSummaryPopupSubject = new Subject<void>()
     showDetailPopupSubject = new Subject<PopupTriggeredParams>()
     hideDetailPopupSubject = new Subject<void>()
+    
+    private tooltipPopupSubject = new Subject<DocDbPopupContextI>()
+    private tooltipPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
+    private tooltipPopupMouseMovements$ = new BehaviorSubject<number>(0)
+    private summaryPopupSubject = new Subject<DocDbPopupContextI>()
+    private summaryPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
+    private detailPopupSubject = new Subject<DocDbPopupContextI>()
+    private detailPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
     private readonly DATA_LOAD_LEAD_TIME_MS = 200
     private readonly TOOLTIP_POPUP_DELAY_TIME_MS = 700
     private shownPopup: DocDbPopupTypeE | null = null
     
-    // Tooltip
-    private tooltipPopupSubject = new Subject<DocDbPopupContextI>()
-    private tooltipPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
-    // Summary
-    private summaryPopupSubject = new Subject<DocDbPopupContextI>()
-    private summaryPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
-    // Details
-    private detailPopupSubject = new Subject<DocDbPopupContextI>()
-    private detailPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
+    get tooltipPopupMouseMovements() {
+        return this.tooltipPopupMouseMovements$.getValue()
+    }
+    
+    set tooltipPopupMouseMovements(value) {
+        this.tooltipPopupMouseMovements$.next(value)
+    }
     
     constructor(
         private docDbService: DocDbService,
         protected zone: NgZone
     ) {
         super()
-        this.handleClosePopups()
+        this.handleHidePopups()
     }
     
-    handleClosePopups(): void {
+    handleHidePopups(): void {
         fromEvent(document, 'mousemove')
-            .pipe(debounceTime(10))
+            .pipe(debounceTime(50))
             .subscribe((event: any) => {
-                if (this.shownPopup !== DocDbPopupTypeE.tooltipPopup)
+                if (this.shownPopup !== DocDbPopupTypeE.tooltipPopup) {
                     return
-                console.log(event)
-                for (const el of event.path) {
-                    if (el.id === "peek-core-docdb-tooltip-popup") {
-                        return
-                    }
                 }
-                this.hidePopup(DocDbPopupTypeE.tooltipPopup)
+                if (this.tooltipPopupMouseMovements > 0) {
+                    for (const el of event.path) {
+                        if (el.id === "peek-core-docdb-tooltip-popup") {
+                            return
+                        }
+                    }
+                    this.hidePopup(DocDbPopupTypeE.tooltipPopup)
+                    this.tooltipPopupMouseMovements = 0
+                }
+                this.tooltipPopupMouseMovements += 1
             })
+        
         fromEvent(document, 'click').subscribe((event: any) => {
             if (
                 this.shownPopup !== DocDbPopupTypeE.summaryPopup
                 && this.shownPopup !== DocDbPopupTypeE.detailPopup
-            )
+            ) {
                 return
+            }
             console.log(event)
             for (const el of event.path) {
                 if (el.id === "peek-core-docdb-summary-popup") {
@@ -104,6 +116,10 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         objectKey: string,
         options: ObjectTriggerOptionsI = {}
     ): void {
+        this.hidePopup(DocDbPopupTypeE.tooltipPopup)
+        this.hidePopup(DocDbPopupTypeE.summaryPopup)
+        this.hidePopup(DocDbPopupTypeE.detailPopup)
+        
         const params = new PopupTriggeredParams(
             triggeredByPlugin,
             position,

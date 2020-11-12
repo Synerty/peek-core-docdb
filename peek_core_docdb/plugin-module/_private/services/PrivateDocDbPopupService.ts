@@ -9,13 +9,15 @@ import {
     ObjectTriggerOptionsI,
     ObjectTriggerPositionI
 } from "../../DocDbPopupService"
-import { fromEvent, Observable, Subject, BehaviorSubject } from "rxjs"
-import { debounceTime } from "rxjs/operators"
+import { BehaviorSubject, fromEvent, Observable, Subject } from "rxjs"
 import {
     DocDbPropertyTuple,
     DocDbPropertyTypeFilterI,
     DocDbService,
-    DocumentResultI
+    DocumentResultI,
+    DOCDB_TOOLTIP_POPUP,
+    DOCDB_SUMMARY_POPUP,
+    DOCDB_DETAIL_POPUP
 } from "@peek/peek_core_docdb"
 import { assert, sortText } from "@synerty/vortexjs"
 
@@ -43,7 +45,7 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
     
     private tooltipPopupSubject = new Subject<DocDbPopupContextI>()
     private tooltipPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
-    private tooltipPopupMouseMovements$ = new BehaviorSubject<number>(0)
+    private popupMouseClicks$ = new BehaviorSubject<number>(0)
     private summaryPopupSubject = new Subject<DocDbPopupContextI>()
     private summaryPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
     private detailPopupSubject = new Subject<DocDbPopupContextI>()
@@ -52,12 +54,12 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
     private readonly TOOLTIP_POPUP_DELAY_TIME_MS = 700
     private shownPopup: DocDbPopupTypeE | null = null
     
-    get tooltipPopupMouseMovements() {
-        return this.tooltipPopupMouseMovements$.getValue()
+    get popupMouseClicks() {
+        return this.popupMouseClicks$.getValue()
     }
     
-    set tooltipPopupMouseMovements(value) {
-        this.tooltipPopupMouseMovements$.next(value)
+    set popupMouseClicks(value) {
+        this.popupMouseClicks$.next(value)
     }
     
     constructor(
@@ -69,43 +71,41 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
     }
     
     handleHidePopups(): void {
-        fromEvent(document, 'mousemove')
-            .pipe(debounceTime(50))
-            .subscribe((event: any) => {
-                if (this.shownPopup !== DocDbPopupTypeE.tooltipPopup) {
-                    return
-                }
-                if (this.tooltipPopupMouseMovements > 0) {
-                    for (const el of event.path) {
-                        if (el.id === "peek-core-docdb-tooltip-popup") {
-                            return
-                        }
-                    }
-                    this.hidePopup(DocDbPopupTypeE.tooltipPopup)
-                    this.tooltipPopupMouseMovements = 0
-                }
-                this.tooltipPopupMouseMovements += 1
-            })
+        fromEvent(document, 'touchend')
+            .subscribe((event: any) => this.handleOnPressPopup(event))
         
-        fromEvent(document, 'click').subscribe((event: any) => {
-            if (
-                this.shownPopup !== DocDbPopupTypeE.summaryPopup
-                && this.shownPopup !== DocDbPopupTypeE.detailPopup
-            ) {
-                return
-            }
-            console.log(event)
+        fromEvent(document, 'click')
+            .subscribe((event: any) => this.handleOnPressPopup(event))
+    }
+    
+    hideAllPopups(): void {
+        this.hidePopup(DocDbPopupTypeE.tooltipPopup)
+        this.hidePopup(DocDbPopupTypeE.summaryPopup)
+        this.hidePopup(DocDbPopupTypeE.detailPopup)
+        this.popupMouseClicks = 0
+    }
+    
+    handleOnPressPopup(event): void {
+        if (this.shownPopup == null) {
+            return
+        }
+        if (this.popupMouseClicks > 0) {
             for (const el of event.path) {
-                if (el.id === "peek-core-docdb-summary-popup") {
+                if (el.id === DOCDB_TOOLTIP_POPUP) {
                     return
                 }
-                if (el.id === "peek-core-docdb-details-popup") {
+                if (el.id === DOCDB_SUMMARY_POPUP) {
+                    return
+                }
+                if (el.id === DOCDB_DETAIL_POPUP) {
                     return
                 }
             }
-            this.hidePopup(DocDbPopupTypeE.summaryPopup)
-            this.hidePopup(DocDbPopupTypeE.detailPopup)
-        })
+            this.hideAllPopups()
+        }
+        else {
+            this.popupMouseClicks += 1
+        }
     }
     
     showPopup(
@@ -116,9 +116,7 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         objectKey: string,
         options: ObjectTriggerOptionsI = {}
     ): void {
-        this.hidePopup(DocDbPopupTypeE.tooltipPopup)
-        this.hidePopup(DocDbPopupTypeE.summaryPopup)
-        this.hidePopup(DocDbPopupTypeE.detailPopup)
+        this.hideAllPopups()
         
         const params = new PopupTriggeredParams(
             triggeredByPlugin,
@@ -129,8 +127,9 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         )
         
         if (popupType == DocDbPopupTypeE.tooltipPopup) {
-            params.options.popupDelayMs =
+            params.options.popupDelayMs = (
                 params.options.popupDelayMs || this.TOOLTIP_POPUP_DELAY_TIME_MS
+            )
             
             this.triggerPopup(popupType, params,
                 this.showTooltipPopupSubject,
@@ -138,7 +137,6 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
                 this.tooltipPopupSubject,
                 (prop: DocDbPropertyTuple) => prop.showOnTooltip
             )
-            
         }
         else if (popupType == DocDbPopupTypeE.summaryPopup) {
             this.triggerPopup(popupType, params,
@@ -147,7 +145,6 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
                 this.summaryPopupSubject,
                 (prop: DocDbPropertyTuple) => prop.showOnSummary
             )
-            
         }
         else if (popupType == DocDbPopupTypeE.detailPopup) {
             this.triggerPopup(popupType, params,
@@ -156,12 +153,10 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
                 this.detailPopupSubject,
                 (prop: DocDbPropertyTuple) => prop.showOnDetail
             )
-            
         }
         else {
             throw new Error(`showPopup:Unhandled popup type ${popupType}`)
         }
-        
     }
     
     hidePopup(popupType: DocDbPopupTypeE): void {
@@ -172,11 +167,6 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         popupType: DocDbPopupTypeE,
         reason: DocDbPopupClosedReasonE
     ): void {
-        if (
-            this.shownPopup === 0 && popupType !== 0
-            || this.shownPopup > 0 && popupType === 0
-        ) return
-        
         this.shownPopup = null
         this.hideTooltipPopupSubject.next()
         this.tooltipPopupClosedSubject.next(reason)
@@ -189,15 +179,12 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
     popupObservable(popupType: DocDbPopupTypeE): Observable<DocDbPopupContextI> {
         if (popupType == DocDbPopupTypeE.tooltipPopup) {
             return this.tooltipPopupSubject.asObservable()
-            
         }
         else if (popupType == DocDbPopupTypeE.summaryPopup) {
             return this.summaryPopupSubject.asObservable()
-            
         }
         else if (popupType == DocDbPopupTypeE.detailPopup) {
             return this.detailPopupSubject.asObservable()
-            
         }
         else {
             throw new Error(`popupObservable:Unhandled popup type ${popupType}`)
@@ -209,15 +196,12 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         
         if (popupType == DocDbPopupTypeE.tooltipPopup) {
             return this.tooltipPopupClosedSubject.asObservable()
-            
         }
         else if (popupType == DocDbPopupTypeE.summaryPopup) {
             return this.summaryPopupClosedSubject.asObservable()
-            
         }
         else if (popupType == DocDbPopupTypeE.detailPopup) {
             return this.detailPopupClosedSubject.asObservable()
-            
         }
         else {
             throw new Error(`popupObservable:Unhandled popup type ${popupType}`)
@@ -232,9 +216,6 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         subject: Subject<DocDbPopupContextI>,
         propFilter: DocDbPropertyTypeFilterI
     ) {
-        if (this.shownPopup != null)
-            return
-        
         this.shownPopup = popupType
         
         assert(params.objectKey != null, "objectKey is null")
@@ -248,7 +229,6 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         
         const loadTimeoutHandle = setTimeout(
             () => {
-                
                 // FIXME: This doesn't work because all the data is under pofDiagram
                 // this.docDbService.getObjects(params.modelSetKey, [params.objectKey])
                 this.docDbService.getObjects("pofDiagram", [params.objectKey])

@@ -10,16 +10,19 @@ import {
     ObjectTriggerPositionI
 } from "../../DocDbPopupService"
 import { BehaviorSubject, fromEvent, Observable, Subject } from "rxjs"
+import { debounceTime } from "rxjs/operators"
 import {
     DocDbPropertyTuple,
     DocDbPropertyTypeFilterI,
     DocDbService,
     DocumentResultI,
+} from "@peek/peek_core_docdb"
+import { assert, sortText } from "@synerty/vortexjs"
+import {
     DOCDB_TOOLTIP_POPUP,
     DOCDB_SUMMARY_POPUP,
     DOCDB_DETAIL_POPUP
-} from "@peek/peek_core_docdb"
-import { assert, sortText } from "@synerty/vortexjs"
+} from "@peek/peek_core_docdb/constants"
 
 export class PopupTriggeredParams {
     actions: DocDbPopupActionI[] = []
@@ -76,13 +79,6 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         
         fromEvent(document, 'click')
             .subscribe((event: any) => this.handleOnPressPopup(event))
-    }
-    
-    hideAllPopups(): void {
-        this.hidePopup(DocDbPopupTypeE.tooltipPopup)
-        this.hidePopup(DocDbPopupTypeE.summaryPopup)
-        this.hidePopup(DocDbPopupTypeE.detailPopup)
-        this.popupMouseClicks = 0
     }
     
     handleOnPressPopup(event): void {
@@ -174,6 +170,13 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         this.summaryPopupClosedSubject.next(reason)
         this.hideDetailPopupSubject.next()
         this.detailPopupClosedSubject.next(reason)
+    }
+    
+    hideAllPopups(): void {
+        this.hidePopup(DocDbPopupTypeE.tooltipPopup)
+        this.hidePopup(DocDbPopupTypeE.summaryPopup)
+        this.hidePopup(DocDbPopupTypeE.detailPopup)
+        this.popupMouseClicks = 0
     }
     
     popupObservable(popupType: DocDbPopupTypeE): Observable<DocDbPopupContextI> {

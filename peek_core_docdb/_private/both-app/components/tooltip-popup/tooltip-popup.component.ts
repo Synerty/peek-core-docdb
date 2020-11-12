@@ -43,6 +43,10 @@ export class TooltipPopupComponent {
             .subscribe(() => this.closePopup())
     }
     
+    hidePopup(): void {
+        this.popupService.hideAllPopups()
+    }
+    
     closePopup(): void {
         this.params = null
         this.nzContextMenuService.close()

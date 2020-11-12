@@ -1,5 +1,5 @@
 <nz-dropdown-menu #tooltipView="nzDropdownMenu">
-  <div [id]="DOCDB_TOOLTIP_POPUP" *ngIf="params$ | async">
+  <div [id]="DOCDB_TOOLTIP_POPUP" (mouseleave)="hidePopup()" *ngIf="params$ | async">
     <nz-card [nzTitle]="headerDetails()">
       <div *ngIf="hasBodyDetails()">
         <nz-table

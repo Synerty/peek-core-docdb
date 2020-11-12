@@ -1,5 +1,5 @@
 import { Component, ViewChild, ChangeDetectionStrategy } from "@angular/core"
-import { DocDbPopupActionI, DocDbPopupTypeE } from "@peek/peek_core_docdb/DocDbPopupService"
+import { DocDbPopupActionI, DocDbPopupTypeE } from "@peek/peek_core_docdb"
 import {
     PopupTriggeredParams,
     PrivateDocDbPopupService
@@ -7,6 +7,7 @@ import {
 import { NzContextMenuService } from "ng-zorro-antd/dropdown"
 import { DocDbPopupClosedReasonE, DocDbPopupDetailI } from "@peek/peek_core_docdb"
 import { BehaviorSubject } from "rxjs"
+import { DOCDB_SUMMARY_POPUP } from "@peek/peek_core_docdb/constants"
 
 // This is a root/global component
 @Component({
@@ -16,6 +17,8 @@ import { BehaviorSubject } from "rxjs"
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SummaryPopupComponent {
+    DOCDB_SUMMARY_POPUP = DOCDB_SUMMARY_POPUP
+    
     @ViewChild("summaryView", {static: true})
     summaryView: any
     
@@ -48,21 +51,25 @@ export class SummaryPopupComponent {
         
         this.popupService
             .hideSummaryPopupSubject
-            .subscribe(() => this.closePopup(DocDbPopupClosedReasonE.closedByApiCall))
+            .subscribe(() => this.closePopup())
     }
     
-    closePopup(reason: DocDbPopupClosedReasonE): void {
-        if (this.params == null) {
+    closePopup(): void {
+        if (!this.params) {
             return
         }
         
+        this.params = null
+        this.popupService.hidePopupWithReason(
+            DocDbPopupTypeE.summaryPopup,
+            DocDbPopupClosedReasonE.closedByApiCall
+        )
         this.nzContextMenuService.close()
-        this.reset()
-        this.popupService.hidePopupWithReason(DocDbPopupTypeE.summaryPopup, reason)
     }
     
     showDetailsPopup(): void {
         const params = this.params
+        
         this.popupService.hidePopupWithReason(
             DocDbPopupTypeE.summaryPopup,
             DocDbPopupClosedReasonE.userDismissedPopup
@@ -97,16 +104,7 @@ export class SummaryPopupComponent {
         if (item.children != null && item.children.length != 0) {
             this.nzContextMenuService.close()
             this.modalAction = item
-            return
-        }
-        
-        item.callback()
-        
-        if (
-            item.closeOnCallback == null
-            || item.closeOnCallback === true
-        ) {
-            this.closePopup(DocDbPopupClosedReasonE.userClickedAction)
+            this.closePopup()
         }
     }
     
@@ -126,8 +124,8 @@ export class SummaryPopupComponent {
         return this.modalAction == null ? [] : this.modalAction.children
     }
     
-    protected openPopup(params: PopupTriggeredParams) {
-        this.reset()
+    openPopup(params: PopupTriggeredParams) {
+        this.params = null
         
         setTimeout(() => {
             this.params = params
@@ -156,10 +154,5 @@ export class SummaryPopupComponent {
             x,
             y
         }
-    }
-    
-    private reset() {
-        this.params = null
-        this.modalAction = null
     }
 }

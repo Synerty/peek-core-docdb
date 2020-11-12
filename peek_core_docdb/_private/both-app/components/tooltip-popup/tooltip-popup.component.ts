@@ -6,6 +6,7 @@ import {
 } from "@peek/peek_core_docdb/_private/services/PrivateDocDbPopupService"
 import { DocDbPopupDetailI } from "@peek/peek_core_docdb"
 import { BehaviorSubject } from "rxjs"
+import { DOCDB_TOOLTIP_POPUP } from "@peek/peek_core_docdb/constants"
 
 @Component({
     selector: "plugin-docdb-popup-tooltip-popup",
@@ -14,6 +15,8 @@ import { BehaviorSubject } from "rxjs"
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TooltipPopupComponent {
+    DOCDB_TOOLTIP_POPUP = DOCDB_TOOLTIP_POPUP
+    
     @ViewChild("tooltipView", {static: true})
     tooltipView: any
     
@@ -41,8 +44,8 @@ export class TooltipPopupComponent {
     }
     
     closePopup(): void {
-        this.nzContextMenuService.close()
         this.params = null
+        this.nzContextMenuService.close()
     }
     
     headerDetails(): string {

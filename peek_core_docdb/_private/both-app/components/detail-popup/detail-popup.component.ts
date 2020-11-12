@@ -1,5 +1,5 @@
 import { Component, ViewChild, ChangeDetectionStrategy } from "@angular/core"
-import { DocDbPopupActionI, DocDbPopupTypeE } from "@peek/peek_core_docdb/DocDbPopupService"
+import { DocDbPopupActionI, DocDbPopupTypeE } from "@peek/peek_core_docdb"
 import {
     PopupTriggeredParams,
     PrivateDocDbPopupService
@@ -7,6 +7,7 @@ import {
 import { NzContextMenuService } from "ng-zorro-antd/dropdown"
 import { DocDbPopupClosedReasonE, DocDbPopupDetailI } from "@peek/peek_core_docdb"
 import { BehaviorSubject } from "rxjs"
+import { DOCDB_DETAIL_POPUP } from "@peek/peek_core_docdb/constants"
 
 // This is a root/global component
 @Component({
@@ -16,6 +17,8 @@ import { BehaviorSubject } from "rxjs"
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DetailPopupComponent {
+    DOCDB_DETAIL_POPUP = DOCDB_DETAIL_POPUP
+    
     @ViewChild("detailView", {static: true})
     detailView: any
     
@@ -48,17 +51,20 @@ export class DetailPopupComponent {
         
         this.popupService
             .hideDetailPopupSubject
-            .subscribe(() => this.closePopup(DocDbPopupClosedReasonE.closedByApiCall))
+            .subscribe(() => this.closePopup())
     }
     
-    closePopup(reason: DocDbPopupClosedReasonE): void {
-        if (this.params == null) {
+    closePopup(): void {
+        if (!this.params) {
             return
         }
         
+        this.params = null
+        this.popupService.hidePopupWithReason(
+            DocDbPopupTypeE.detailPopup,
+            DocDbPopupClosedReasonE.closedByApiCall
+        )
         this.nzContextMenuService.close()
-        this.reset()
-        this.popupService.hidePopupWithReason(DocDbPopupTypeE.detailPopup, reason)
     }
     
     headerDetails(): string {
@@ -80,16 +86,7 @@ export class DetailPopupComponent {
         if (item.children != null && item.children.length != 0) {
             this.nzContextMenuService.close()
             this.modalAction = item
-            return
-        }
-        
-        item.callback()
-        
-        if (
-            item.closeOnCallback == null
-            || item.closeOnCallback === true
-        ) {
-            this.closePopup(DocDbPopupClosedReasonE.userClickedAction)
+            this.closePopup()
         }
     }
     
@@ -110,7 +107,7 @@ export class DetailPopupComponent {
     }
     
     protected openPopup(params: PopupTriggeredParams) {
-        this.reset()
+        // this.reset()
 
         setTimeout(() => {
             this.params = params
@@ -139,10 +136,5 @@ export class DetailPopupComponent {
             x,
             y
         }
-    }
-    
-    private reset() {
-        this.params = null
-        this.modalAction = null
     }
 }

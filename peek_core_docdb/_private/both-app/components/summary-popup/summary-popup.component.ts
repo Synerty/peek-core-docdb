@@ -76,6 +76,7 @@ export class SummaryPopupComponent {
         )
         
         this.popupService.showPopup(
+            true,
             DocDbPopupTypeE.detailPopup,
             params.triggeredByPlugin,
             this.makeMouseEvent(params),

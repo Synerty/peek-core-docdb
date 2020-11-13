@@ -126,6 +126,7 @@ export abstract class DocDbPopupService {
      *
      */
     abstract showPopup(
+        popupClicked: boolean,
         popupType: DocDbPopupTypeE,
         triggeredByPlugin: string,
         position: ObjectTriggerPositionI,
@@ -142,6 +143,13 @@ export abstract class DocDbPopupService {
      *
      */
     abstract hidePopup(popupType: DocDbPopupTypeE): void
+    
+    /** Hide Hover Popup
+     *
+     * Use this method to hide any popup opened via hover
+     *
+     */
+    abstract hideHoverPopup(): void
     
     /** Object Popup Observable
      *

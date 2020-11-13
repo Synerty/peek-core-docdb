@@ -9,8 +9,7 @@ import {
     ObjectTriggerOptionsI,
     ObjectTriggerPositionI
 } from "../../DocDbPopupService"
-import { BehaviorSubject, fromEvent, Observable, Subject } from "rxjs"
-import { debounceTime } from "rxjs/operators"
+import { fromEvent, Observable, Subject } from "rxjs"
 import {
     DocDbPropertyTuple,
     DocDbPropertyTypeFilterI,
@@ -19,9 +18,9 @@ import {
 } from "@peek/peek_core_docdb"
 import { assert, sortText } from "@synerty/vortexjs"
 import {
-    DOCDB_TOOLTIP_POPUP,
+    DOCDB_DETAIL_POPUP,
     DOCDB_SUMMARY_POPUP,
-    DOCDB_DETAIL_POPUP
+    DOCDB_TOOLTIP_POPUP
 } from "@peek/peek_core_docdb/constants"
 
 export class PopupTriggeredParams {
@@ -48,22 +47,15 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
     
     private tooltipPopupSubject = new Subject<DocDbPopupContextI>()
     private tooltipPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
-    private popupMouseClicks$ = new BehaviorSubject<number>(0)
     private summaryPopupSubject = new Subject<DocDbPopupContextI>()
     private summaryPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
     private detailPopupSubject = new Subject<DocDbPopupContextI>()
     private detailPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
     private readonly DATA_LOAD_LEAD_TIME_MS = 200
     private readonly TOOLTIP_POPUP_DELAY_TIME_MS = 700
+    
     private shownPopup: DocDbPopupTypeE | null = null
-    
-    get popupMouseClicks() {
-        return this.popupMouseClicks$.getValue()
-    }
-    
-    set popupMouseClicks(value) {
-        this.popupMouseClicks$.next(value)
-    }
+    private popupClicked: boolean = false
     
     constructor(
         private docDbService: DocDbService,
@@ -74,37 +66,33 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
     }
     
     handleHidePopups(): void {
-        fromEvent(document, 'touchend')
-            .subscribe((event: any) => this.handleOnPressPopup(event))
+        fromEvent(document, "touchstart")
+            .subscribe((event: any) => this.handleCloseEvents(event))
         
-        fromEvent(document, 'click')
-            .subscribe((event: any) => this.handleOnPressPopup(event))
+        fromEvent(document, "mousedown")
+            .subscribe((event: any) => this.handleCloseEvents(event))
     }
     
-    handleOnPressPopup(event): void {
-        if (this.shownPopup == null) {
+    handleCloseEvents(event): void {
+        if (!this.popupClicked) {
             return
         }
-        if (this.popupMouseClicks > 0) {
-            for (const el of event.path) {
-                if (el.id === DOCDB_TOOLTIP_POPUP) {
-                    return
-                }
-                if (el.id === DOCDB_SUMMARY_POPUP) {
-                    return
-                }
-                if (el.id === DOCDB_DETAIL_POPUP) {
-                    return
-                }
+        for (const el of event.path) {
+            if (el.id === DOCDB_TOOLTIP_POPUP) {
+                return
             }
-            this.hideAllPopups()
+            if (el.id === DOCDB_SUMMARY_POPUP) {
+                return
+            }
+            if (el.id === DOCDB_DETAIL_POPUP) {
+                return
+            }
         }
-        else {
-            this.popupMouseClicks += 1
-        }
+        this.hideAllPopups()
     }
     
     showPopup(
+        popupClicked: boolean,
         popupType: DocDbPopupTypeE,
         triggeredByPlugin: string,
         position: ObjectTriggerPositionI,
@@ -112,7 +100,14 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         objectKey: string,
         options: ObjectTriggerOptionsI = {}
     ): void {
-        this.hideAllPopups()
+        if (this.popupClicked && !popupClicked) {
+            return
+        }
+        
+        this.hidePopup(DocDbPopupTypeE.tooltipPopup)
+        
+        this.shownPopup = popupType
+        this.popupClicked = popupClicked
         
         const params = new PopupTriggeredParams(
             triggeredByPlugin,
@@ -155,10 +150,6 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         }
     }
     
-    hidePopup(popupType: DocDbPopupTypeE): void {
-        this.hidePopupWithReason(popupType, DocDbPopupClosedReasonE.closedByApiCall)
-    }
-    
     hidePopupWithReason(
         popupType: DocDbPopupTypeE,
         reason: DocDbPopupClosedReasonE
@@ -172,11 +163,24 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         this.detailPopupClosedSubject.next(reason)
     }
     
+    hidePopup(popupType: DocDbPopupTypeE): void {
+        this.hidePopupWithReason(popupType, DocDbPopupClosedReasonE.closedByApiCall)
+    }
+    
+    hideHoverPopup(): void {
+        if (this.popupClicked) {
+            return
+        }
+        
+        this.hidePopup(DocDbPopupTypeE.tooltipPopup)
+    }
+
+    
     hideAllPopups(): void {
         this.hidePopup(DocDbPopupTypeE.tooltipPopup)
         this.hidePopup(DocDbPopupTypeE.summaryPopup)
         this.hidePopup(DocDbPopupTypeE.detailPopup)
-        this.popupMouseClicks = 0
+        this.popupClicked = false
     }
     
     popupObservable(popupType: DocDbPopupTypeE): Observable<DocDbPopupContextI> {
@@ -219,8 +223,6 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         subject: Subject<DocDbPopupContextI>,
         propFilter: DocDbPropertyTypeFilterI
     ) {
-        this.shownPopup = popupType
-        
         assert(params.objectKey != null, "objectKey is null")
         
         // Load the data XXXms before showing the popup, if we can.

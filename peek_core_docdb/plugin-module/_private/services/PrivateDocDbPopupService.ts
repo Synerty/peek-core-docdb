@@ -22,6 +22,7 @@ import {
     DOCDB_SUMMARY_POPUP,
     DOCDB_TOOLTIP_POPUP
 } from "@peek/peek_core_docdb/constants"
+import { first } from "rxjs/operators"
 
 export class PopupTriggeredParams {
     actions: DocDbPopupActionI[] = []
@@ -274,7 +275,6 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
                         // Tell any observers that we're popping up
                         // Give them a chance to add their items
                         subject.next(apiHook)
-                        
                     })
             },
             loadDelay
@@ -286,7 +286,7 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         )
         
         hideTriggerSubject
-            .first()
+            .pipe(first())
             .subscribe(() => {
                 loadCancelled = true
                 clearTimeout(popupTimeoutHandle)
@@ -303,8 +303,9 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
                     ? action.tooltip
                     : ""
         })
-        for (const action of actions)
+        for (const action of actions) {
             action.children = this.sortActions(action.children || [])
+        }
         return actions
     }
     

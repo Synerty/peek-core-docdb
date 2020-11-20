@@ -50,7 +50,6 @@ export class DocDbService extends NgLifeCycleEvents {
                     this.propertiesByName[propKey] = item
                 }
             })
-        
     }
     
     /** Get Locations

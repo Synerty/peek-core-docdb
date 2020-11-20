@@ -102,11 +102,14 @@ export class SummaryPopupComponent {
     }
     
     actionClicked(item: DocDbPopupActionI): void {
-        if (item.children != null && item.children.length != 0) {
+        if (item.children?.length) {
             this.nzContextMenuService.close()
             this.modalAction = item
-            this.closePopup()
         }
+        else {
+            item.callback()
+        }
+        this.closePopup()
     }
     
     modalName(): string {

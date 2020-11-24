@@ -3,7 +3,7 @@ from typing import Optional
 
 from peek_abstract_chunked_index.private.server.client_handlers.ACIChunkLoadRpcABC import \
     ACIChunkLoadRpcABC
-from peek_plugin_base.PeekVortexUtil import peekServerName, peekClientName
+from peek_plugin_base.PeekVortexUtil import peekServerName, peekBackendNames
 from peek_core_docdb._private.PluginNames import docDbFilt
 from peek_core_docdb._private.storage.DocDbEncodedChunk import DocDbEncodedChunk
 from vortex.rpc.RPC import vortexRPC
@@ -26,7 +26,7 @@ class ClientChunkLoadRpc(ACIChunkLoadRpcABC):
         logger.debug("RPCs started")
 
     # -------------
-    @vortexRPC(peekServerName, acceptOnlyFromVortex=peekClientName, timeoutSeconds=60,
+    @vortexRPC(peekServerName, acceptOnlyFromVortex=peekBackendNames, timeoutSeconds=60,
                additionalFilt=docDbFilt, deferToThread=True)
     def loadDocumentChunks(self, offset: int, count: int) -> Optional[bytes]:
         """ Update Page Loader Status

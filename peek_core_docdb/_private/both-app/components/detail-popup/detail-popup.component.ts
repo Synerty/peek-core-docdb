@@ -81,6 +81,11 @@ export class DetailPopupComponent {
     bodyDetails(): DocDbPopupDetailI[] {
         return this.params.details.filter(d => !d.showInHeader)
     }
+
+    modalActionClicked(item: DocDbPopupActionI): void {
+        this.actionClicked(item)
+        this.closeModal()
+    }
     
     actionClicked(item: DocDbPopupActionI): void {
         if (item.children?.length) {

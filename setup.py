@@ -12,7 +12,7 @@ author_email = 'contact@synerty.com'
 py_package_name = "peek_core_docdb"
 pip_package_name = py_package_name.replace('_', '-')
 package_version = '0.0.0'
-description = 'Peek Plugin DocDb - My first enhancement.'
+description = 'Peek Core Plugin DocDB.'
 
 download_url = 'https://bitbucket.org/synerty/%s/get/%s.zip'
 download_url %= pip_package_name, package_version
@@ -53,11 +53,30 @@ def find_package_files():
 
 package_files = find_package_files()
 
+###############################################################################
+# Define the dependencies
+
+# Ensure the dependency is the same major number
+# and no older then this version
+
+requirements = [
+    'peek-plugin-base'
+]
+
+# Force the dependencies to be the same branch
+reqVer = '.'.join(package_version.split('.')[0:2]) + ".*"
+
+# >=2.0.*,>=2.0.6
+requirements = ["%s==%s,>=%s" % (pkg, reqVer, package_version) for pkg in requirements]
+
+###############################################################################
+# Call the setuptools
+
 setup(
     name=pip_package_name,
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     package_data={'': package_files},
-    install_requires=['peek-plugin-base'],
+    install_requires=requirements,
     version=package_version,
     description=description,
     author=author,

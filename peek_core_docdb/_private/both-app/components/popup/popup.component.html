@@ -1,0 +1,92 @@
+<div
+  class="docdb-popup"
+  [id]="DOCDB_POPUP"
+  [style.left]="(left$ | async) + 'px'"
+  [style.right]="(right$ | async) + 'px'"
+  [style.top]="(top$ | async) + 'px'"
+  [style.bottom]="(bottom$ | async) + 'px'"
+  *ngIf="params$ | async as params"
+>
+  <nz-card [nzTitle]="headerDetails(params.details$ | async)">
+    <div *ngIf="bodyDetails(params.details$ | async)?.length">
+      <nz-table
+        #detailsTable
+        [nzData]="bodyDetails(params.details$ | async)"
+        nzFrontPagination="false"
+        nzSize="small"
+      >
+        <tbody>
+        <tr *ngFor="let data of detailsTable.data">
+          <td>
+            {{data.title}}
+          </td>
+          <td>
+            {{data.value}}
+          </td>
+        </tr>
+        </tbody>
+      </nz-table>
+    </div>
+    <div class="buttons">
+      <div class="dynamic-buttons">
+        <button
+          *ngFor="let item of params.actions$ | async"
+          nzSize="large"
+          nz-button
+          nzType="default"
+          style="white-space: normal;"
+          (click)="actionClicked(item)"
+          nz-tooltip
+          [nzTooltipTitle]="item.tooltip"
+        >
+          <i
+            nz-icon
+            nzType="{{item.icon}}"
+            nzTheme="outline"
+            *ngIf="item.icon"
+          ></i>
+        </button>
+      </div>
+      <div class="details-buttons">
+        <button
+          nzSize="large"
+          nz-button
+          nzType="default"
+          style="white-space: normal;"
+          (click)="showDetailsPopup()"
+          nz-tooltip
+          [nzTooltipTitle]="'Full Details'"
+          *ngIf="(currentPopup$ | async) === 'summary'"
+        >
+          <i nz-icon nzType="info" nzTheme="outline"></i>
+        </button>
+      </div>
+    </div>
+  </nz-card>
+</div>
+
+<nz-modal
+  [nzVisible]="modalAction$ | async"
+  (nzVisible)="closeModal()"
+  [nzFooter]="null"
+  [nzTitle]="modalName()"
+  (nzOnCancel)="closeModal()"
+>
+  <div class="child-menu-items">
+    <ul nz-menu>
+      <li
+        nz-menu-item
+        (click)="modalActionClicked(child)"
+        *ngFor="let child of modalChildActions()"
+      >
+        <i
+          nz-icon
+          nzType="{{child.icon}}"
+          nzTheme="outline"
+          *ngIf="child.icon"
+        ></i>
+        {{child.name}}
+      </li>
+    </ul>
+  </div>
+</nz-modal>

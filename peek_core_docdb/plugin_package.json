@@ -83,14 +83,8 @@
         ],
         "rootComponents": [
             {
-                "selector": "plugin-docdb-popup-tooltip-popup"
+                "selector": "popup-component"
             },
-            {
-                "selector": "plugin-docdb-popup-summary-popup"
-            },
-            {
-                "selector": "plugin-docdb-popup-detail-popup"
-            }
         ]
     },
     "office": {

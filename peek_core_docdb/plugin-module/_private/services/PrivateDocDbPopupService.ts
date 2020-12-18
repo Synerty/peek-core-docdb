@@ -9,7 +9,7 @@ import {
     ObjectTriggerOptionsI,
     ObjectTriggerPositionI
 } from "../../DocDbPopupService"
-import { fromEvent, Observable, Subject } from "rxjs"
+import { BehaviorSubject, fromEvent, Observable, Subject } from "rxjs"
 import {
     DocDbPropertyTuple,
     DocDbPropertyTypeFilterI,
@@ -17,16 +17,12 @@ import {
     DocumentResultI,
 } from "@peek/peek_core_docdb"
 import { assert, sortText } from "@synerty/vortexjs"
-import {
-    DOCDB_DETAIL_POPUP,
-    DOCDB_SUMMARY_POPUP,
-    DOCDB_TOOLTIP_POPUP
-} from "@peek/peek_core_docdb/constants"
+import { DOCDB_POPUP } from "@peek/peek_core_docdb/constants"
 import { first } from "rxjs/operators"
 
 export class PopupTriggeredParams {
-    actions: DocDbPopupActionI[] = []
-    details: DocDbPopupDetailI[] = []
+    actions$ = new BehaviorSubject<DocDbPopupActionI[]>([])
+    details$ = new BehaviorSubject<DocDbPopupDetailI[]>([])
     
     constructor(
         public triggeredByPlugin: string,
@@ -34,7 +30,24 @@ export class PopupTriggeredParams {
         public modelSetKey: string,
         public objectKey: string,
         public options: ObjectTriggerOptionsI
-    ) { }
+    ) {
+    }
+    
+    get actions() {
+        return this.actions$.getValue()
+    }
+    
+    set actions(value) {
+        this.actions$.next(value)
+    }
+    
+    get details() {
+        return this.details$.getValue()
+    }
+    
+    set details(value) {
+        this.details$.next(value)
+    }
 }
 
 @Injectable()
@@ -52,6 +65,7 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
     private summaryPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
     private detailPopupSubject = new Subject<DocDbPopupContextI>()
     private detailPopupClosedSubject = new Subject<DocDbPopupClosedReasonE>()
+    
     private readonly DATA_LOAD_LEAD_TIME_MS = 200
     private readonly TOOLTIP_POPUP_DELAY_TIME_MS = 700
     
@@ -79,13 +93,7 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
             return
         }
         for (const el of event.path) {
-            if (el.id === DOCDB_TOOLTIP_POPUP) {
-                return
-            }
-            if (el.id === DOCDB_SUMMARY_POPUP) {
-                return
-            }
-            if (el.id === DOCDB_DETAIL_POPUP) {
+            if (el.id === DOCDB_POPUP) {
                 return
             }
         }
@@ -175,7 +183,6 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         
         this.hidePopup(DocDbPopupTypeE.tooltipPopup)
     }
-
     
     hideAllPopups(): void {
         this.hidePopup(DocDbPopupTypeE.tooltipPopup)
@@ -250,17 +257,16 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
                             triggeredByPlugin: params.triggeredByPlugin,
                             options: params.options,
                             addAction: (item: DocDbPopupActionI) => {
-                                this.zone.run(() => {
-                                    params.actions.push(item)
-                                    params.actions = this.sortActions(params.actions)
-                                })
+                                params.actions = this.sortActions([
+                                    ...params.actions,
+                                    item
+                                ])
                             },
                             addDetails: (items: DocDbPopupDetailI[]) => {
-                                this.zone.run(() => {
-                                    params.details.add(items)
-                                    params.details = this.sortDetails(params.details)
-                                    
-                                })
+                                params.details = this.sortDetails([
+                                    ...params.details,
+                                    ...items
+                                ])
                             }
                         }
                         
@@ -269,7 +275,10 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
                             apiHook.document = doc
                             const docProps = this.docDbService
                                 .getNiceOrderedProperties(doc, propFilter)
-                            params.details.add(docProps)
+                            params.details = [
+                                ...params.details,
+                                ...docProps
+                            ]
                         }
                         
                         // Tell any observers that we're popping up

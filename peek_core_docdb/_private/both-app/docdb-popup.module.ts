@@ -11,15 +11,11 @@ import { NzMenuModule } from "ng-zorro-antd/menu"
 import { NzModalModule } from "ng-zorro-antd/modal"
 
 import {
-    DetailPopupComponent,
-    SummaryPopupComponent,
-    TooltipPopupComponent,
+    PopupComponent,
 } from "./components"
 
 const COMPONENTS = [
-    TooltipPopupComponent,
-    SummaryPopupComponent,
-    DetailPopupComponent,
+    PopupComponent
 ]
 
 @NgModule({

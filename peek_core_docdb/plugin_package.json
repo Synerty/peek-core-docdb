@@ -47,7 +47,7 @@
         "appDir": "_private/both-app",
         "appModule": "debug-page/debug-page.module#DocDbPopupDebugModule",
         "assetDir": "_private/both-assets",
-        "icon": "/assets/peek_plugin_object_popup/icon.png",
+        "icon": "",
         "moduleDir": "plugin-module",
         "rootServices": [
             {
@@ -94,7 +94,7 @@
         "appDir": "_private/both-app",
         "appModule": "debug-page/debug-page.module#DocDbPopupDebugModule",
         "assetDir": "_private/both-assets",
-        "icon": "/assets/peek_plugin_object_popup/icon.png",
+        "icon": "",
         "moduleDir": "plugin-module",
         "rootServices": [
             {

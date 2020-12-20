@@ -8,7 +8,7 @@ import {
 } from "@peek/peek_core_docdb/_private/document-loader"
 
 @Component({
-    selector: "peek-plugin-docdb-cfg",
+    selector: "peek-core-docdb-cfg",
     templateUrl: "docdb-cfg.component.web.html"
 })
 export class DocdbCfgComponent extends NgLifeCycleEvents {

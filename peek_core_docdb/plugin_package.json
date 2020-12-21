@@ -84,7 +84,7 @@
         "rootComponents": [
             {
                 "selector": "popup-component"
-            },
+            }
         ]
     },
     "office": {
@@ -130,13 +130,7 @@
         ],
         "rootComponents": [
             {
-                "selector": "plugin-docdb-popup-tooltip-popup"
-            },
-            {
-                "selector": "plugin-docdb-popup-summary-popup"
-            },
-            {
-                "selector": "plugin-docdb-popup-detail-popup"
+                "selector": "popup-component"
             }
         ]
     }

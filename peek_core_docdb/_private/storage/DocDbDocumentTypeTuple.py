@@ -10,15 +10,15 @@ from vortex.Tuple import Tuple, addTupleType
 
 @addTupleType
 class DocDbDocumentTypeTuple(Tuple, DeclarativeBase):
-    __tupleType__ = docDbTuplePrefix + 'DocDbDocumentTypeTuple'
-    __tablename__ = 'DocDbDocumentType'
+    __tupleType__ = docDbTuplePrefix + "DocDbDocumentTypeTuple"
+    __tablename__ = "DocDbDocumentType"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     #:  The model set for this document
-    modelSetId = Column(Integer,
-                        ForeignKey('DocDbModelSet.id', ondelete='CASCADE'),
-                        nullable=False)
+    modelSetId = Column(
+        Integer, ForeignKey("DocDbModelSet.id", ondelete="CASCADE"), nullable=False
+    )
     modelSet = relationship(DocDbModelSet)
 
     name = Column(String, nullable=False)

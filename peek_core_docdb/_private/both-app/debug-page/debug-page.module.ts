@@ -1,11 +1,11 @@
-import { CommonModule } from "@angular/common";
-import { HttpClientModule } from "@angular/common/http";
-import { NgModule } from "@angular/core";
-import { Routes } from "@angular/router";
-import { FormsModule } from "@angular/forms";
-import { NzIconModule } from "ng-zorro-antd/icon";
-import { RouterModule } from "@angular/router";
-import { DocDbPopupComponent } from "./debug-page.component";
+import { CommonModule } from "@angular/common"
+import { HttpClientModule } from "@angular/common/http"
+import { NgModule } from "@angular/core"
+import { Routes } from "@angular/router"
+import { FormsModule } from "@angular/forms"
+import { NzIconModule } from "ng-zorro-antd/icon"
+import { RouterModule } from "@angular/router"
+import { DocDbPopupComponent } from "./debug-page.component"
 
 // Define the child routes for this plugin.
 export const pluginRoutes: Routes = [
@@ -14,7 +14,7 @@ export const pluginRoutes: Routes = [
         pathMatch: "full",
         component: DocDbPopupComponent,
     },
-];
+]
 
 // Define the root module for this plugin.
 // This module is loaded by the lazy loader, what ever this defines is what is started.
@@ -31,4 +31,5 @@ export const pluginRoutes: Routes = [
     providers: [],
     declarations: [DocDbPopupComponent],
 })
-export class DocDbPopupDebugModule {}
+export class DocDbPopupDebugModule {
+}

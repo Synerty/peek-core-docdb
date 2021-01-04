@@ -1,15 +1,19 @@
 import logging
 
-from peek_abstract_chunked_index.private.server.controller.ACIProcessorQueueControllerABC import \
-    ACIProcessorQueueControllerABC, ACIProcessorQueueBlockItem
-from peek_abstract_chunked_index.private.server.controller.ACIProcessorStatusNotifierABC import \
-    ACIProcessorStatusNotifierABC
-from peek_abstract_chunked_index.private.tuples.ACIProcessorQueueTupleABC import \
-    ACIProcessorQueueTupleABC
-from peek_core_docdb._private.server.client_handlers.ClientChunkUpdateHandler import \
-    ClientChunkUpdateHandler
-from peek_core_docdb._private.server.controller.StatusController import \
-    StatusController
+from peek_abstract_chunked_index.private.server.controller.ACIProcessorQueueControllerABC import (
+    ACIProcessorQueueControllerABC,
+    ACIProcessorQueueBlockItem,
+)
+from peek_abstract_chunked_index.private.server.controller.ACIProcessorStatusNotifierABC import (
+    ACIProcessorStatusNotifierABC,
+)
+from peek_abstract_chunked_index.private.tuples.ACIProcessorQueueTupleABC import (
+    ACIProcessorQueueTupleABC,
+)
+from peek_core_docdb._private.server.client_handlers.ClientChunkUpdateHandler import (
+    ClientChunkUpdateHandler,
+)
+from peek_core_docdb._private.server.controller.StatusController import StatusController
 from peek_core_docdb._private.storage.DocDbCompilerQueue import DocDbCompilerQueue
 from peek_core_docdb._private.storage.DocDbDocument import DocDbDocument
 from peek_core_docdb._private.storage.DocDbEncodedChunk import DocDbEncodedChunk
@@ -36,7 +40,7 @@ class _Notifier(ACIProcessorStatusNotifierABC):
 
 
 class ChunkCompilerQueueController(ACIProcessorQueueControllerABC):
-    """ DocDbChunkCompilerQueueController
+    """DocDbChunkCompilerQueueController
 
     Compile the disp items into the grid data
 
@@ -58,18 +62,24 @@ class ChunkCompilerQueueController(ACIProcessorQueueControllerABC):
     _QueueDeclarative: ACIProcessorQueueTupleABC = DocDbCompilerQueue
     _VacuumDeclaratives = (DocDbCompilerQueue, DocDbDocument, DocDbEncodedChunk)
 
-    def __init__(self, dbSessionCreator,
-                 statusController: StatusController,
-                 clientChunkUpdateHandler: ClientChunkUpdateHandler):
-        ACIProcessorQueueControllerABC.__init__(self, dbSessionCreator,
-                                                _Notifier(statusController))
+    def __init__(
+        self,
+        dbSessionCreator,
+        statusController: StatusController,
+        clientChunkUpdateHandler: ClientChunkUpdateHandler,
+    ):
+        ACIProcessorQueueControllerABC.__init__(
+            self, dbSessionCreator, _Notifier(statusController)
+        )
 
-        self._clientChunkUpdateHandler: ClientChunkUpdateHandler \
-            = clientChunkUpdateHandler
+        self._clientChunkUpdateHandler: ClientChunkUpdateHandler = (
+            clientChunkUpdateHandler
+        )
 
     def _sendToWorker(self, block: ACIProcessorQueueBlockItem):
-        from peek_core_docdb._private.worker.tasks.ChunkCompilerTask import \
-            compileDocumentChunk
+        from peek_core_docdb._private.worker.tasks.ChunkCompilerTask import (
+            compileDocumentChunk,
+        )
 
         return compileDocumentChunk.delay(block.itemsEncodedPayload)
 
@@ -77,7 +87,7 @@ class ChunkCompilerQueueController(ACIProcessorQueueControllerABC):
         self._clientChunkUpdateHandler.sendChunks(results)
 
     def _dedupeQueueSql(self, lastFetchedId: int, dedupeLimit: int):
-        return '''
+        return """
                  with sq_raw as (
                     SELECT "id", "chunkKey"
                     FROM core_docdb."DocDbChunkQueue"
@@ -96,4 +106,7 @@ class ChunkCompilerQueueController(ACIProcessorQueueControllerABC):
                     AND core_docdb."DocDbChunkQueue"."id" > %(id)s
                     AND core_docdb."DocDbChunkQueue"."chunkKey" = sq1."chunkKey"
 
-            ''' % {'id': lastFetchedId, 'limit': dedupeLimit}
+            """ % {
+            "id": lastFetchedId,
+            "limit": dedupeLimit,
+        }

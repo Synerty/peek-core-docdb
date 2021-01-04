@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import { Component, OnInit } from "@angular/core"
 
 let exampleDocMod = `
     {
@@ -10,17 +10,17 @@ let exampleDocMod = `
             rating: "11kV"
         }
     }
-`;
+`
 
 @Component({
-    selector: 'docDb-admin',
-    templateUrl: 'docDb.component.html'
+    selector: "docDb-admin",
+    templateUrl: "docDb.component.html"
 })
 export class DocDbComponent implements OnInit {
-
-    exampleDoc = exampleDocMod;
-
+    
+    exampleDoc = exampleDocMod
+    
     ngOnInit() {
-
+    
     }
 }

@@ -1,7 +1,10 @@
 import { Injectable } from "@angular/core"
 import { NgLifeCycleEvents } from "@synerty/peek-plugin-base-js"
 import { TupleSelector } from "@synerty/vortexjs"
-import { DocumentResultI, PrivateDocumentLoaderService } from "./_private/document-loader"
+import {
+    DocumentResultI,
+    PrivateDocumentLoaderService
+} from "./_private/document-loader"
 import { DocumentTuple } from "./DocumentTuple"
 import { DocDbTupleService } from "./_private"
 import { DocDbPropertyTuple } from "./DocDbPropertyTuple"

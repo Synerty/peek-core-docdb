@@ -6,6 +6,7 @@ from vortex.handler.TupleActionProcessorProxy import TupleActionProcessorProxy
 
 def makeTupleActionProcessorProxy():
     return TupleActionProcessorProxy(
-                tupleActionProcessorName=docDbActionProcessorName,
-                proxyToVortexName=peekServerName,
-                additionalFilt=docDbFilt)
+        tupleActionProcessorName=docDbActionProcessorName,
+        proxyToVortexName=peekServerName,
+        additionalFilt=docDbFilt,
+    )

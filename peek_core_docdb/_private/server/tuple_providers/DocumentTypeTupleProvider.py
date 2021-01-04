@@ -3,8 +3,9 @@ from typing import Union
 
 from twisted.internet.defer import Deferred
 
-from peek_core_docdb._private.storage.DocDbDocumentTypeTuple import \
-    DocDbDocumentTypeTuple
+from peek_core_docdb._private.storage.DocDbDocumentTypeTuple import (
+    DocDbDocumentTypeTuple,
+)
 from vortex.DeferUtil import deferToThreadWrapWithLogger
 from vortex.Payload import Payload
 from vortex.TupleSelector import TupleSelector
@@ -18,8 +19,9 @@ class DocumentTypeTupleProvider(TuplesProviderABC):
         self._ormSessionCreator = ormSessionCreator
 
     @deferToThreadWrapWithLogger(logger)
-    def makeVortexMsg(self, filt: dict,
-                      tupleSelector: TupleSelector) -> Union[Deferred, bytes]:
+    def makeVortexMsg(
+        self, filt: dict, tupleSelector: TupleSelector
+    ) -> Union[Deferred, bytes]:
 
         session = self._ormSessionCreator()
         try:

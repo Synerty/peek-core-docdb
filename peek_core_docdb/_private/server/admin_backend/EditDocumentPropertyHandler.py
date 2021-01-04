@@ -19,12 +19,13 @@ class __CrudHandler(OrmCrudHandler):
 
 
 class __ExtUpdateObservable(OrmCrudHandlerExtension):
-    """ Update Observable ORM Crud Extension
+    """Update Observable ORM Crud Extension
 
     This extension is called after events that will alter data,
     it then notifies the observer.
 
     """
+
     def __init__(self, tupleDataObserver: TupleDataObservableHandler):
         self._tupleDataObserver = tupleDataObserver
 
@@ -40,8 +41,9 @@ class __ExtUpdateObservable(OrmCrudHandlerExtension):
 
 # This method creates an instance of the handler class.
 def makeDocumentPropertyHandler(tupleObservable, dbSessionCreator):
-    handler = __CrudHandler(dbSessionCreator, DocDbPropertyTuple,
-                            filtKey, retreiveAll=True)
+    handler = __CrudHandler(
+        dbSessionCreator, DocDbPropertyTuple, filtKey, retreiveAll=True
+    )
 
     logger.debug("Started")
     handler.addExtension(DocDbPropertyTuple, __ExtUpdateObservable(tupleObservable))

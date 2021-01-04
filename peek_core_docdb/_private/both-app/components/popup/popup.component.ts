@@ -4,7 +4,10 @@ import {
     PopupTriggeredParams,
     PrivateDocDbPopupService
 } from "@peek/peek_core_docdb/_private/services/PrivateDocDbPopupService"
-import { DocDbPopupClosedReasonE, DocDbPopupDetailI } from "@peek/peek_core_docdb"
+import {
+    DocDbPopupClosedReasonE,
+    DocDbPopupDetailI
+} from "@peek/peek_core_docdb"
 import { BehaviorSubject } from "rxjs"
 import { DOCDB_POPUP } from "@peek/peek_core_docdb/constants"
 
@@ -28,6 +31,31 @@ export class PopupComponent {
     right$ = new BehaviorSubject<number>(0)
     top$ = new BehaviorSubject<number>(0)
     bottom$ = new BehaviorSubject<number>(0)
+    
+    constructor(
+        private popupService: PrivateDocDbPopupService,
+        private element: ElementRef
+    ) {
+        this.popupService.showTooltipPopupSubject.subscribe(val => {
+            this.openPopup(val)
+            this.currentPopup = "tooltip"
+            document.body.appendChild(this.element.nativeElement)
+        })
+        this.popupService.showSummaryPopupSubject.subscribe(val => {
+            this.openPopup(val)
+            this.currentPopup = "summary"
+            document.body.appendChild(this.element.nativeElement)
+        })
+        this.popupService.showDetailPopupSubject.subscribe(val => {
+            this.openPopup(val)
+            this.currentPopup = "detail"
+            document.body.appendChild(this.element.nativeElement)
+        })
+        
+        this.popupService.hideTooltipPopupSubject.subscribe(() => this.closePopup())
+        this.popupService.hideSummaryPopupSubject.subscribe(() => this.closePopup())
+        this.popupService.hideDetailPopupSubject.subscribe(() => this.closePopup())
+    }
     
     get params() {
         return this.params$.getValue()
@@ -85,31 +113,6 @@ export class PopupComponent {
         this.bottom$.next(value)
     }
     
-    constructor(
-        private popupService: PrivateDocDbPopupService,
-        private element: ElementRef
-    ) {
-        this.popupService.showTooltipPopupSubject.subscribe(val => {
-            this.openPopup(val)
-            this.currentPopup = "tooltip"
-            document.body.appendChild(this.element.nativeElement)
-        })
-        this.popupService.showSummaryPopupSubject.subscribe(val => {
-            this.openPopup(val)
-            this.currentPopup = "summary"
-            document.body.appendChild(this.element.nativeElement)
-        })
-        this.popupService.showDetailPopupSubject.subscribe(val => {
-            this.openPopup(val)
-            this.currentPopup = "detail"
-            document.body.appendChild(this.element.nativeElement)
-        })
-
-        this.popupService.hideTooltipPopupSubject.subscribe(() => this.closePopup())
-        this.popupService.hideSummaryPopupSubject.subscribe(() => this.closePopup())
-        this.popupService.hideDetailPopupSubject.subscribe(() => this.closePopup())
-    }
-    
     closePopup(): void {
         if (!this.params) {
             return
@@ -151,7 +154,7 @@ export class PopupComponent {
     bodyDetails(details: DocDbPopupDetailI[]): DocDbPopupDetailI[] {
         return details.filter(d => !d.showInHeader)
     }
-
+    
     modalActionClicked(item: DocDbPopupActionI): void {
         this.actionClicked(item)
         this.closeModal()
@@ -191,8 +194,8 @@ export class PopupComponent {
             this.setVertical(params.position.changedTouches[0].clientY)
         }
         else {
-           this.setHorizontal(params.position.x)
-           this.setVertical(params.position.y)
+            this.setHorizontal(params.position.x)
+            this.setVertical(params.position.y)
         }
     }
     
@@ -231,8 +234,8 @@ export class PopupComponent {
             y = params.position.changedTouches[0].clientY
         }
         else {
-           x = params.position.x
-           y = params.position.y
+            x = params.position.x
+            y = params.position.y
         }
         
         return <any>{

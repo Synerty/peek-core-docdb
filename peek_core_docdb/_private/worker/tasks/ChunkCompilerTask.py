@@ -13,11 +13,9 @@ from vortex.Payload import Payload
 
 from peek_plugin_base.worker import CeleryDbConn
 from peek_plugin_base.worker.CeleryApp import celeryApp
-from peek_core_docdb._private.storage.DocDbCompilerQueue import \
-    DocDbCompilerQueue
+from peek_core_docdb._private.storage.DocDbCompilerQueue import DocDbCompilerQueue
 from peek_core_docdb._private.storage.DocDbDocument import DocDbDocument
-from peek_core_docdb._private.storage.DocDbEncodedChunk import \
-    DocDbEncodedChunk
+from peek_core_docdb._private.storage.DocDbEncodedChunk import DocDbEncodedChunk
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +32,7 @@ Compile the docDb indexes
 @DeferrableTask
 @celeryApp.task(bind=True)
 def compileDocumentChunk(self, payloadEncodedArgs: bytes) -> List[int]:
-    """ Compile DocDb Index Task
+    """Compile DocDb Index Task
 
     :param self: The reference to this celery task
     :param payloadEncodedArgs: An encoded payload containing the queue tuples.
@@ -73,9 +71,9 @@ def compileDocumentChunk(self, payloadEncodedArgs: bytes) -> List[int]:
     return list(set([i.chunkKey for i in queueItems]))
 
 
-def _compileDocumentChunk(conn, transaction,
-                          modelSetId: int,
-                          queueItems: List[DocDbCompilerQueue]) -> None:
+def _compileDocumentChunk(
+    conn, transaction, modelSetId: int, queueItems: List[DocDbCompilerQueue]
+) -> None:
     chunkKeys = list(set([i.chunkKey for i in queueItems]))
 
     compiledTable = DocDbEncodedChunk.__table__
@@ -83,8 +81,11 @@ def _compileDocumentChunk(conn, transaction,
 
     startTime = datetime.now(pytz.utc)
 
-    logger.debug("Staring compile of %s queueItems in %s",
-                 len(queueItems), (datetime.now(pytz.utc) - startTime))
+    logger.debug(
+        "Staring compile of %s queueItems in %s",
+        len(queueItems),
+        (datetime.now(pytz.utc) - startTime),
+    )
 
     # Get Model Sets
 
@@ -107,21 +108,22 @@ def _compileDocumentChunk(conn, transaction,
                 continue
 
         chunksToDelete.append(chunkKey)
-        inserts.append(dict(
-            modelSetId=modelSetId,
-            chunkKey=chunkKey,
-            encodedData=docDbIndexChunkEncodedPayload,
-            encodedHash=encodedHash,
-            lastUpdate=lastUpdate))
+        inserts.append(
+            dict(
+                modelSetId=modelSetId,
+                chunkKey=chunkKey,
+                encodedData=docDbIndexChunkEncodedPayload,
+                encodedHash=encodedHash,
+                lastUpdate=lastUpdate,
+            )
+        )
 
     # Add any chnuks that we need to delete that we don't have new data for, here
     chunksToDelete.extend(list(existingHashes))
 
     if chunksToDelete:
         # Delete the old chunks
-        conn.execute(
-            compiledTable.delete(compiledTable.c.chunkKey.in_(chunksToDelete))
-        )
+        conn.execute(compiledTable.delete(compiledTable.c.chunkKey.in_(chunksToDelete)))
 
     if inserts:
         newIdGen = CeleryDbConn.prefetchDeclarativeIds(DocDbDocument, len(inserts))
@@ -134,24 +136,32 @@ def _compileDocumentChunk(conn, transaction,
     if inserts:
         conn.execute(compiledTable.insert(), inserts)
 
-    logger.debug("Compiled %s Documents, %s missing, in %s",
-                 len(inserts),
-                 len(chunkKeys) - len(inserts), (datetime.now(pytz.utc) - startTime))
+    logger.debug(
+        "Compiled %s Documents, %s missing, in %s",
+        len(inserts),
+        len(chunkKeys) - len(inserts),
+        (datetime.now(pytz.utc) - startTime),
+    )
 
     total += len(inserts)
 
     transaction.commit()
-    logger.info("Compiled and Committed %s EncodedDocumentChunks in %s",
-                total, (datetime.now(pytz.utc) - startTime))
+    logger.info(
+        "Compiled and Committed %s EncodedDocumentChunks in %s",
+        total,
+        (datetime.now(pytz.utc) - startTime),
+    )
 
 
 def _loadExistingHashes(conn, chunkKeys: List[str]) -> Dict[str, str]:
     compiledTable = DocDbEncodedChunk.__table__
 
-    results = conn.execute(select(
-        columns=[compiledTable.c.chunkKey, compiledTable.c.encodedHash],
-        whereclause=compiledTable.c.chunkKey.in_(chunkKeys)
-    )).fetchall()
+    results = conn.execute(
+        select(
+            columns=[compiledTable.c.chunkKey, compiledTable.c.encodedHash],
+            whereclause=compiledTable.c.chunkKey.in_(chunkKeys),
+        )
+    ).fetchall()
 
     return {result[0]: result[1] for result in results}
 
@@ -161,12 +171,13 @@ def _buildIndex(chunkKeys) -> Dict[str, bytes]:
 
     try:
         indexQry = (
-            session.query(DocDbDocument.chunkKey, DocDbDocument.key,
-                          DocDbDocument.documentJson)
-                .filter(DocDbDocument.chunkKey.in_(chunkKeys))
-                .order_by(DocDbDocument.key)
-                .yield_per(1000)
-                .all()
+            session.query(
+                DocDbDocument.chunkKey, DocDbDocument.key, DocDbDocument.documentJson
+            )
+            .filter(DocDbDocument.chunkKey.in_(chunkKeys))
+            .order_by(DocDbDocument.key)
+            .yield_per(1000)
+            .all()
         )
 
         # Create the ChunkKey -> {id -> packedJson, id -> packedJson, ....]

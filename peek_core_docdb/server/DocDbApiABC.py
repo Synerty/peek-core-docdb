@@ -5,10 +5,9 @@ from twisted.internet.defer import Deferred
 
 
 class DocDbApiABC(metaclass=ABCMeta):
-
     @abstractmethod
     def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> Deferred:
-        """ Create or Update Documents
+        """Create or Update Documents
 
         Add new documents to the document db
 
@@ -19,7 +18,7 @@ class DocDbApiABC(metaclass=ABCMeta):
 
     @abstractmethod
     def deleteDocuments(self, modelSetKey: str, keys: List[str]) -> Deferred:
-        """ Delete Documents
+        """Delete Documents
 
         Delete documents from the document db.
 

@@ -3,10 +3,12 @@ from typing import Union
 
 from twisted.internet.defer import Deferred, inlineCallbacks
 
-from peek_core_docdb._private.client.controller.DocumentCacheController import \
-    DocumentCacheController
-from peek_core_docdb._private.tuples.DocumentUpdateDateTuple import \
-    DocumentUpdateDateTuple
+from peek_core_docdb._private.client.controller.DocumentCacheController import (
+    DocumentCacheController,
+)
+from peek_core_docdb._private.tuples.DocumentUpdateDateTuple import (
+    DocumentUpdateDateTuple,
+)
 from vortex.Payload import Payload
 from vortex.TupleSelector import TupleSelector
 from vortex.handler.TupleDataObservableHandler import TuplesProviderABC
@@ -19,11 +21,12 @@ class ClientDocumentUpdateDateTupleProvider(TuplesProviderABC):
         self._cacheHandler = cacheHandler
 
     @inlineCallbacks
-    def makeVortexMsg(self, filt: dict,
-                      tupleSelector: TupleSelector) -> Union[Deferred, bytes]:
+    def makeVortexMsg(
+        self, filt: dict, tupleSelector: TupleSelector
+    ) -> Union[Deferred, bytes]:
         tuple_ = DocumentUpdateDateTuple()
         tuple_.updateDateByChunkKey = {
-            key:self._cacheHandler.encodedChunk(key).lastUpdate
+            key: self._cacheHandler.encodedChunk(key).lastUpdate
             for key in self._cacheHandler.encodedChunkKeys()
         }
         payload = Payload(filt, tuples=[tuple_])

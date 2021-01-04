@@ -1,12 +1,12 @@
-import {CommonModule} from "@angular/common";
-import {FormsModule} from "@angular/forms";
-import {NgModule} from "@angular/core";
-import {RouterModule, Routes} from "@angular/router";
-import {ViewDocumentComponent} from "./view-document/view-document";
-import {EditSettingComponent} from "./edit-setting-table/edit.component";
-import {StatusComponent} from "./status/status.component";
+import { CommonModule } from "@angular/common"
+import { FormsModule } from "@angular/forms"
+import { NgModule } from "@angular/core"
+import { RouterModule, Routes } from "@angular/router"
+import { ViewDocumentComponent } from "./view-document/view-document"
+import { EditSettingComponent } from "./edit-setting-table/edit.component"
+import { StatusComponent } from "./status/status.component"
 // Import our components
-import {DocDbComponent} from "./docDb.component";
+import { DocDbComponent } from "./docDb.component"
 import {
     TupleActionPushNameService,
     TupleActionPushService,
@@ -15,41 +15,40 @@ import {
     TupleDataOfflineObserverService,
     TupleOfflineStorageNameService,
     TupleOfflineStorageService
-} from "@synerty/vortexjs";
+} from "@synerty/vortexjs"
 
 import {
     docDbActionProcessorName,
     docDbFilt,
     docDbObservableName,
     docDbTupleOfflineServiceName
-} from "@peek/peek_core_docdb/_private";
-import {EditPropertyComponent} from "./edit-property-table/edit.component";
-import {EditDocumentTypeComponent} from "./edit-object-type-table/edit.component";
-
+} from "@peek/peek_core_docdb/_private"
+import { EditPropertyComponent } from "./edit-property-table/edit.component"
+import { EditDocumentTypeComponent } from "./edit-object-type-table/edit.component"
 
 export function tupleActionPushNameServiceFactory() {
     return new TupleActionPushNameService(
-        docDbActionProcessorName, docDbFilt);
+        docDbActionProcessorName, docDbFilt)
 }
 
 export function tupleDataObservableNameServiceFactory() {
     return new TupleDataObservableNameService(
-        docDbObservableName, docDbFilt);
+        docDbObservableName, docDbFilt)
 }
 
 export function tupleOfflineStorageNameServiceFactory() {
-    return new TupleOfflineStorageNameService(docDbTupleOfflineServiceName);
+    return new TupleOfflineStorageNameService(docDbTupleOfflineServiceName)
 }
 
-import { NzSwitchModule } from 'ng-zorro-antd/switch';
+import { NzSwitchModule } from "ng-zorro-antd/switch"
 // Define the routes for this Angular module
 export const pluginRoutes: Routes = [
     {
-        path: '',
+        path: "",
         component: DocDbComponent
     }
 
-];
+]
 
 // Define the module
 @NgModule({

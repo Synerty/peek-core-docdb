@@ -1,38 +1,37 @@
-import {addTupleType, Tuple} from "@synerty/vortexjs";
-import {docDbTuplePrefix} from "./_private/PluginNames";
-
+import { addTupleType, Tuple } from "@synerty/vortexjs"
+import { docDbTuplePrefix } from "./_private/PluginNames"
 
 @addTupleType
 export class DocDbPropertyTuple extends Tuple {
-    public static readonly tupleName = docDbTuplePrefix + "DocDbPropertyTuple";
-
+    public static readonly tupleName = docDbTuplePrefix + "DocDbPropertyTuple"
+    
     //  The id
-    id: number;
-
+    id: number
+    
     //  The modelSetId of the document property
-    modelSetId: number;
-
+    modelSetId: number
+    
     //  The name of the document property
-    name: string;
-
+    name: string
+    
     //  The title of the document property
-    title: string;
-
+    title: string
+    
     //  The order of the document property
-    order: number;
-
+    order: number
+    
     // Show on Tooltip Popup
-    showOnTooltip:boolean;
-
+    showOnTooltip: boolean
+    
     // Show on Summary Popup
-    showOnSummary:boolean;
-
+    showOnSummary: boolean
+    
     // Show on Detail Popup
-    showOnDetail:boolean;
-
+    showOnDetail: boolean
+    
     // Show on the header of any popup screen
-    showInHeader:boolean;
-
+    showInHeader: boolean
+    
     constructor() {
         super(DocDbPropertyTuple.tupleName)
     }

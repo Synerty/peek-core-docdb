@@ -4,20 +4,24 @@ from twisted.internet.defer import inlineCallbacks
 
 from peek_plugin_base.PeekVortexUtil import peekServerName
 from peek_plugin_base.client.PluginClientEntryHookABC import PluginClientEntryHookABC
-from peek_core_docdb._private.PluginNames import docDbFilt, \
-    docDbActionProcessorName
+from peek_core_docdb._private.PluginNames import docDbFilt, docDbActionProcessorName
 from peek_core_docdb._private.PluginNames import docDbObservableName
-from peek_core_docdb._private.client.TupleDataObservable import \
-    makeClientTupleDataObservableHandler
-from peek_core_docdb._private.client.controller.DocumentCacheController import \
-    DocumentCacheController
-from peek_core_docdb._private.client.handlers.DocumentCacheHandler import \
-    DocumentCacheHandler
+from peek_core_docdb._private.client.TupleDataObservable import (
+    makeClientTupleDataObservableHandler,
+)
+from peek_core_docdb._private.client.controller.DocumentCacheController import (
+    DocumentCacheController,
+)
+from peek_core_docdb._private.client.handlers.DocumentCacheHandler import (
+    DocumentCacheHandler,
+)
 from peek_core_docdb._private.storage.DeclarativeBase import loadStorageTuples
 from peek_core_docdb._private.tuples import loadPrivateTuples
 from peek_core_docdb.tuples import loadPublicTuples
 from vortex.handler.TupleActionProcessorProxy import TupleActionProcessorProxy
-from vortex.handler.TupleDataObservableProxyHandler import TupleDataObservableProxyHandler
+from vortex.handler.TupleDataObservableProxyHandler import (
+    TupleDataObservableProxyHandler,
+)
 from vortex.handler.TupleDataObserverClient import TupleDataObserverClient
 
 logger = logging.getLogger(__name__)
@@ -33,7 +37,7 @@ class ClientEntryHook(PluginClientEntryHookABC):
         self._loadedObjects = []
 
     def load(self) -> None:
-        """ Load
+        """Load
 
         This will be called when the plugin is loaded, just after the db is migrated.
         Place any custom initialiastion steps here.
@@ -49,7 +53,7 @@ class ClientEntryHook(PluginClientEntryHookABC):
 
     @inlineCallbacks
     def start(self):
-        """ Load
+        """Load
 
         This will be called when the plugin is loaded, just after the db is migrated.
         Place any custom initialisation steps here.
@@ -62,7 +66,8 @@ class ClientEntryHook(PluginClientEntryHookABC):
             TupleActionProcessorProxy(
                 tupleActionProcessorName=docDbActionProcessorName,
                 proxyToVortexName=peekServerName,
-                additionalFilt=docDbFilt)
+                additionalFilt=docDbFilt,
+            )
         )
 
         # ----------------
@@ -71,7 +76,8 @@ class ClientEntryHook(PluginClientEntryHookABC):
             observableName=docDbObservableName,
             proxyToVortexName=peekServerName,
             additionalFilt=docDbFilt,
-            observerName="Proxy to devices")
+            observerName="Proxy to devices",
+        )
         self._loadedObjects.append(tupleDataObservableProxyHandler)
 
         # ----------------
@@ -81,24 +87,21 @@ class ClientEntryHook(PluginClientEntryHookABC):
             observableName=docDbObservableName,
             destVortexName=peekServerName,
             additionalFilt=docDbFilt,
-            observerName="Data for client"
+            observerName="Data for client",
         )
         self._loadedObjects.append(serverTupleObserver)
 
         # ----------------
         # Document Cache Controller
 
-        documentCacheController = DocumentCacheController(
-            self.platform.serviceId
-        )
+        documentCacheController = DocumentCacheController(self.platform.serviceId)
         self._loadedObjects.append(documentCacheController)
 
         # ----------------
         # Document Cache Handler
 
         documentHandler = DocumentCacheHandler(
-            cacheController=documentCacheController,
-            clientId=self.platform.serviceId
+            cacheController=documentCacheController, clientId=self.platform.serviceId
         )
         self._loadedObjects.append(documentHandler)
 
@@ -108,8 +111,9 @@ class ClientEntryHook(PluginClientEntryHookABC):
 
         # ----------------
         # Create the Tuple Observer
-        makeClientTupleDataObservableHandler(tupleDataObservableProxyHandler,
-                                             documentCacheController)
+        makeClientTupleDataObservableHandler(
+            tupleDataObservableProxyHandler, documentCacheController
+        )
 
         # ----------------
         # Start the compiler controllers
@@ -118,7 +122,7 @@ class ClientEntryHook(PluginClientEntryHookABC):
         logger.debug("Started")
 
     def stop(self):
-        """ Stop
+        """Stop
 
         This method is called by the platform to tell the peek app to shutdown and stop
         everything it's doing

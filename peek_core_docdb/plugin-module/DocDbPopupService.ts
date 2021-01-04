@@ -118,7 +118,8 @@ export interface DocDbPopupContextI {
  * be fired with a context class, allowing the other plugin to add actions and details to the popup.
  */
 export abstract class DocDbPopupService {
-    constructor() { }
+    constructor() {
+    }
     
     /** Show Object Popup
      *

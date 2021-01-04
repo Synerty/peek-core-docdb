@@ -6,12 +6,13 @@ from vortex.Tuple import addTupleType, TupleField, Tuple
 
 @addTupleType
 class ImportDocumentTuple(Tuple):
-    """ Import Document Tuple
+    """Import Document Tuple
 
     This tuple is the publicly exposed Document
 
     """
-    __tupleType__ = docDbTuplePrefix + 'ImportDocumentTuple'
+
+    __tupleType__ = docDbTuplePrefix + "ImportDocumentTuple"
 
     #:  The unique key of this document
     key: str = TupleField()

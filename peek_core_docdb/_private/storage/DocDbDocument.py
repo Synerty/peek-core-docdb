@@ -4,30 +4,31 @@ from sqlalchemy.orm import relationship
 
 from peek_core_docdb._private.PluginNames import docDbTuplePrefix
 from peek_core_docdb._private.storage.DeclarativeBase import DeclarativeBase
-from peek_core_docdb._private.storage.DocDbDocumentTypeTuple import \
-    DocDbDocumentTypeTuple
+from peek_core_docdb._private.storage.DocDbDocumentTypeTuple import (
+    DocDbDocumentTypeTuple,
+)
 from peek_core_docdb._private.storage.DocDbModelSet import DocDbModelSet
 from vortex.Tuple import Tuple, addTupleType
 
 
 @addTupleType
 class DocDbDocument(Tuple, DeclarativeBase):
-    __tupleType__ = docDbTuplePrefix + 'DocDbDocumentTable'
-    __tablename__ = 'DocDbDocument'
+    __tupleType__ = docDbTuplePrefix + "DocDbDocumentTable"
+    __tablename__ = "DocDbDocument"
 
     #:  The unique ID of this document (database generated)
     id = Column(BigInteger, primary_key=True, autoincrement=True)
 
     #:  The model set for this document
-    modelSetId = Column(Integer,
-                        ForeignKey('DocDbModelSet.id', ondelete='CASCADE'),
-                        nullable=False)
+    modelSetId = Column(
+        Integer, ForeignKey("DocDbModelSet.id", ondelete="CASCADE"), nullable=False
+    )
     modelSet = relationship(DocDbModelSet)
 
     #:  The model set for this document
-    documentTypeId = Column(Integer,
-                            ForeignKey('DocDbDocumentType.id', ondelete='CASCADE'),
-                            nullable=False)
+    documentTypeId = Column(
+        Integer, ForeignKey("DocDbDocumentType.id", ondelete="CASCADE"), nullable=False
+    )
     documentType = relationship(DocDbDocumentTypeTuple)
 
     importGroupHash = Column(String, nullable=False)

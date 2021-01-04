@@ -17,10 +17,7 @@ class MainController(TupleActionProcessorDelegateABC):
         pass
 
     def processTupleAction(self, tupleAction: TupleActionABC) -> Deferred:
-
-
         raise NotImplementedError(tupleAction.tupleName())
-
 
     def agentNotifiedOfUpdate(self, updateStr):
         logger.debug("Agent said : %s", updateStr)

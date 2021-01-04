@@ -6,23 +6,31 @@ from jsoncfg.value_mappers import require_string
 from sqlalchemy import MetaData
 
 from peek_plugin_base.server.PluginLogicEntryHookABC import PluginLogicEntryHookABC
-from peek_plugin_base.server.PluginServerStorageEntryHookABC import \
-    PluginServerStorageEntryHookABC
-from peek_plugin_base.server.PluginServerWorkerEntryHookABC import \
-    PluginServerWorkerEntryHookABC
+from peek_plugin_base.server.PluginServerStorageEntryHookABC import (
+    PluginServerStorageEntryHookABC,
+)
+from peek_plugin_base.server.PluginServerWorkerEntryHookABC import (
+    PluginServerWorkerEntryHookABC,
+)
 from peek_core_docdb._private.server.api.DocDbApi import DocDbApi
-from peek_core_docdb._private.server.client_handlers.ClientChunkLoadRpc import \
-    ClientChunkLoadRpc
-from peek_core_docdb._private.server.client_handlers.ClientChunkUpdateHandler import \
-    ClientChunkUpdateHandler
-from peek_core_docdb._private.server.controller.ChunkCompilerQueueController import \
-    ChunkCompilerQueueController
+from peek_core_docdb._private.server.client_handlers.ClientChunkLoadRpc import (
+    ClientChunkLoadRpc,
+)
+from peek_core_docdb._private.server.client_handlers.ClientChunkUpdateHandler import (
+    ClientChunkUpdateHandler,
+)
+from peek_core_docdb._private.server.controller.ChunkCompilerQueueController import (
+    ChunkCompilerQueueController,
+)
 from peek_core_docdb._private.server.controller.ImportController import ImportController
 from peek_core_docdb._private.server.controller.StatusController import StatusController
 from peek_core_docdb._private.storage import DeclarativeBase
 from peek_core_docdb._private.storage.DeclarativeBase import loadStorageTuples
-from peek_core_docdb._private.storage.Setting import INDEX_COMPILER_ENABLED, \
-    globalSetting, globalProperties
+from peek_core_docdb._private.storage.Setting import (
+    INDEX_COMPILER_ENABLED,
+    globalSetting,
+    globalProperties,
+)
 from peek_core_docdb._private.tuples import loadPrivateTuples
 from peek_core_docdb.tuples import loadPublicTuples
 from peek_core_docdb.tuples.DocumentTuple import DocumentTuple
@@ -39,9 +47,11 @@ from .controller.MainController import MainController
 logger = logging.getLogger(__name__)
 
 
-class LogicEntryHook(PluginLogicEntryHookABC,
-                      PluginServerStorageEntryHookABC,
-                      PluginServerWorkerEntryHookABC):
+class LogicEntryHook(
+    PluginLogicEntryHookABC,
+    PluginServerStorageEntryHookABC,
+    PluginServerWorkerEntryHookABC,
+):
     def __init__(self, *args, **kwargs):
         """" Constructor """
         # Call the base classes constructor
@@ -53,7 +63,7 @@ class LogicEntryHook(PluginLogicEntryHookABC,
         self._api = None
 
     def _migrateStorageSchema(self, metadata: MetaData) -> None:
-        """ Migrate Storage Schema
+        """Migrate Storage Schema
 
         Rename the schema
 
@@ -61,17 +71,18 @@ class LogicEntryHook(PluginLogicEntryHookABC,
 
         relDir = self._packageCfg.config.storage.alembicDir(require_string)
         alembicDir = os.path.join(self.rootDir, relDir)
-        if not os.path.isdir(alembicDir): raise NotADirectoryError(alembicDir)
+        if not os.path.isdir(alembicDir):
+            raise NotADirectoryError(alembicDir)
 
         dbConn = DbConnection(
             dbConnectString=self.platform.dbConnectString,
             metadata=metadata,
             alembicDir=alembicDir,
-            enableCreateAll=False
+            enableCreateAll=False,
         )
 
         # Rename the plugin schema to core.
-        renameToCoreSql = '''
+        renameToCoreSql = """
             DO $$
             BEGIN
                 IF EXISTS(
@@ -85,7 +96,7 @@ class LogicEntryHook(PluginLogicEntryHookABC,
                 END IF;
             END
             $$;
-        '''
+        """
 
         dbSession = dbConn.ormSessionCreator()
         try:
@@ -99,7 +110,7 @@ class LogicEntryHook(PluginLogicEntryHookABC,
         PluginServerStorageEntryHookABC._migrateStorageSchema(self, metadata)
 
     def load(self) -> None:
-        """ Load
+        """Load
 
         This will be called when the plugin is loaded, just after the db is migrated.
         Place any custom initialiastion steps here.
@@ -116,7 +127,7 @@ class LogicEntryHook(PluginLogicEntryHookABC,
 
     @inlineCallbacks
     def start(self):
-        """ Start
+        """Start
 
         This will be called when the plugin is loaded, just after the db is migrated.
         Place any custom initialiastion steps here.
@@ -130,9 +141,7 @@ class LogicEntryHook(PluginLogicEntryHookABC,
 
         # ----------------
         # Client Search Object client update handler
-        clientChunkUpdateHandler = ClientChunkUpdateHandler(
-            self.dbSessionCreator
-        )
+        clientChunkUpdateHandler = ClientChunkUpdateHandler(self.dbSessionCreator)
         self._loadedObjects.append(clientChunkUpdateHandler)
 
         # ----------------
@@ -143,8 +152,7 @@ class LogicEntryHook(PluginLogicEntryHookABC,
         # ----------------
         # Tuple Observable
         tupleObservable = makeTupleDataObservableHandler(
-            dbSessionCreator=self.dbSessionCreator,
-            statusController=statusController
+            dbSessionCreator=self.dbSessionCreator, statusController=statusController
         )
         self._loadedObjects.append(tupleObservable)
 
@@ -161,8 +169,8 @@ class LogicEntryHook(PluginLogicEntryHookABC,
         # ----------------
         # Main Controller
         mainController = MainController(
-            dbSessionCreator=self.dbSessionCreator,
-            tupleObservable=tupleObservable)
+            dbSessionCreator=self.dbSessionCreator, tupleObservable=tupleObservable
+        )
 
         self._loadedObjects.append(mainController)
 
@@ -171,7 +179,7 @@ class LogicEntryHook(PluginLogicEntryHookABC,
         chunkCompilerQueueController = ChunkCompilerQueueController(
             dbSessionCreator=self.dbSessionCreator,
             statusController=statusController,
-            clientChunkUpdateHandler=clientChunkUpdateHandler
+            clientChunkUpdateHandler=clientChunkUpdateHandler,
         )
         self._loadedObjects.append(chunkCompilerQueueController)
 
@@ -210,14 +218,14 @@ class LogicEntryHook(PluginLogicEntryHookABC,
             key="doc1key",
             modelSetKey="testModel",
             documentTypeKey="objectType1",
-            importGroupHash='test load',
+            importGroupHash="test load",
             document={
                 "name": "134 Ocean Parade, Circuit breaker 1",
                 "alias": "SO1ALIAS",
                 "propStr": "Test Property 1",
                 "propNumArr": [1, 2, 4, 5, 6],
-                "propStrArr": ["one", "two", "three", "four"]
-            }
+                "propStrArr": ["one", "two", "three", "four"],
+            },
         )
 
         newDocs.append(so1)
@@ -225,14 +233,14 @@ class LogicEntryHook(PluginLogicEntryHookABC,
             key="doc2key",
             modelSetKey="testModel",
             documentTypeKey="objectType2",
-            importGroupHash='test load',
+            importGroupHash="test load",
             document={
                 "name": "69 Sheep Farmers Rd Sub TX breaker",
                 "alias": "SO2ALIAS",
                 "propStr": "Test Property 1",
-                "propNumArr": [7,8,9,10,11],
-                "propStrArr": ["five", "siz", "seven", "eight"]
-            }
+                "propNumArr": [7, 8, 9, 10, 11],
+                "propStrArr": ["five", "siz", "seven", "eight"],
+            },
         )
 
         newDocs.append(so2)
@@ -242,7 +250,7 @@ class LogicEntryHook(PluginLogicEntryHookABC,
         d.addErrback(vortexLogFailure, logger, consumeError=True)
 
     def stop(self):
-        """ Stop
+        """Stop
 
         This method is called by the platform to tell the peek app to shutdown and stop
         everything it's doing
@@ -266,8 +274,8 @@ class LogicEntryHook(PluginLogicEntryHookABC,
 
     @property
     def publishedServerApi(self) -> object:
-        """ Published Server API
-    
+        """Published Server API
+
         :return  class that implements the API that can be used by other Plugins on this
         platform service.
         """
@@ -279,9 +287,10 @@ class LogicEntryHook(PluginLogicEntryHookABC,
     def _loadSettings(self):
         dbSession = self.dbSessionCreator()
         try:
-            return {globalProperties[p.key]: p.value
-                    for p in globalSetting(dbSession).propertyObjects}
+            return {
+                globalProperties[p.key]: p.value
+                for p in globalSetting(dbSession).propertyObjects
+            }
 
         finally:
             dbSession.close()
-

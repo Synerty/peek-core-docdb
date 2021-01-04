@@ -8,7 +8,7 @@ from .DeclarativeBase import DeclarativeBase
 
 @addTupleType
 class DocDbModelSet(Tuple, DeclarativeBase):
-    __tablename__ = 'DocDbModelSet'
+    __tablename__ = "DocDbModelSet"
     __tupleType__ = docDbTuplePrefix + __tablename__
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -17,4 +17,3 @@ class DocDbModelSet(Tuple, DeclarativeBase):
 
     comment = Column(String)
     propsJson = Column(String)
-

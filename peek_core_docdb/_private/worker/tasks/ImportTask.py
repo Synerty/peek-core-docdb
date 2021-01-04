@@ -12,8 +12,9 @@ from vortex.Payload import Payload
 from peek_plugin_base.worker import CeleryDbConn
 from peek_core_docdb._private.storage.DocDbCompilerQueue import DocDbCompilerQueue
 from peek_core_docdb._private.storage.DocDbDocument import DocDbDocument
-from peek_core_docdb._private.storage.DocDbDocumentTypeTuple import \
-    DocDbDocumentTypeTuple
+from peek_core_docdb._private.storage.DocDbDocumentTypeTuple import (
+    DocDbDocumentTypeTuple,
+)
 from peek_core_docdb._private.storage.DocDbModelSet import DocDbModelSet
 from peek_core_docdb._private.storage.DocDbPropertyTuple import DocDbPropertyTuple
 from peek_plugin_base.worker.CeleryApp import celeryApp
@@ -65,9 +66,11 @@ def createOrUpdateDocuments(self, documentsEncodedPayload: bytes) -> None:
             docTypeIdsByName = _prepareLookups(docs, modelSetId)
             _insertOrUpdateObjects(docs, modelSetId, docTypeIdsByName)
 
-        logger.info("Imported %s Documents in %s",
-                     len(newDocuments),
-                     datetime.now(pytz.utc) - startTime)
+        logger.info(
+            "Imported %s Documents in %s",
+            len(newDocuments),
+            datetime.now(pytz.utc) - startTime,
+        )
 
     except Exception as e:
         logger.debug("Retrying import docDb objects, %s", e)
@@ -95,9 +98,9 @@ def _loadModelSets() -> Dict[str, int]:
     conn = engine.connect()
     try:
         modelSetTable = DocDbModelSet.__table__
-        results = list(conn.execute(select(
-            columns=[modelSetTable.c.id, modelSetTable.c.key]
-        )))
+        results = list(
+            conn.execute(select(columns=[modelSetTable.c.id, modelSetTable.c.key]))
+        )
         modelSetIdByKey = {o.key: o.id for o in results}
         del results
 
@@ -119,9 +122,10 @@ def _makeModelSet(modelSetKey: str) -> int:
         dbSession.close()
 
 
-def _prepareLookups(newDocuments: List[ImportDocumentTuple], modelSetId: int) -> Dict[
-    str, int]:
-    """ Check Or Insert Search Properties
+def _prepareLookups(
+    newDocuments: List[ImportDocumentTuple], modelSetId: int
+) -> Dict[str, int]:
+    """Check Or Insert Search Properties
 
     Make sure the search properties exist.
 
@@ -147,17 +151,19 @@ def _prepareLookups(newDocuments: List[ImportDocumentTuple], modelSetId: int) ->
         # Prepare Properties
         dbProps = (
             dbSession.query(DocDbPropertyTuple)
-                .filter(DocDbPropertyTuple.modelSetId == modelSetId)
-                .all()
+            .filter(DocDbPropertyTuple.modelSetId == modelSetId)
+            .all()
         )
 
         propertyNames -= set([o.name for o in dbProps])
 
         if propertyNames:
             for newPropName in propertyNames:
-                dbSession.add(DocDbPropertyTuple(
-                    name=newPropName, title=newPropName, modelSetId=modelSetId
-                ))
+                dbSession.add(
+                    DocDbPropertyTuple(
+                        name=newPropName, title=newPropName, modelSetId=modelSetId
+                    )
+                )
 
             dbSession.commit()
 
@@ -167,8 +173,8 @@ def _prepareLookups(newDocuments: List[ImportDocumentTuple], modelSetId: int) ->
         # Prepare Object Types
         dbObjectTypes = (
             dbSession.query(DocDbDocumentTypeTuple)
-                .filter(DocDbDocumentTypeTuple.modelSetId == modelSetId)
-                .all()
+            .filter(DocDbDocumentTypeTuple.modelSetId == modelSetId)
+            .all()
         )
         docTypeNames -= set([o.name for o in dbObjectTypes])
 
@@ -177,9 +183,11 @@ def _prepareLookups(newDocuments: List[ImportDocumentTuple], modelSetId: int) ->
 
         else:
             for newType in docTypeNames:
-                dbSession.add(DocDbDocumentTypeTuple(
-                    name=newType, title=newType, modelSetId=modelSetId
-                ))
+                dbSession.add(
+                    DocDbDocumentTypeTuple(
+                        name=newType, title=newType, modelSetId=modelSetId
+                    )
+                )
 
             dbSession.commit()
 
@@ -198,10 +206,12 @@ def _prepareLookups(newDocuments: List[ImportDocumentTuple], modelSetId: int) ->
         dbSession.close()
 
 
-def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
-                           modelSetId: int,
-                           docTypeIdsByName: Dict[str, int]) -> None:
-    """ Insert or Update Objects
+def _insertOrUpdateObjects(
+    newDocuments: List[ImportDocumentTuple],
+    modelSetId: int,
+    docTypeIdsByName: Dict[str, int],
+) -> None:
+    """Insert or Update Objects
 
     1) Find objects and update them
     2) Insert object if the are missing
@@ -225,12 +235,22 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
         chunkKeysForQueue: Set[Tuple[str, str]] = set()
 
         # Query existing objects
-        results = list(conn.execute(select(
-            columns=[documentTable.c.id, documentTable.c.key,
-                     documentTable.c.chunkKey, documentTable.c.documentJson],
-            whereclause=and_(documentTable.c.key.in_(objectKeys),
-                             documentTable.c.modelSetId == modelSetId)
-        )))
+        results = list(
+            conn.execute(
+                select(
+                    columns=[
+                        documentTable.c.id,
+                        documentTable.c.key,
+                        documentTable.c.chunkKey,
+                        documentTable.c.documentJson,
+                    ],
+                    whereclause=and_(
+                        documentTable.c.key.in_(objectKeys),
+                        documentTable.c.modelSetId == modelSetId,
+                    ),
+                )
+            )
+        )
 
         foundObjectByKey = {o.key: o for o in results}
         del results
@@ -248,26 +268,31 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
         # Work out which objects have been updated or need inserting
         for importDocument in newDocuments:
             if importDocument.key in processedKeys:
-                raise Exception("Key %s exists in import data twice"
-                                % importDocument.key)
+                raise Exception(
+                    "Key %s exists in import data twice" % importDocument.key
+                )
             processedKeys.add(importDocument.key)
 
             existingObject = foundObjectByKey.get(importDocument.key)
             importDocumentTypeId = docTypeIdsByName[importDocument.documentTypeKey]
 
-            packedJsonDict = {k: v
-                              for k, v in importDocument.document.items()
-                              if v is not None and v is not ''}  # 0 / false allowed
-            packedJsonDict['_dtid'] = importDocumentTypeId
-            packedJsonDict['_msid'] = modelSetId
+            packedJsonDict = {
+                k: v
+                for k, v in importDocument.document.items()
+                if v is not None and v is not ""
+            }  # 0 / false allowed
+            packedJsonDict["_dtid"] = importDocumentTypeId
+            packedJsonDict["_msid"] = modelSetId
             documentJson = json.dumps(packedJsonDict, sort_keys=True)
 
             # Work out if we need to update the object type
             if existingObject:
                 updates.append(
-                    dict(b_id=existingObject.id,
-                         b_typeId=importDocumentTypeId,
-                         b_documentJson=documentJson)
+                    dict(
+                        b_id=existingObject.id,
+                        b_typeId=importDocumentTypeId,
+                        b_documentJson=documentJson,
+                    )
                 )
                 dontDeleteObjectIds.append(existingObject.id)
 
@@ -279,8 +304,10 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
                     documentTypeId=importDocumentTypeId,
                     key=importDocument.key,
                     importGroupHash=importDocument.importGroupHash,
-                    chunkKey=makeChunkKey(importDocument.modelSetKey, importDocument.key),
-                    documentJson=documentJson
+                    chunkKey=makeChunkKey(
+                        importDocument.modelSetKey, importDocument.key
+                    ),
+                    documentJson=documentJson,
                 )
                 inserts.append(existingObject.tupleToSqlaBulkInsertDict())
 
@@ -294,16 +321,18 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
         if updates:
             stmt = (
                 documentTable.update()
-                    .where(documentTable.c.id == bindparam('b_id'))
-                    .values(documentTypeId=bindparam('b_typeId'),
-                            documentJson=bindparam('b_documentJson'))
+                .where(documentTable.c.id == bindparam("b_id"))
+                .values(
+                    documentTypeId=bindparam("b_typeId"),
+                    documentJson=bindparam("b_documentJson"),
+                )
             )
             conn.execute(stmt, updates)
 
         if chunkKeysForQueue:
             conn.execute(
                 queueTable.insert(),
-                [dict(modelSetId=m, chunkKey=c) for m, c in chunkKeysForQueue]
+                [dict(modelSetId=m, chunkKey=c) for m, c in chunkKeysForQueue],
             )
 
         if inserts or updates or chunkKeysForQueue:
@@ -311,14 +340,17 @@ def _insertOrUpdateObjects(newDocuments: List[ImportDocumentTuple],
         else:
             transaction.rollback()
 
-        logger.debug("Inserted %s updated %s queued %s chunks in %s",
-                     len(inserts), len(updates), len(chunkKeysForQueue),
-                     (datetime.now(pytz.utc) - startTime))
+        logger.debug(
+            "Inserted %s updated %s queued %s chunks in %s",
+            len(inserts),
+            len(updates),
+            len(chunkKeysForQueue),
+            (datetime.now(pytz.utc) - startTime),
+        )
 
     except Exception:
         transaction.rollback()
         raise
-
 
     finally:
         conn.close()

@@ -15,8 +15,8 @@ from sqlalchemy.orm import sessionmaker
 
 from peek_core_docdb._private.worker.tasks._CalcChunkKey import makeChunkKey
 
-revision = 'a423a783700f'
-down_revision = 'c1d2d5475c64'
+revision = "a423a783700f"
+down_revision = "c1d2d5475c64"
 branch_labels = None
 depends_on = None
 
@@ -33,14 +33,14 @@ __DeclarativeBase = declarative_base(metadata=MetaData(schema="core_docdb"))
 
 
 class __DocDbModelSet(__DeclarativeBase):
-    __tablename__ = 'DocDbModelSet'
+    __tablename__ = "DocDbModelSet"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     key = Column(String, nullable=False, unique=True)
 
 
 class __DocDbDocument(__DeclarativeBase):
-    __tablename__ = 'DocDbDocument'
+    __tablename__ = "DocDbDocument"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     modelSetId = Column(Integer)
@@ -54,16 +54,20 @@ def _loadSearchObjects(session):
     while True:
         rows = (
             session.query(__DocDbDocument)
-                .order_by(__DocDbDocument.id)
-                .offset(lastOffset)
-                .limit(FETCH_SIZE)
-                .yield_per(FETCH_SIZE)
-                .all()
+            .order_by(__DocDbDocument.id)
+            .offset(lastOffset)
+            .limit(FETCH_SIZE)
+            .yield_per(FETCH_SIZE)
+            .all()
         )
-        if not rows: return
-        logger.info("Loading %s-%s for %s",
-                    lastOffset, lastOffset+FETCH_SIZE,
-                    __DocDbDocument.__name__)
+        if not rows:
+            return
+        logger.info(
+            "Loading %s-%s for %s",
+            lastOffset,
+            lastOffset + FETCH_SIZE,
+            __DocDbDocument.__name__,
+        )
         yield rows
         lastOffset += FETCH_SIZE
 
@@ -85,11 +89,13 @@ def upgrade():
     op.execute('TRUNCATE TABLE core_docdb."DocDbEncodedChunkTuple" ')
     op.execute('TRUNCATE TABLE core_docdb."DocDbChunkQueue" ')
 
-    op.execute('''INSERT INTO core_docdb."DocDbChunkQueue"
+    op.execute(
+        """INSERT INTO core_docdb."DocDbChunkQueue"
                             ("modelSetId", "chunkKey")
                             SELECT DISTINCT "modelSetId", "chunkKey"
                             FROM core_docdb."DocDbDocument"
-                         ''')
+                         """
+    )
 
 
 def downgrade():

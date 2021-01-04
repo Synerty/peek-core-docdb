@@ -27,5 +27,4 @@ class WorkerEntryHook(PluginWorkerEntryHookABC):
 
     @property
     def celeryAppIncludes(self):
-        return [ImportTask.__name__,
-                ChunkCompilerTask.__name__]
+        return [ImportTask.__name__, ChunkCompilerTask.__name__]

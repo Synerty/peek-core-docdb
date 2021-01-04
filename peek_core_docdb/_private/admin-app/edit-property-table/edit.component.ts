@@ -1,6 +1,15 @@
 import { Component } from "@angular/core"
-import { BalloonMsgService, NgLifeCycleEvents } from "@synerty/peek-plugin-base-js"
-import { extend, TupleDataObserverService, TupleLoader, TupleSelector, VortexService } from "@synerty/vortexjs"
+import {
+    BalloonMsgService,
+    NgLifeCycleEvents
+} from "@synerty/peek-plugin-base-js"
+import {
+    extend,
+    TupleDataObserverService,
+    TupleLoader,
+    TupleSelector,
+    VortexService
+} from "@synerty/vortexjs"
 import { DocDbModelSetTuple, DocDbPropertyTuple } from "@peek/peek_core_docdb"
 import { docDbFilt } from "@peek/peek_core_docdb/_private"
 

@@ -9,8 +9,8 @@ Create Date: 2020-05-01 23:59:15.448423
 """
 
 # revision identifiers, used by Alembic.
-revision = '0b20ccfb7a6a'
-down_revision = '6c94c040e18c'
+revision = "0b20ccfb7a6a"
+down_revision = "6c94c040e18c"
 branch_labels = None
 depends_on = None
 
@@ -18,8 +18,9 @@ from alembic import op
 import sqlalchemy as sa
 import geoalchemy2
 
+
 def _alterColumnPkBigInt(schemaName, tableName):
-    return '''
+    return """
         
         DO $$
             DECLARE
@@ -68,9 +69,9 @@ def _alterColumnPkBigInt(schemaName, tableName):
         ALTER TABLE %(schemaName)s."%(tableName)s"
         ALTER COLUMN "%(columnName)s" SET DEFAULT 
             nextval('%(schemaName)s."%(tableName)s_%(columnName)s_seq"'::regclass);
-        ''' % dict(schemaName=schemaName,
-                   tableName=tableName,
-                   columnName='id')
+        """ % dict(
+        schemaName=schemaName, tableName=tableName, columnName="id"
+    )
 
 
 def upgrade():

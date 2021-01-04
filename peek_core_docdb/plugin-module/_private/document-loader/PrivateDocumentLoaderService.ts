@@ -12,7 +12,11 @@ import {
     VortexStatusService
 } from "@synerty/vortexjs"
 
-import { docDbCacheStorageName, docDbFilt, docDbTuplePrefix } from "../PluginNames"
+import {
+    docDbCacheStorageName,
+    docDbFilt,
+    docDbTuplePrefix
+} from "../PluginNames"
 
 import { Subject } from "rxjs"
 import { Observable } from "rxjs"

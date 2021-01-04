@@ -7,8 +7,9 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import Index
 from vortex.Tuple import Tuple, addTupleType
 
-from peek_abstract_chunked_index.private.tuples.ACIEncodedChunkTupleABC import \
-    ACIEncodedChunkTupleABC
+from peek_abstract_chunked_index.private.tuples.ACIEncodedChunkTupleABC import (
+    ACIEncodedChunkTupleABC,
+)
 from peek_core_docdb._private.PluginNames import docDbTuplePrefix
 from peek_core_docdb._private.storage.DocDbModelSet import DocDbModelSet
 from .DeclarativeBase import DeclarativeBase
@@ -17,17 +18,15 @@ logger = logging.getLogger(__name__)
 
 
 @addTupleType
-class DocDbEncodedChunk(Tuple, DeclarativeBase,
-                        ACIEncodedChunkTupleABC):
-
-    __tablename__ = 'DocDbEncodedChunkTuple'
-    __tupleType__ = docDbTuplePrefix + 'DocDbEncodedChunk'
+class DocDbEncodedChunk(Tuple, DeclarativeBase, ACIEncodedChunkTupleABC):
+    __tablename__ = "DocDbEncodedChunkTuple"
+    __tupleType__ = docDbTuplePrefix + "DocDbEncodedChunk"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
 
-    modelSetId = Column(Integer,
-                        ForeignKey('DocDbModelSet.id', ondelete='CASCADE'),
-                        nullable=False)
+    modelSetId = Column(
+        Integer, ForeignKey("DocDbModelSet.id", ondelete="CASCADE"), nullable=False
+    )
     modelSet = relationship(DocDbModelSet)
 
     chunkKey = Column(String, nullable=False)
@@ -61,8 +60,10 @@ class DocDbEncodedChunk(Tuple, DeclarativeBase,
 
     @classmethod
     def sqlCoreLoad(cls, row):
-        return DocDbEncodedChunk(id=row.id,
-                                 chunkKey=row.chunkKey,
-                                 encodedData=row.encodedData,
-                                 encodedHash=row.encodedHash,
-                                 lastUpdate=row.lastUpdate)
+        return DocDbEncodedChunk(
+            id=row.id,
+            chunkKey=row.chunkKey,
+            encodedData=row.encodedData,
+            encodedHash=row.encodedHash,
+            lastUpdate=row.lastUpdate,
+        )

@@ -14,17 +14,17 @@ filtKey.update(docDbFilt)
 
 # This is the CRUD hander
 class __CrudHandler(OrmCrudHandler):
-
     def createDeclarative(self, session, payloadFilt):
-        return session.query(DocDbDocument) \
-            .filter(DocDbDocument.key == payloadFilt.get("docKey")) \
+        return (
+            session.query(DocDbDocument)
+            .filter(DocDbDocument.key == payloadFilt.get("docKey"))
             .all()
+        )
 
 
 # This method creates an instance of the handler class.
 def makeDocumentTableHandler(tupleObservable, dbSessionCreator):
-    handler = __CrudHandler(dbSessionCreator, DocDbDocument,
-                            filtKey)
+    handler = __CrudHandler(dbSessionCreator, DocDbDocument, filtKey)
 
     logger.debug("Started")
     return handler

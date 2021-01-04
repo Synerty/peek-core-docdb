@@ -2,7 +2,12 @@ import { Component, OnInit } from "@angular/core"
 import { ActivatedRoute, Params } from "@angular/router"
 import { NgLifeCycleEvents, HeaderService } from "@synerty/peek-plugin-base-js"
 import { VortexStatusService } from "@synerty/vortexjs"
-import { DocDbService, DocPropT, DocumentResultI, DocumentTuple } from "@peek/peek_core_docdb"
+import {
+    DocDbService,
+    DocPropT,
+    DocumentResultI,
+    DocumentTuple
+} from "@peek/peek_core_docdb"
 
 @Component({
     selector: "plugin-docdb-popup-debug",
@@ -51,7 +56,10 @@ export class DocDbPopupComponent extends NgLifeCycleEvents implements OnInit {
             })
     }
     
-    private loadDoc(doc: DocumentTuple, key: string) {
+    private loadDoc(
+        doc: DocumentTuple,
+        key: string
+    ) {
         doc = doc || new DocumentTuple()
         this.doc = doc
         this.docTypeName = ""

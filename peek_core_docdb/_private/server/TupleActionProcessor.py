@@ -9,5 +9,6 @@ def makeTupleActionProcessorHandler(mainController: MainController):
     processor = TupleActionProcessor(
         tupleActionProcessorName=docDbActionProcessorName,
         additionalFilt=docDbFilt,
-        defaultDelegate=mainController)
+        defaultDelegate=mainController,
+    )
     return processor

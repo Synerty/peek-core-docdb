@@ -2,68 +2,92 @@
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
         <!-- Home Tab -->
-        <li role="presentation" class="active">
-            <a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a>
+        <li class="active" role="presentation">
+            <a aria-controls="home" data-toggle="tab" href="#home" role="tab">
+                Home
+            </a>
         </li>
         <!-- Status -->
         <li role="presentation">
-            <a href="#status" aria-controls="status" role="tab"
-               data-toggle="tab">Status</a>
+            <a
+                aria-controls="status" data-toggle="tab" href="#status"
+                role="tab"
+            >Status
+            </a>
         </li>
         <!-- Edit Document Tab -->
         <li role="presentation">
-            <a href="#editDocument" aria-controls="editDocument" role="tab"
-               data-toggle="tab">View Document</a>
+            <a
+                aria-controls="editDocument" data-toggle="tab"
+                href="#editDocument"
+                role="tab"
+            >View Document
+            </a>
         </li>
         <!-- Edit Document Type Tab -->
         <li role="presentation">
-            <a href="#editDocType" aria-controls="editDocType" role="tab"
-               data-toggle="tab">Edit Document Types</a>
+            <a
+                aria-controls="editDocType" data-toggle="tab"
+                href="#editDocType"
+                role="tab"
+            >Edit Document Types
+            </a>
         </li>
         <!-- Edit Property Names Tab -->
         <li role="presentation">
-            <a href="#editPropertyNames" aria-controls="editPropertyNames" role="tab"
-               data-toggle="tab">Edit Property Names</a>
+            <a
+                aria-controls="editPropertyNames" data-toggle="tab"
+                href="#editPropertyNames"
+                role="tab"
+            >Edit Property Names
+            </a>
         </li>
         <!-- Edit Settings Tab -->
         <li role="presentation">
-            <a href="#editSetting" aria-controls="editSetting" role="tab"
-               data-toggle="tab">Edit Settings</a>
+            <a
+                aria-controls="editSetting" data-toggle="tab"
+                href="#editSetting"
+                role="tab"
+            >Edit Settings
+            </a>
         </li>
     </ul>
-
+    
     <!-- Tab panes -->
     <div class="tab-content">
         <!-- Edit Status Tab -->
-        <div role="tabpanel" class="tab-pane" id="status">
+        <div class="tab-pane" id="status" role="tabpanel">
             <pl-docdb-status></pl-docdb-status>
         </div>
         <!-- Edit Settings Tab -->
-        <div role="tabpanel" class="tab-pane" id="editSetting">
+        <div class="tab-pane" id="editSetting" role="tabpanel">
             <pl-docdb-edit-setting></pl-docdb-edit-setting>
         </div>
         <!-- Edit Document Tab -->
-        <div role="tabpanel" class="tab-pane" id="editDocument">
+        <div class="tab-pane" id="editDocument" role="tabpanel">
             <pl-docdb-view-document></pl-docdb-view-document>
         </div>
         <!-- Edit Document Type Tab -->
-        <div role="tabpanel" class="tab-pane" id="editDocType">
+        <div class="tab-pane" id="editDocType" role="tabpanel">
             <pl-docdb-edit-object-type></pl-docdb-edit-object-type>
         </div>
         <!-- Edit Property Names Tab -->
-        <div role="tabpanel" class="tab-pane" id="editPropertyNames">
+        <div class="tab-pane" id="editPropertyNames" role="tabpanel">
             <pl-docdb-edit-property></pl-docdb-edit-property>
         </div>
         <!-- Home Tab -->
-        <div role="tabpanel" class="tab-pane active" id="home">
+        <div class="tab-pane active" id="home" role="tabpanel">
             <h1 class="text-center">Document DB</h1>
-            <p>This plugin stores JSON like 'Documents', and supports offline caching.</p>
-            <p>The documents are used to store information about objects, for example,
-                A piece of equipment might have a document that looks like this:</p>
+            <p>This plugin stores JSON like 'Documents', and supports offline
+               caching.</p>
+            <p>The documents are used to store information about objects, for
+               example,
+               A piece of equipment might have a document that looks like
+               this:</p>
             <pre>
 {{exampleDoc}}
             </pre>
         </div>
-
+    
     </div>
 </div>

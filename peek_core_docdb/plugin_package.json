@@ -2,7 +2,7 @@
     "plugin": {
         "title": "Document DB",
         "packageName": "peek_core_docdb",
-    "version":"0.0.0",
+        "version": "0.0.0",
         "buildNumber": "#PLUGIN_BUILD#",
         "buildDate": "#BUILD_DATE#",
         "creator": "Synerty Pty Ltd",
@@ -34,7 +34,6 @@
         "appModule": "docDb.module#DocDbModule",
         "moduleDir": "plugin-module"
     },
-
     "field": {
         "cfgDir": "_private/both-cfg",
         "cfgModule": "docdb-cfg.module#DocDBCfgModule",

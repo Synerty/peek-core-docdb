@@ -2,10 +2,10 @@
     <div class="panel-heading">Edit Search Properties
         <div class="btn-toolbar pull-right">
             <div class="btn-group">
-                <div class="btn btn-default btn-sm" (click)='save()'>
+                <div (click)="save()" class="btn btn-default btn-sm">
                     Save
                 </div>
-                <div class="btn btn-default btn-sm" (click)='resetClicked()'>
+                <div (click)="resetClicked()" class="btn btn-default btn-sm">
                     Reset
                 </div>
             </div>
@@ -26,9 +26,11 @@
                     {{item.name}}
                 </td>
                 <td>
-                    <input [(ngModel)]="item.title"
-                           class="form-control input-sm"
-                           type="text"/>
+                    <input
+                        [(ngModel)]="item.title"
+                        class="form-control input-sm"
+                        type="text"
+                    />
                 </td>
             </tr>
         </table>

@@ -5,10 +5,12 @@ from typing import Union, List
 
 from twisted.internet.defer import Deferred
 
-from peek_core_docdb._private.client.controller.DocumentCacheController import \
-    DocumentCacheController
-from peek_core_docdb._private.storage.DocDbDocumentTypeTuple import \
-    DocDbDocumentTypeTuple
+from peek_core_docdb._private.client.controller.DocumentCacheController import (
+    DocumentCacheController,
+)
+from peek_core_docdb._private.storage.DocDbDocumentTypeTuple import (
+    DocDbDocumentTypeTuple,
+)
 from peek_core_docdb._private.storage.DocDbEncodedChunk import DocDbEncodedChunk
 from peek_core_docdb._private.storage.DocDbModelSet import DocDbModelSet
 from peek_core_docdb._private.worker.tasks._CalcChunkKey import makeChunkKey
@@ -26,8 +28,9 @@ class ClientDocumentTupleProvider(TuplesProviderABC):
         self._cacheHandler = cacheHandler
 
     @deferToThreadWrapWithLogger(logger)
-    def makeVortexMsg(self, filt: dict,
-                      tupleSelector: TupleSelector) -> Union[Deferred, bytes]:
+    def makeVortexMsg(
+        self, filt: dict, tupleSelector: TupleSelector
+    ) -> Union[Deferred, bytes]:
         modelSetKey = tupleSelector.selector["modelSetKey"]
         keys = tupleSelector.selector["keys"]
 
@@ -52,7 +55,8 @@ class ClientDocumentTupleProvider(TuplesProviderABC):
                 if subKey not in docsByKey:
                     logger.warning(
                         "Document %s is missing from index, chunkKey %s",
-                        subKey, chunkKey
+                        subKey,
+                        chunkKey,
                     )
                     continue
 
@@ -60,12 +64,12 @@ class ClientDocumentTupleProvider(TuplesProviderABC):
                 objectProps: {} = json.loads(docsByKey[subKey])
 
                 # Get out the object type
-                thisDocumentTypeId = objectProps['_dtid']
-                del objectProps['_dtid']
+                thisDocumentTypeId = objectProps["_dtid"]
+                del objectProps["_dtid"]
 
                 # Get out the object type
-                thisModelSetId = objectProps['_msid']
-                del objectProps['_msid']
+                thisModelSetId = objectProps["_msid"]
+                del objectProps["_msid"]
 
                 # Create the new object
                 newObject = DocumentTuple()

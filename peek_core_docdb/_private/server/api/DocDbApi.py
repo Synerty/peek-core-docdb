@@ -7,7 +7,6 @@ from peek_core_docdb.server.DocDbApiABC import DocDbApiABC
 
 
 class DocDbApi(DocDbApiABC):
-
     def __init__(self, importController: ImportController):
         self._importController = importController
 

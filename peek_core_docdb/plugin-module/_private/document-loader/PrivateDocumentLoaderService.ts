@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core"
-import { NgLifeCycleEvents } from "@synerty/peek-plugin-base-js"
 import {
     extend,
+    NgLifeCycleEvents,
     Payload,
     PayloadEnvelope,
     TupleOfflineStorageNameService,
@@ -18,8 +18,7 @@ import {
     docDbTuplePrefix
 } from "../PluginNames"
 
-import { Subject } from "rxjs"
-import { Observable } from "rxjs"
+import { Observable, Subject } from "rxjs"
 import { EncodedDocumentChunkTuple } from "./EncodedDocumentChunkTuple"
 import { DocumentUpdateDateTuple } from "./DocumentUpdateDateTuple"
 import { DocumentTuple } from "../../DocumentTuple"

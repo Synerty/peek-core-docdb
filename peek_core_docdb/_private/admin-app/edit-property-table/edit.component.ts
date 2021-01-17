@@ -1,10 +1,8 @@
 import { Component } from "@angular/core"
-import {
-    BalloonMsgService,
-    NgLifeCycleEvents
-} from "@synerty/peek-plugin-base-js"
+import { BalloonMsgService } from "@synerty/peek-plugin-base-js"
 import {
     extend,
+    NgLifeCycleEvents,
     TupleDataObserverService,
     TupleLoader,
     TupleSelector,

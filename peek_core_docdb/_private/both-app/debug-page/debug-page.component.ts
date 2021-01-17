@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core"
 import { ActivatedRoute, Params } from "@angular/router"
-import { NgLifeCycleEvents, HeaderService } from "@synerty/peek-plugin-base-js"
-import { VortexStatusService } from "@synerty/vortexjs"
+import { HeaderService } from "@synerty/peek-plugin-base-js"
+import { NgLifeCycleEvents, VortexStatusService } from "@synerty/vortexjs"
 import {
     DocDbService,
     DocPropT,

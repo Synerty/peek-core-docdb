@@ -92,7 +92,7 @@ export class PrivateDocDbPopupService extends DocDbPopupService {
         if (!this.popupClicked) {
             return
         }
-        for (const el of event.path) {
+        for (const el of (event.path || event.composedPath())) {
             if (el.id === DOCDB_POPUP) {
                 return
             }

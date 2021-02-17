@@ -6,7 +6,6 @@ import {
     DocDbModelSetTuple
 } from "@peek/peek_core_docdb"
 import {
-    ,
     NgLifeCycleEvents,
     extend,
     TupleDataObserverService,

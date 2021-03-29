@@ -1,9 +1,8 @@
 import json
 import logging
 from collections import defaultdict
-from typing import Union, List
-
-from twisted.internet.defer import Deferred
+from typing import List
+from typing import Union
 
 from peek_core_docdb._private.client.controller.DocumentCacheController import (
     DocumentCacheController,
@@ -15,7 +14,10 @@ from peek_core_docdb._private.storage.DocDbEncodedChunk import DocDbEncodedChunk
 from peek_core_docdb._private.storage.DocDbModelSet import DocDbModelSet
 from peek_core_docdb._private.worker.tasks._CalcChunkKey import makeChunkKey
 from peek_core_docdb.tuples.DocumentTuple import DocumentTuple
+from twisted.internet.defer import Deferred
+
 from vortex.DeferUtil import deferToThreadWrapWithLogger
+from vortex.Jsonable import Jsonable
 from vortex.Payload import Payload
 from vortex.TupleSelector import TupleSelector
 from vortex.handler.TupleDataObservableHandler import TuplesProviderABC
@@ -45,10 +47,12 @@ class ClientDocumentTupleProvider(TuplesProviderABC):
             chunk: DocDbEncodedChunk = self._cacheHandler.encodedChunk(chunkKey)
 
             if not chunk:
-                logger.warning("Document chunk %s is missing from cache", chunkKey)
+                logger.warning("Document chunk %s is missing from cache",
+                    chunkKey)
                 continue
 
-            docsByKeyStr = Payload().fromEncodedPayload(chunk.encodedData).tuples[0]
+            docsByKeyStr = \
+            Payload().fromEncodedPayload(chunk.encodedData).tuples[0]
             docsByKey = json.loads(docsByKeyStr)
 
             for subKey in subKeys:
@@ -62,6 +66,7 @@ class ClientDocumentTupleProvider(TuplesProviderABC):
 
                 # Reconstruct the data
                 objectProps: {} = json.loads(docsByKey[subKey])
+                objectProps = Jsonable().fromJsonField(objectProps)
 
                 # Get out the object type
                 thisDocumentTypeId = objectProps["_dtid"]
@@ -77,8 +82,10 @@ class ClientDocumentTupleProvider(TuplesProviderABC):
 
                 newObject.key = subKey
                 newObject.modelSet = DocDbModelSet(id=thisModelSetId)
-                newObject.documentType = DocDbDocumentTypeTuple(id=thisDocumentTypeId)
+                newObject.documentType = DocDbDocumentTypeTuple(
+                    id=thisDocumentTypeId)
                 newObject.document = objectProps
 
         # Create the vortex message
-        return Payload(filt, tuples=foundDocuments).makePayloadEnvelope().toVortexMsg()
+        return Payload(filt,
+            tuples=foundDocuments).makePayloadEnvelope().toVortexMsg()

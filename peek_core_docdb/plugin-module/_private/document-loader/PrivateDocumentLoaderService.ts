@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core"
 import {
     extend,
+    Jsonable,
     NgLifeCycleEvents,
     Payload,
     PayloadEnvelope,
@@ -579,6 +580,7 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
                             
                             // Reconstruct the data
                             let objectProps: {} = JSON.parse(chunkData[key])
+                            objectProps = new Jsonable().fromJsonField(objectProps)
                             
                             // Get out the object type
                             let thisDocumentTypeId = objectProps["_dtid"]

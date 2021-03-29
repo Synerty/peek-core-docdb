@@ -2,24 +2,33 @@ import json
 import logging
 from collections import defaultdict
 from datetime import datetime
-from typing import List, Dict, Set, Tuple
+from typing import Dict
+from typing import List
+from typing import Set
+from typing import Tuple
 
 import pytz
-from sqlalchemy import select, bindparam, and_
-from txcelery.defer import DeferrableTask
-from vortex.Payload import Payload
-
-from peek_plugin_base.worker import CeleryDbConn
-from peek_core_docdb._private.storage.DocDbCompilerQueue import DocDbCompilerQueue
+from peek_core_docdb._private.storage.DocDbCompilerQueue import \
+    DocDbCompilerQueue
 from peek_core_docdb._private.storage.DocDbDocument import DocDbDocument
 from peek_core_docdb._private.storage.DocDbDocumentTypeTuple import (
     DocDbDocumentTypeTuple,
 )
 from peek_core_docdb._private.storage.DocDbModelSet import DocDbModelSet
-from peek_core_docdb._private.storage.DocDbPropertyTuple import DocDbPropertyTuple
-from peek_plugin_base.worker.CeleryApp import celeryApp
+from peek_core_docdb._private.storage.DocDbPropertyTuple import \
+    DocDbPropertyTuple
 from peek_core_docdb._private.worker.tasks._CalcChunkKey import makeChunkKey
 from peek_core_docdb.tuples.ImportDocumentTuple import ImportDocumentTuple
+from sqlalchemy import and_
+from sqlalchemy import bindparam
+from sqlalchemy import select
+from txcelery.defer import DeferrableTask
+
+from peek_plugin_base.worker import CeleryDbConn
+from peek_plugin_base.worker.CeleryApp import celeryApp
+from vortex.Jsonable import Jsonable
+from vortex.Payload import Payload
+
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +108,8 @@ def _loadModelSets() -> Dict[str, int]:
     try:
         modelSetTable = DocDbModelSet.__table__
         results = list(
-            conn.execute(select(columns=[modelSetTable.c.id, modelSetTable.c.key]))
+            conn.execute(
+                select(columns=[modelSetTable.c.id, modelSetTable.c.key]))
         )
         modelSetIdByKey = {o.key: o.id for o in results}
         del results
@@ -151,8 +161,8 @@ def _prepareLookups(
         # Prepare Properties
         dbProps = (
             dbSession.query(DocDbPropertyTuple)
-            .filter(DocDbPropertyTuple.modelSetId == modelSetId)
-            .all()
+                .filter(DocDbPropertyTuple.modelSetId == modelSetId)
+                .all()
         )
 
         propertyNames -= set([o.name for o in dbProps])
@@ -161,7 +171,8 @@ def _prepareLookups(
             for newPropName in propertyNames:
                 dbSession.add(
                     DocDbPropertyTuple(
-                        name=newPropName, title=newPropName, modelSetId=modelSetId
+                        name=newPropName, title=newPropName,
+                        modelSetId=modelSetId
                     )
                 )
 
@@ -173,8 +184,8 @@ def _prepareLookups(
         # Prepare Object Types
         dbObjectTypes = (
             dbSession.query(DocDbDocumentTypeTuple)
-            .filter(DocDbDocumentTypeTuple.modelSetId == modelSetId)
-            .all()
+                .filter(DocDbDocumentTypeTuple.modelSetId == modelSetId)
+                .all()
         )
         docTypeNames -= set([o.name for o in dbObjectTypes])
 
@@ -194,7 +205,8 @@ def _prepareLookups(
             dbObjectTypes = dbSession.query(DocDbDocumentTypeTuple).all()
             docTypeIdsByName = {o.name: o.id for o in dbObjectTypes}
 
-        logger.debug("Prepared lookups in %s", (datetime.now(pytz.utc) - startTime))
+        logger.debug("Prepared lookups in %s",
+            (datetime.now(pytz.utc) - startTime))
 
         return docTypeIdsByName
 
@@ -274,7 +286,8 @@ def _insertOrUpdateObjects(
             processedKeys.add(importDocument.key)
 
             existingObject = foundObjectByKey.get(importDocument.key)
-            importDocumentTypeId = docTypeIdsByName[importDocument.documentTypeKey]
+            importDocumentTypeId = docTypeIdsByName[
+                importDocument.documentTypeKey]
 
             packedJsonDict = {
                 k: v
@@ -283,8 +296,9 @@ def _insertOrUpdateObjects(
             }  # 0 / false allowed
             packedJsonDict["_dtid"] = importDocumentTypeId
             packedJsonDict["_msid"] = modelSetId
-            documentJson = json.dumps(packedJsonDict, sort_keys=True)
 
+            documentJson = Jsonable().toJsonField(packedJsonDict, {})
+            documentJson = json.dumps(documentJson)
             # Work out if we need to update the object type
             if existingObject:
                 updates.append(
@@ -321,8 +335,8 @@ def _insertOrUpdateObjects(
         if updates:
             stmt = (
                 documentTable.update()
-                .where(documentTable.c.id == bindparam("b_id"))
-                .values(
+                    .where(documentTable.c.id == bindparam("b_id"))
+                    .values(
                     documentTypeId=bindparam("b_typeId"),
                     documentJson=bindparam("b_documentJson"),
                 )

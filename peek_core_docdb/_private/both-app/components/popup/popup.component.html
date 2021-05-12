@@ -12,7 +12,10 @@
         [style.top]="(top$ | async) + 'px'"
         class="docdb-popup"
     >
-        <nz-card [nzTitle]="headerDetails(params.details$ | async)">
+        <nz-card
+            [nzBorderless]="true"
+            [nzTitle]="headerDetails(params.details$ | async)"
+        >
             <div *ngIf="bodyDetails(params.details$ | async)?.length">
                 <nz-table
                     #detailsTable

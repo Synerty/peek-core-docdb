@@ -11,8 +11,6 @@ To update the names, follow this procedure:
 
 ----
 
-#.  Open the Peek Admin UI and navigate to the DocumentDB plugin.
-
 #.  Click on the **Edit Document Types** tab
 
 #.  Update the **Description** column.
@@ -33,13 +31,17 @@ To update the names, follow this procedure:
 
 ----
 
-#.  Open the Peek Admin UI and navigate to the DocumentDB plugin.
+Open the Peek Admin UI and navigate to the DocumentDB plugin.
 
-#.  Click on the **Edit Property Names** tab
+----
 
-#.  Update the **Title** column.
+#.  Click on the **Edit Property Names** tab.
 
-#.  Click save.
+#.  Update the **Order** column if required.
+
+#. Update the **Title** column.
+
+#.  Click **Save**.
 
 
 .. image:: admin_task_update_property_name.png

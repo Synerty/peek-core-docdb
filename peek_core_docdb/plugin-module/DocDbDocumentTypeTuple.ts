@@ -1,23 +1,24 @@
-import { addTupleType, Tuple } from "@synerty/vortexjs"
-import { docDbTuplePrefix } from "./_private/PluginNames"
+import { addTupleType, Tuple } from "@synerty/vortexjs";
+import { docDbTuplePrefix } from "./_private/PluginNames";
 
 @addTupleType
 export class DocDbDocumentTypeTuple extends Tuple {
-    public static readonly tupleName = docDbTuplePrefix + "DocDbDocumentTypeTuple"
-    
+    public static readonly tupleName =
+        docDbTuplePrefix + "DocDbDocumentTypeTuple";
+
     //  The id
-    id: number
-    
+    id: number;
+
     //  The modelSetId of the document property
-    modelSetId: number
-    
+    modelSetId: number;
+
     //  The name of the document type
-    name: string
-    
+    name: string;
+
     //  The title of the document type
-    title: string
-    
+    title: string;
+
     constructor() {
-        super(DocDbDocumentTypeTuple.tupleName)
+        super(DocDbDocumentTypeTuple.tupleName);
     }
 }

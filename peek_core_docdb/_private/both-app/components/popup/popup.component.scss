@@ -1,12 +1,12 @@
-@import '~@synerty/peek-plugin-base-js/src/styles/_mixins';
-@import '~@synerty/peek-plugin-base-js/src/styles/_variables';
+@import "~@synerty/peek-plugin-base-js/src/styles/_mixins";
+@import "~@synerty/peek-plugin-base-js/src/styles/_variables";
 
 $margin: 8px;
 
 .docdb-popup {
     position: fixed;
     z-index: 999;
-    box-shadow: 0 2px 4px rgba(0,0,0,.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .buttons {

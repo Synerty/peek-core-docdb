@@ -1,10 +1,9 @@
 <div class="panel panel-default">
-    <div class="panel-heading">Edit Document DB Properties
+    <div class="panel-heading">
+        Edit Document DB Properties
         <div class="btn-toolbar pull-right">
             <div class="btn-group">
-                <div (click)="save()" class="btn btn-default btn-sm">
-                    Save
-                </div>
+                <div (click)="save()" class="btn btn-default btn-sm">Save</div>
                 <div (click)="resetClicked()" class="btn btn-default btn-sm">
                     Reset
                 </div>
@@ -25,10 +24,10 @@
             </tr>
             <tr *ngFor="let item of items">
                 <td>
-                    {{modelSetTitle(item)}}
+                    {{ modelSetTitle(item) }}
                 </td>
                 <td>
-                    {{item.name}}
+                    {{ item.name }}
                 </td>
                 <td>
                     <input

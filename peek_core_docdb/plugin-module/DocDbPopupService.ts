@@ -1,5 +1,5 @@
-import { Observable } from "rxjs"
-import { DocumentTuple } from "@peek/peek_core_docdb"
+import { Observable } from "rxjs";
+import { DocumentTuple } from "@peek/peek_core_docdb";
 
 /** Object Action Item Callback Interface
  *
@@ -8,7 +8,7 @@ import { DocumentTuple } from "@peek/peek_core_docdb"
  *
  */
 export interface DocDbPopupActionCallbackI {
-    (): void
+    (): void;
 }
 
 /** Object Action Item Interface
@@ -21,12 +21,12 @@ export interface DocDbPopupActionCallbackI {
  *
  */
 export interface DocDbPopupActionI {
-    name: string
-    tooltip: string | null
-    icon: string | null
-    callback: DocDbPopupActionCallbackI | null
-    children: DocDbPopupActionI[]
-    closeOnCallback?: boolean
+    name: string;
+    tooltip: string | null;
+    icon: string | null;
+    callback: DocDbPopupActionCallbackI | null;
+    children: DocDbPopupActionI[];
+    closeOnCallback?: boolean;
 }
 
 /** Object Item Detail Interface
@@ -36,10 +36,10 @@ export interface DocDbPopupActionI {
  *
  */
 export interface DocDbPopupDetailI {
-    title: string
-    value: string // TODO: Add support for tables, etc.
-    order: number
-    showInHeader: boolean
+    title: string;
+    value: string; // TODO: Add support for tables, etc.
+    order: number;
+    showInHeader: boolean;
 }
 
 /** Object Trigger Position
@@ -48,8 +48,8 @@ export interface DocDbPopupDetailI {
  *
  */
 export interface ObjectTriggerPositionI {
-    x: number
-    y: number
+    x: number;
+    y: number;
 }
 
 /** Object Popup Type
@@ -58,14 +58,14 @@ export interface ObjectTriggerPositionI {
 export enum DocDbPopupTypeE {
     tooltipPopup,
     summaryPopup,
-    detailPopup
+    detailPopup,
 }
 
 export enum DocDbPopupClosedReasonE {
     userClickedAction,
     userDismissedPopup,
     closedByApiCall,
-    other
+    other,
 }
 
 /** Object Trigger Options
@@ -74,40 +74,40 @@ export enum DocDbPopupClosedReasonE {
  *
  */
 export interface ObjectTriggerOptionsI {
-    triggeredForContext?: string
-    popupDelayMs?: number
+    triggeredForContext?: string;
+    popupDelayMs?: number;
 }
 
 export interface DocDbPopupContextI {
     /** The type of the popup being displayed */
-    popupType: DocDbPopupTypeE
-    
+    popupType: DocDbPopupTypeE;
+
     /** The is the key assigned to the Object item when it was imported */
-    key: string
-    
+    key: string;
+
     /** The is the document from DocDB */
-    document: DocumentTuple | null
-    
+    document: DocumentTuple | null;
+
     /** The key of the model set that this Object belongs to */
-    modelSetKey: string
-    
+    modelSetKey: string;
+
     /** The name of the plugin that triggered the popup */
-    triggeredByPlugin: string
-    
+    triggeredByPlugin: string;
+
     /** The additional options that the popup was triggered with  */
-    options: ObjectTriggerOptionsI
-    
+    options: ObjectTriggerOptionsI;
+
     /** Add Action Item
      *
      * @param action: A action item, or the root action item of a hierarchy of items to add.
      */
-    addAction(action: DocDbPopupActionI): void
-    
+    addAction(action: DocDbPopupActionI): void;
+
     /** Add Detail Items
      *
      * @param details: A list of details object on the popup.
      */
-    addDetails(details: DocDbPopupDetailI[]): void
+    addDetails(details: DocDbPopupDetailI[]): void;
 }
 
 /** Object Item Popup Service
@@ -118,9 +118,8 @@ export interface DocDbPopupContextI {
  * be fired with a context class, allowing the other plugin to add actions and details to the popup.
  */
 export abstract class DocDbPopupService {
-    constructor() {
-    }
-    
+    constructor() {}
+
     /** Show Object Popup
      *
      * Use this method to trigger a popup with the objects respective details
@@ -134,35 +133,38 @@ export abstract class DocDbPopupService {
         modelSetKey: string,
         objectKey: string,
         options?: ObjectTriggerOptionsI
-    ): void
-    
-    abstract hideAllPopups(): void
-    
+    ): void;
+
+    abstract hideAllPopups(): void;
+
     /** Hide Object Popup
      *
      * Use this method to trigger a tooltip with the objects respective details
      *
      */
-    abstract hidePopup(popupType: DocDbPopupTypeE): void
-    
+    abstract hidePopup(popupType: DocDbPopupTypeE): void;
+
     /** Hide Hover Popup
      *
      * Use this method to hide any popup opened via hover
      *
      */
-    abstract hideHoverPopup(): void
-    
+    abstract hideHoverPopup(): void;
+
     /** Object Popup Observable
      *
      * This method returns an observable that is fired with the context when ever a
      * popup is triggered.
      */
-    abstract popupObservable(popupType: DocDbPopupTypeE): Observable<DocDbPopupContextI>
-    
+    abstract popupObservable(
+        popupType: DocDbPopupTypeE
+    ): Observable<DocDbPopupContextI>;
+
     /** Object Popup Closed Observable
      *
      * This method returns an observable that is fired when a popup is closed.
      */
-    abstract popupClosedObservable(popupType: DocDbPopupTypeE)
-        : Observable<DocDbPopupClosedReasonE>
+    abstract popupClosedObservable(
+        popupType: DocDbPopupTypeE
+    ): Observable<DocDbPopupClosedReasonE>;
 }

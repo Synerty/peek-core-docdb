@@ -1,1 +1,1 @@
-export * from "./docdb.constants"
+export * from "./docdb.constants";

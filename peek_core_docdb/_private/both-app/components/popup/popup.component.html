@@ -1,10 +1,10 @@
 <ng-container *ngIf="params$ | async as params">
     <div
         *ngIf="
-      headerDetails(params.details$ | async)
-      || bodyDetails(params.details$ | async)?.length
-      || (params.actions$ | async)?.length
-    "
+            headerDetails(params.details$ | async) ||
+            bodyDetails(params.details$ | async)?.length ||
+            (params.actions$ | async)?.length
+        "
         [id]="DOCDB_POPUP"
         [style.bottom]="(bottom$ | async) + 'px'"
         [style.left]="(left$ | async) + 'px'"
@@ -24,14 +24,14 @@
                     nzSize="small"
                 >
                     <tbody>
-                    <tr *ngFor="let data of detailsTable.data">
-                        <td>
-                            {{data.title}}
-                        </td>
-                        <td>
-                            {{data.value}}
-                        </td>
-                    </tr>
+                        <tr *ngFor="let data of detailsTable.data">
+                            <td>
+                                {{ data.title }}
+                            </td>
+                            <td>
+                                {{ data.value }}
+                            </td>
+                        </tr>
                     </tbody>
                 </nz-table>
             </div>
@@ -45,13 +45,13 @@
                         nz-tooltip
                         nzSize="large"
                         nzType="default"
-                        style="white-space: normal;"
+                        style="white-space: normal"
                     >
                         <i
                             *ngIf="item.icon"
                             nz-icon
                             nzTheme="outline"
-                            nzType="{{item.icon}}"
+                            nzType="{{ item.icon }}"
                         ></i>
                     </button>
                 </div>
@@ -64,7 +64,7 @@
                         nz-tooltip
                         nzSize="large"
                         nzType="default"
-                        style="white-space: normal;"
+                        style="white-space: normal"
                     >
                         <i nz-icon nzTheme="outline" nzType="info"></i>
                     </button>
@@ -92,9 +92,9 @@
                     *ngIf="child.icon"
                     nz-icon
                     nzTheme="outline"
-                    nzType="{{child.icon}}"
+                    nzType="{{ child.icon }}"
                 ></i>
-                {{child.name}}
+                {{ child.name }}
             </li>
         </ul>
     </div>

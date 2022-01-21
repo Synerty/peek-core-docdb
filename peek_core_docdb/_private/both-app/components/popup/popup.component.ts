@@ -1,15 +1,15 @@
+import { BehaviorSubject } from "rxjs";
 import { ChangeDetectionStrategy, Component, ElementRef } from "@angular/core";
 import {
     DocDbPopupActionI,
     DocDbPopupClosedReasonE,
     DocDbPopupDetailI,
-    DocDbPopupTypeE
+    DocDbPopupTypeE,
 } from "@peek/peek_core_docdb";
 import {
     PopupTriggeredParams,
     PrivateDocDbPopupService,
 } from "@peek/peek_core_docdb/_private/services/PrivateDocDbPopupService";
-import { BehaviorSubject } from "rxjs";
 import { DOCDB_POPUP } from "@peek/peek_core_docdb/constants";
 
 type Popup = "tooltip" | "summary" | "detail";

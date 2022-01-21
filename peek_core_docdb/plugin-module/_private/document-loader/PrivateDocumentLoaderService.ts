@@ -1,3 +1,5 @@
+import { Observable, Subject } from "rxjs";
+import { filter, first, takeUntil } from "rxjs/operators";
 import { Injectable } from "@angular/core";
 import {
     extend,
@@ -18,8 +20,6 @@ import {
     docDbFilt,
     docDbTuplePrefix,
 } from "../PluginNames";
-
-import { Observable, Subject } from "rxjs";
 import { EncodedDocumentChunkTuple } from "./EncodedDocumentChunkTuple";
 import { DocumentUpdateDateTuple } from "./DocumentUpdateDateTuple";
 import { DocumentTuple } from "../../DocumentTuple";
@@ -152,7 +152,7 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
         let objTypeTs = new TupleSelector(DocDbDocumentTypeTuple.tupleName, {});
         this.tupleService.offlineObserver
             .subscribeToTupleSelector(objTypeTs)
-            .takeUntil(this.onDestroyEvent)
+            .pipe(takeUntil(this.onDestroyEvent))
             .subscribe((tuples: DocDbDocumentTypeTuple[]) => {
                 this.objectTypesByIds = {};
                 for (let item of tuples) {
@@ -165,7 +165,7 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
         let modelSetTs = new TupleSelector(DocDbModelSetTuple.tupleName, {});
         this.tupleService.offlineObserver
             .subscribeToTupleSelector(modelSetTs)
-            .takeUntil(this.onDestroyEvent)
+            .pipe(takeUntil(this.onDestroyEvent))
             .subscribe((tuples: DocDbModelSetTuple[]) => {
                 this.modelSetByIds = {};
                 for (let item of tuples) {
@@ -184,8 +184,8 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
         this._notifyStatus();
 
         this.deviceCacheControllerService.triggerCachingObservable
-            .takeUntil(this.onDestroyEvent)
-            .filter((v) => v)
+            .pipe(takeUntil(this.onDestroyEvent))
+            .pipe(filter((v) => v))
             .subscribe(() => {
                 this.initialLoad();
                 this._notifyStatus();
@@ -235,8 +235,8 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
                 .isOnline
                 ? Promise.resolve()
                 : this.vortexStatusService.isOnline
-                      .filter((online) => online)
-                      .first()
+                      .pipe(filter((online) => online))
+                      .pipe(first())
                       .toPromise();
 
             return isOnlinePromise
@@ -255,7 +255,7 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
             );
 
         return this.isReadyObservable()
-            .first()
+            .pipe(first())
             .toPromise()
             .then(() => this.getDocumentsWhenReady(modelSetKey, keys))
             .then((docs) => this._populateAndIndexObjectTypes(docs));
@@ -327,15 +327,15 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
                 this,
                 clientDocumentWatchUpdateFromDeviceFilt
             )
-            .takeUntil(this.onDestroyEvent)
+            .pipe(takeUntil(this.onDestroyEvent))
             .subscribe((payloadEnvelope: PayloadEnvelope) => {
                 this.processDocumentsFromServer(payloadEnvelope);
             });
 
         // If the vortex service comes back online, update the watch grids.
         this.vortexStatusService.isOnline
-            .filter((isOnline) => isOnline == true)
-            .takeUntil(this.onDestroyEvent)
+            .pipe(filter((isOnline) => isOnline == true))
+            .pipe(takeUntil(this.onDestroyEvent))
             .subscribe(() => this.askServerForUpdates());
     }
 

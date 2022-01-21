@@ -45,7 +45,7 @@ export class EditDocumentTypeComponent extends NgLifeCycleEvents {
 
         // let modelSetTs = new TupleSelector(ModelSetTuple.tupleName, {});
         // this.tupleObserver.subscribeToTupleSelector(modelSetTs)
-        //     .takeUntil(this.onDestroyEvent)
+        //     .pipe(takeUntil(this.onDestroyEvent))
         //     .subscribe((tuples: ModelSetTuple[]) => {
         //         this.modelSetById = {};
         //         for (let tuple of tuples) {
@@ -55,7 +55,7 @@ export class EditDocumentTypeComponent extends NgLifeCycleEvents {
         //
         // let documentTypeTs = new TupleSelector(DocDbDocumentTypeTuple.tupleName, {});
         // this.tupleObserver.subscribeToTupleSelector(documentTypeTs)
-        //     .takeUntil(this.onDestroyEvent)
+        //     .pipe(takeUntil(this.onDestroyEvent))
         //     .subscribe((tuples: DocDbDocumentTypeTuple[]) => {
         //         this.documentTypeById = {};
         //         for (let tuple of tuples) {

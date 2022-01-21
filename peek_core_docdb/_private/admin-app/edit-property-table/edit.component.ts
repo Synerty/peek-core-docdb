@@ -1,3 +1,4 @@
+import { takeUntil } from "rxjs/operators";
 import { Component } from "@angular/core";
 import { BalloonMsgService } from "@synerty/peek-plugin-base-js";
 import {
@@ -43,7 +44,7 @@ export class EditPropertyComponent extends NgLifeCycleEvents {
         let ts = new TupleSelector(DocDbModelSetTuple.tupleName, {});
         this.tupleObserver
             .subscribeToTupleSelector(ts)
-            .takeUntil(this.onDestroyEvent)
+            .pipe(takeUntil(this.onDestroyEvent))
             .subscribe((tuples: DocDbModelSetTuple[]) => {
                 this.modelSetById = {};
                 for (let tuple of tuples) {

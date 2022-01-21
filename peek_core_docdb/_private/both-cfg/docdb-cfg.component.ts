@@ -1,3 +1,4 @@
+import { takeUntil } from "rxjs/operators";
 import { Component } from "@angular/core";
 import { NgLifeCycleEvents } from "@synerty/vortexjs";
 import { DocDbTupleService } from "@peek/peek_core_docdb/_private";
@@ -23,7 +24,7 @@ export class DocdbCfgComponent extends NgLifeCycleEvents {
         this.lastStatus = this.documentLoader.status();
         this.documentLoader
             .statusObservable()
-            .takeUntil(this.onDestroyEvent)
+            .pipe(takeUntil(this.onDestroyEvent))
             .subscribe((value) => (this.lastStatus = value));
     }
 }

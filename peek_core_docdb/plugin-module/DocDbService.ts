@@ -1,3 +1,4 @@
+import { takeUntil } from "rxjs/operators";
 import { Injectable } from "@angular/core";
 import { NgLifeCycleEvents, TupleSelector } from "@synerty/vortexjs";
 import {
@@ -42,7 +43,7 @@ export class DocDbService extends NgLifeCycleEvents {
         let propTs = new TupleSelector(DocDbPropertyTuple.tupleName, {});
         this.tupleService.offlineObserver
             .subscribeToTupleSelector(propTs)
-            .takeUntil(this.onDestroyEvent)
+            .pipe(takeUntil(this.onDestroyEvent))
             .subscribe((tuples: DocDbPropertyTuple[]) => {
                 this.propertiesByName = {};
 

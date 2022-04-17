@@ -44,15 +44,20 @@ class ClientDocumentTupleProvider(TuplesProviderABC):
             keysByChunkKey[makeChunkKey(modelSetKey, key)].append(key)
 
         for chunkKey, subKeys in keysByChunkKey.items():
-            chunk: DocDbEncodedChunk = self._cacheHandler.encodedChunk(chunkKey)
+            # JS Side = PrivateDocumentLoaderService.getDocumentsForKeys
+            chunkData: DocDbEncodedChunk = self._cacheHandler.encodedChunk(
+                chunkKey
+            )
 
-            if not chunk:
-                logger.warning("Document chunk %s is missing from cache",
-                    chunkKey)
+            if not chunkData:
+                logger.warning(
+                    "Document chunk %s is missing from cache", chunkKey
+                )
                 continue
 
-            docsByKeyStr = \
-            Payload().fromEncodedPayload(chunk.encodedData).tuples[0]
+            docsByKeyStr = (
+                Payload().fromEncodedPayload(chunkData.encodedData).tuples[0]
+            )
             docsByKey = json.loads(docsByKeyStr)
 
             for subKey in subKeys:
@@ -83,9 +88,13 @@ class ClientDocumentTupleProvider(TuplesProviderABC):
                 newObject.key = subKey
                 newObject.modelSet = DocDbModelSet(id=thisModelSetId)
                 newObject.documentType = DocDbDocumentTypeTuple(
-                    id=thisDocumentTypeId)
+                    id=thisDocumentTypeId
+                )
                 newObject.document = objectProps
 
         # Create the vortex message
-        return Payload(filt,
-            tuples=foundDocuments).makePayloadEnvelope().toVortexMsg()
+        return (
+            Payload(filt, tuples=foundDocuments)
+            .makePayloadEnvelope()
+            .toVortexMsg()
+        )

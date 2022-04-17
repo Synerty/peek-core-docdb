@@ -222,10 +222,7 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
         }
 
         // If there is no offline support, or we're online
-        if (
-            !this.deviceCacheControllerService.cachingEnabled ||
-            this.vortexStatusService.snapshot.isOnline
-        ) {
+        if (this.vortexStatusService.snapshot.isOnline) {
             let ts = new TupleSelector(DocumentTuple.tupleName, {
                 modelSetKey: modelSetKey,
                 keys: keys,
@@ -241,18 +238,27 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
 
             return isOnlinePromise
                 .then(() =>
-                    this.tupleService.offlineObserver.pollForTuples(ts, false)
+                    this.tupleService.offlineObserver //
+                        .pollForTuples(ts, false)
                 )
                 .then((docs: DocumentTuple[]) =>
                     this._populateAndIndexObjectTypes(docs)
                 );
         }
 
-        // If we do have offline support
-        if (this.isReady())
-            return this.getDocumentsWhenReady(modelSetKey, keys).then((docs) =>
-                this._populateAndIndexObjectTypes(docs)
+        if (!this.deviceCacheControllerService.offlineModeEnabled) {
+            console.log(
+                "WARNING Offline support for Documents is disabled," +
+                    " returning zero results"
             );
+            return Promise.resolve({});
+        }
+
+        // If we do have offline support
+        if (this.isReady()) {
+            return this.getDocumentsWhenReady(modelSetKey, keys) //
+                .then((docs) => this._populateAndIndexObjectTypes(docs));
+        }
 
         return this.isReadyObservable()
             .pipe(first())
@@ -341,7 +347,7 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
 
     private areWeTalkingToTheServer(): boolean {
         return (
-            this.deviceCacheControllerService.cachingEnabled &&
+            this.deviceCacheControllerService.offlineModeEnabled &&
             this.vortexStatusService.snapshot.isOnline
         );
     }
@@ -557,70 +563,66 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
      * Get the objects with matching keywords from the index..
      *
      */
-    private getDocumentsForKeys(
+    private async getDocumentsForKeys(
         keys: string[],
         chunkKey: string
     ): Promise<DocumentTuple[]> {
+        // PY side = ClientDocumentTupleProvider.makeVortexMsg
         if (!this.index.updateDateByChunkKey.hasOwnProperty(chunkKey)) {
             console.log(`ObjectIDs: ${keys} doesn't appear in the index`);
-            return Promise.resolve([]);
+            return [];
         }
 
-        let retPromise: any;
-        retPromise = this.storage
-            .loadTuplesEncoded(new DocumentChunkTupleSelector(chunkKey))
-            .then((vortexMsg: string) => {
-                if (vortexMsg == null) {
-                    return [];
-                }
+        const vortexMsg: string = await this.storage.loadTuplesEncoded(
+            new DocumentChunkTupleSelector(chunkKey)
+        );
 
-                return Payload.fromEncodedPayload(vortexMsg)
-                    .then((payload: Payload) => JSON.parse(<any>payload.tuples))
-                    .then((chunkData: { [key: number]: string }) => {
-                        let foundDocuments: DocumentTuple[] = [];
+        if (vortexMsg == null) {
+            return [];
+        }
 
-                        for (let key of keys) {
-                            // Find the keyword, we're just iterating
-                            if (!chunkData.hasOwnProperty(key)) {
-                                console.log(
-                                    `WARNING: Document ${key} is missing from index,` +
-                                        ` chunkKey ${chunkKey}`
-                                );
-                                continue;
-                            }
+        const payload: Payload = await Payload.fromEncodedPayload(vortexMsg);
+        const docsByKey: { [key: number]: string } = JSON.parse(
+            <any>payload.tuples[0]
+        );
 
-                            // Reconstruct the data
-                            let objectProps: {} = JSON.parse(chunkData[key]);
-                            objectProps = new Jsonable().fromJsonField(
-                                objectProps
-                            );
+        let foundDocuments: DocumentTuple[] = [];
 
-                            // Get out the object type
-                            let thisDocumentTypeId = objectProps["_dtid"];
-                            delete objectProps["_dtid"];
+        for (const key of keys) {
+            // Find the keyword, we're just iterating
+            if (!docsByKey.hasOwnProperty(key)) {
+                console.log(
+                    `WARNING: Document ${key} is missing from index,` +
+                        ` chunkKey ${chunkKey}`
+                );
+                continue;
+            }
 
-                            // Get out the object type
-                            let thisModelSetId = objectProps["_msid"];
-                            delete objectProps["_msid"];
+            // Reconstruct the data
+            let objectProps: {} = JSON.parse(docsByKey[key]);
+            objectProps = new Jsonable().fromJsonField(objectProps);
 
-                            // Create the new object
-                            let newObject = new DocumentTuple();
-                            foundDocuments.push(newObject);
+            // Get out the object type
+            let thisDocumentTypeId = objectProps["_dtid"];
+            delete objectProps["_dtid"];
 
-                            newObject.key = key;
-                            newObject.modelSet = new DocDbModelSetTuple();
-                            newObject.modelSet.id = thisModelSetId;
-                            newObject.documentType =
-                                new DocDbDocumentTypeTuple();
-                            newObject.documentType.id = thisDocumentTypeId;
-                            newObject.document = objectProps;
-                        }
+            // Get out the object type
+            let thisModelSetId = objectProps["_msid"];
+            delete objectProps["_msid"];
 
-                        return foundDocuments;
-                    });
-            });
+            // Create the new object
+            let newObject = new DocumentTuple();
+            foundDocuments.push(newObject);
 
-        return retPromise;
+            newObject.key = key;
+            newObject.modelSet = new DocDbModelSetTuple();
+            newObject.modelSet.id = thisModelSetId;
+            newObject.documentType = new DocDbDocumentTypeTuple();
+            newObject.documentType.id = thisDocumentTypeId;
+            newObject.document = objectProps;
+        }
+
+        return foundDocuments;
     }
 
     private _populateAndIndexObjectTypes(

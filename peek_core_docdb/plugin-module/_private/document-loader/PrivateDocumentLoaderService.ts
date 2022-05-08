@@ -28,7 +28,7 @@ import { DocDbDocumentTypeTuple } from "../../DocDbDocumentTypeTuple";
 import { PrivateDocumentLoaderStatusTuple } from "./PrivateDocumentLoaderStatusTuple";
 import { DocDbModelSetTuple } from "../../DocDbModelSetTuple";
 import {
-    DeviceOfflineCacheControllerService,
+    DeviceOfflineCacheService,
     OfflineCacheStatusTuple,
 } from "@peek/peek_core_device";
 
@@ -121,7 +121,6 @@ function keyChunk(modelSetKey: string, key: string): string {
 @Injectable()
 export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
     private UPDATE_CHUNK_FETCH_SIZE = 5;
-    private OFFLINE_CHECK_PERIOD_MS = 15 * 60 * 1000; // 15 minutes
 
     private index = new DocumentUpdateDateTuple();
     private askServerChunks: DocumentUpdateDateTuple[] = [];
@@ -145,7 +144,7 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
         private vortexStatusService: VortexStatusService,
         storageFactory: TupleStorageFactoryService,
         private tupleService: DocDbTupleService,
-        private deviceCacheControllerService: DeviceOfflineCacheControllerService
+        private deviceCacheControllerService: DeviceOfflineCacheService
     ) {
         super();
 
@@ -431,14 +430,19 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
 
         if (this.askServerChunks.length == 0) return;
 
-        let indexChunk: DocumentUpdateDateTuple = this.askServerChunks.pop();
-        let filt = extend({}, clientDocumentWatchUpdateFromDeviceFilt);
-        filt[cacheAll] = true;
-        let pl = new Payload(filt, [indexChunk]);
-        this.vortexService.sendPayload(pl);
+        this.deviceCacheControllerService //
+            .waitForGarbageCollector()
+            .then(() => {
+                let indexChunk: DocumentUpdateDateTuple =
+                    this.askServerChunks.pop();
+                let filt = extend({}, clientDocumentWatchUpdateFromDeviceFilt);
+                filt[cacheAll] = true;
+                let pl = new Payload(filt, [indexChunk]);
+                this.vortexService.sendPayload(pl);
 
-        this._status.lastCheck = new Date();
-        this._notifyStatus();
+                this._status.lastCheck = new Date();
+                this._notifyStatus();
+            });
     }
 
     /** Process Documentes From Server

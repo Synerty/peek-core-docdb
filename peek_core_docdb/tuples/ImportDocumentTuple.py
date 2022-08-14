@@ -28,3 +28,13 @@ class ImportDocumentTuple(Tuple):
 
     #:  The hash of this import group
     importGroupHash: str = TupleField()
+
+    def __repr__(self):
+        s = ""
+        s += f"key={self.key}\n"
+        s += f"modelSetKey={self.modelSetKey}\n"
+        s += f"documentTypeKey={self.documentTypeKey}\n"
+        s += f"importGroupHash={self.importGroupHash}\n"
+        for key, value in sorted(self.document.items(), key=lambda i: i[0]):
+            s += f"prop.{key}={value}\n"
+        return s

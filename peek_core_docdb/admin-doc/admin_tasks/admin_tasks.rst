@@ -76,8 +76,8 @@ Each model set has it's own document index.
         DELETE FROM core_docdb."DocDbEncodedChunkTuple" WHERE "modelSetId" = <ID>;
 
         -- Queue the chunks for compiling.
-        INSERT INTO core_docdb."DocDbChunkQueue" ("modelSetId", "indexBucket")
-        SELECT DISTINCT "modelSetId", "indexBucket"
+        INSERT INTO core_docdb."DocDbChunkQueue" ("modelSetId", "chunkKey")
+        SELECT DISTINCT "modelSetId", "chunkKey"
         FROM core_docdb."DocDbDocument"
         WHERE "modelSetId" = <ID>;
 

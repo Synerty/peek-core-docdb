@@ -3,6 +3,16 @@ Admin Tasks
 
 This section describes how to perform administration tasks for the Document DB plugin.
 
+Viewing a Document
+``````````````````
+Documents can be queried in the database using the View Document Tab.
+This can be useful for debugging.
+
+To view a document, enter the ID into the search box.
+
+.. image:: view_document.png
+    :align: center
+
 Updating Document Types
 ```````````````````````
 

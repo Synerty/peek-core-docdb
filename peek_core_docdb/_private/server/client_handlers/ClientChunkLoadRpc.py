@@ -25,6 +25,7 @@ class ClientChunkLoadRpc(ACIChunkLoadRpcABC):
         """
 
         yield self.loadDocumentChunks.start(funcSelf=self)
+        yield self.loadDocumentIndexDelta.start(funcSelf=self)
         logger.debug("RPCs started")
 
     # -------------
@@ -35,12 +36,20 @@ class ClientChunkLoadRpc(ACIChunkLoadRpcABC):
         additionalFilt=docDbFilt,
         deferToThread=True,
     )
-    def loadDocumentChunks(self, offset: int, count: int) -> str:
-        """Update Page Loader Status
+    def loadDocumentIndexDelta(self, indexEncodedPayload: bytes) -> bytes:
+        return self.ckiChunkIndexDeltaBlocking(
+            indexEncodedPayload, DocDbEncodedChunk
+        )
 
-        Tell the server of the latest status of the loader
-
-        """
+    # -------------
+    @vortexRPC(
+        peekServerName,
+        acceptOnlyFromVortex=peekBackendNames,
+        timeoutSeconds=60,
+        additionalFilt=docDbFilt,
+        deferToThread=True,
+    )
+    def loadDocumentChunks(self, chunkKeys: list[str]) -> list[Tuple]:
         return self.ckiInitialLoadChunksPayloadBlocking(
-            offset, count, DocDbEncodedChunk
+            chunkKeys, DocDbEncodedChunk
         )

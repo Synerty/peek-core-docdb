@@ -25,7 +25,9 @@ class DocDbEncodedChunk(Tuple, DeclarativeBase, ACIEncodedChunkTupleABC):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
 
     modelSetId = Column(
-        Integer, ForeignKey("DocDbModelSet.id", ondelete="CASCADE"), nullable=False
+        Integer,
+        ForeignKey("DocDbModelSet.id", ondelete="CASCADE"),
+        nullable=False,
     )
     modelSet = relationship(DocDbModelSet)
 
@@ -35,12 +37,18 @@ class DocDbEncodedChunk(Tuple, DeclarativeBase, ACIEncodedChunkTupleABC):
     lastUpdate = Column(String, nullable=False)
 
     __table_args__ = (
-        Index("idx_Chunk_modelSetId_chunkKey", modelSetId, chunkKey, unique=False),
+        Index(
+            "idx_Chunk_modelSetId_chunkKey", modelSetId, chunkKey, unique=False
+        ),
     )
 
     @property
     def ckiChunkKey(self):
         return self.chunkKey
+
+    @property
+    def ckiEncodedData(self):
+        return self.encodedData
 
     @property
     def ckiHasEncodedData(self) -> bool:
@@ -57,6 +65,10 @@ class DocDbEncodedChunk(Tuple, DeclarativeBase, ACIEncodedChunkTupleABC):
     @classmethod
     def sqlCoreChunkKeyColumn(cls):
         return cls.__table__.c.chunkKey
+
+    @classmethod
+    def sqlCoreLastUpdateColumn(cls):
+        return cls.__table__.c.lastUpdate
 
     @classmethod
     def sqlCoreLoad(cls, row):

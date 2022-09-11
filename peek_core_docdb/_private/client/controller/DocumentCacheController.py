@@ -8,6 +8,9 @@ from peek_core_docdb._private.server.client_handlers.ClientChunkLoadRpc import (
     ClientChunkLoadRpc,
 )
 from peek_core_docdb._private.storage.DocDbEncodedChunk import DocDbEncodedChunk
+from peek_core_docdb._private.tuples.DocumentUpdateDateTuple import (
+    DocumentUpdateDateTuple,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +27,8 @@ class DocumentCacheController(ACICacheControllerABC):
     """
 
     _ChunkedTuple = DocDbEncodedChunk
+    _UpdateDateTupleABC = DocumentUpdateDateTuple
     _chunkLoadRpcMethod = ClientChunkLoadRpc.loadDocumentChunks
+    _chunkIndexDeltaRpcMethod = ClientChunkLoadRpc.loadDocumentIndexDelta
     _updateFromServerFilt = clientDocumentUpdateFromServerFilt
     _logger = logger

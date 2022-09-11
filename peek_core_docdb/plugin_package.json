@@ -39,6 +39,7 @@
         "moduleDir": "plugin-module"
     },
     "field": {
+        "standalone": true,
         "cfgDir": "_private/both-cfg",
         "cfgModule": "docdb-cfg.module#DocDBCfgModule",
         "showHomeLink": false,
@@ -86,6 +87,7 @@
         ]
     },
     "office": {
+        "standalone": true,
         "cfgDir": "_private/both-cfg",
         "cfgModule": "docdb-cfg.module#DocDBCfgModule",
         "showHomeLink": false,

@@ -3,8 +3,13 @@ import logging
 from twisted.internet.defer import inlineCallbacks
 
 from peek_plugin_base.PeekVortexUtil import peekServerName
-from peek_plugin_base.client.PluginClientEntryHookABC import PluginClientEntryHookABC
-from peek_core_docdb._private.PluginNames import docDbFilt, docDbActionProcessorName
+from peek_plugin_base.client.PluginClientEntryHookABC import (
+    PluginClientEntryHookABC,
+)
+from peek_core_docdb._private.PluginNames import (
+    docDbFilt,
+    docDbActionProcessorName,
+)
 from peek_core_docdb._private.PluginNames import docDbObservableName
 from peek_core_docdb._private.client.TupleDataObservable import (
     makeClientTupleDataObservableHandler,
@@ -29,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 class ClientEntryHook(PluginClientEntryHookABC):
     def __init__(self, *args, **kwargs):
-        """" Constructor """
+        """ " Constructor"""
         # Call the base classes constructor
         PluginClientEntryHookABC.__init__(self, *args, **kwargs)
 
@@ -94,14 +99,17 @@ class ClientEntryHook(PluginClientEntryHookABC):
         # ----------------
         # Document Cache Controller
 
-        documentCacheController = DocumentCacheController(self.platform.serviceId)
+        documentCacheController = DocumentCacheController(
+            self.platform.serviceId, self.platform.fileStorageDirectory
+        )
         self._loadedObjects.append(documentCacheController)
 
         # ----------------
         # Document Cache Handler
 
         documentHandler = DocumentCacheHandler(
-            cacheController=documentCacheController, clientId=self.platform.serviceId
+            cacheController=documentCacheController,
+            clientId=self.platform.serviceId,
         )
         self._loadedObjects.append(documentHandler)
 

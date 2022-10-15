@@ -3,15 +3,14 @@ from typing import Any
 
 from twisted.internet.defer import inlineCallbacks
 from txhttputil.site.FileUnderlayResource import FileUnderlayResource
+from vortex.handler.TupleActionProcessorProxy import TupleActionProcessorProxy
+from vortex.handler.TupleDataObservableProxyHandler import (
+    TupleDataObservableProxyHandler,
+)
+from vortex.handler.TupleDataObserverClient import TupleDataObserverClient
 
-from peek_plugin_base.PeekVortexUtil import peekServerName
-from peek_plugin_base.client.PluginClientEntryHookABC import (
-    PluginClientEntryHookABC,
-)
-from peek_core_docdb._private.PluginNames import (
-    docDbFilt,
-    docDbActionProcessorName,
-)
+from peek_core_docdb._private.PluginNames import docDbActionProcessorName
+from peek_core_docdb._private.PluginNames import docDbFilt
 from peek_core_docdb._private.PluginNames import docDbObservableName
 from peek_core_docdb._private.client.TupleDataObservable import (
     makeClientTupleDataObservableHandler,
@@ -25,11 +24,10 @@ from peek_core_docdb._private.client.handlers.DocumentCacheHandler import (
 from peek_core_docdb._private.storage.DeclarativeBase import loadStorageTuples
 from peek_core_docdb._private.tuples import loadPrivateTuples
 from peek_core_docdb.tuples import loadPublicTuples
-from vortex.handler.TupleActionProcessorProxy import TupleActionProcessorProxy
-from vortex.handler.TupleDataObservableProxyHandler import (
-    TupleDataObservableProxyHandler,
+from peek_plugin_base.PeekVortexUtil import peekServerName
+from peek_plugin_base.client.PluginClientEntryHookABC import (
+    PluginClientEntryHookABC,
 )
-from vortex.handler.TupleDataObserverClient import TupleDataObserverClient
 
 logger = logging.getLogger(__name__)
 
@@ -152,6 +150,7 @@ class ClientEntryHook(PluginClientEntryHookABC):
 
         # ----------------
         # Start the compiler controllers
+        yield documentHandler.start()
         yield documentCacheController.start()
 
         logger.debug("Started")

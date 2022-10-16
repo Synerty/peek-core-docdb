@@ -17,5 +17,5 @@ logger = logging.getLogger(__name__)
 
 class ClientChunkUpdateHandler(ACIChunkUpdateHandlerABC):
     _ChunkedTuple: ACIEncodedChunkTupleABC = DocDbEncodedChunk
-    _updateFromServerFilt: Dict = clientDocumentUpdateFromServerFilt
+    _updateFromLogicFilt: Dict = clientDocumentUpdateFromServerFilt
     _logger: logging.Logger = logger

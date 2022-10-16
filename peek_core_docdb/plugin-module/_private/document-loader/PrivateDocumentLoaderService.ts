@@ -214,6 +214,10 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
         return this._status;
     }
 
+    get offlineEnabled(): boolean {
+        return this.index.initialLoadComplete;
+    }
+
     /** Get Documents
      *
      * Get the objects with matching keywords from the index..
@@ -252,9 +256,9 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
                 );
         }
 
-        if (!this.deviceCacheControllerService.offlineModeEnabled) {
+        if (!this.offlineEnabled) {
             console.log(
-                "WARNING Offline support for Documents is disabled," +
+                "WARNING The offline cache has not finished loading," +
                     " returning zero results"
             );
             return Promise.resolve({});

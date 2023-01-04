@@ -30,5 +30,5 @@ class DocumentCacheController(ACICacheControllerABC):
     _UpdateDateTupleABC = DocumentUpdateDateTuple
     _chunkLoadRpcMethod = ClientChunkLoadRpc.loadDocumentChunks
     _chunkIndexDeltaRpcMethod = ClientChunkLoadRpc.loadDocumentIndexDelta
-    _updateFromServerFilt = clientDocumentUpdateFromServerFilt
+    _updateFromLogicFilt = clientDocumentUpdateFromServerFilt
     _logger = logger

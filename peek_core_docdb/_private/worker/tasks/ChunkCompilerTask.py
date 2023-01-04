@@ -13,7 +13,9 @@ from vortex.Payload import Payload
 
 from peek_plugin_base.worker import CeleryDbConn
 from peek_plugin_base.worker.CeleryApp import celeryApp
-from peek_core_docdb._private.storage.DocDbCompilerQueue import DocDbCompilerQueue
+from peek_core_docdb._private.storage.DocDbCompilerQueue import (
+    DocDbCompilerQueue,
+)
 from peek_core_docdb._private.storage.DocDbDocument import DocDbDocument
 from peek_core_docdb._private.storage.DocDbEncodedChunk import DocDbEncodedChunk
 
@@ -31,7 +33,7 @@ Compile the docDb indexes
 
 @DeferrableTask
 @celeryApp.task(bind=True)
-def compileDocumentChunk(self, payloadEncodedArgs: bytes) -> List[int]:
+def compileDocumentChunk(self, payloadEncodedArgs: bytes) -> dict[str, str]:
     """Compile DocDb Index Task
 
     :param self: The reference to this celery task
@@ -51,8 +53,13 @@ def compileDocumentChunk(self, payloadEncodedArgs: bytes) -> List[int]:
         for queueItem in queueItems:
             queueItemsByModelSetId[queueItem.modelSetId].append(queueItem)
 
+        lastUpdateByChunkKey = {}
         for modelSetId, modelSetQueueItems in queueItemsByModelSetId.items():
-            _compileDocumentChunk(conn, transaction, modelSetId, modelSetQueueItems)
+            lastUpdateByChunkKey.update(
+                _compileDocumentChunk(
+                    conn, transaction, modelSetId, modelSetQueueItems
+                )
+            )
 
         queueTable = DocDbCompilerQueue.__table__
 
@@ -68,12 +75,12 @@ def compileDocumentChunk(self, payloadEncodedArgs: bytes) -> List[int]:
     finally:
         conn.close()
 
-    return list(set([i.chunkKey for i in queueItems]))
+    return lastUpdateByChunkKey
 
 
 def _compileDocumentChunk(
     conn, transaction, modelSetId: int, queueItems: List[DocDbCompilerQueue]
-) -> None:
+) -> dict[str, str]:
     chunkKeys = list(set([i.chunkKey for i in queueItems]))
 
     compiledTable = DocDbEncodedChunk.__table__
@@ -94,8 +101,13 @@ def _compileDocumentChunk(
     encKwPayloadByChunkKey = _buildIndex(chunkKeys)
     chunksToDelete = []
 
+    lastUpdateByChunkKey = {}
+
     inserts = []
-    for chunkKey, docDbIndexChunkEncodedPayload in encKwPayloadByChunkKey.items():
+    for (
+        chunkKey,
+        docDbIndexChunkEncodedPayload,
+    ) in encKwPayloadByChunkKey.items():
         m = hashlib.sha256()
         m.update(docDbIndexChunkEncodedPayload)
         encodedHash = b64encode(m.digest()).decode()
@@ -106,6 +118,8 @@ def _compileDocumentChunk(
             # but inserts are quicker
             if encodedHash == existingHashes.pop(chunkKey):
                 continue
+
+        lastUpdateByChunkKey[str(chunkKey)] = lastUpdate
 
         chunksToDelete.append(chunkKey)
         inserts.append(
@@ -123,10 +137,14 @@ def _compileDocumentChunk(
 
     if chunksToDelete:
         # Delete the old chunks
-        conn.execute(compiledTable.delete(compiledTable.c.chunkKey.in_(chunksToDelete)))
+        conn.execute(
+            compiledTable.delete(compiledTable.c.chunkKey.in_(chunksToDelete))
+        )
 
     if inserts:
-        newIdGen = CeleryDbConn.prefetchDeclarativeIds(DocDbDocument, len(inserts))
+        newIdGen = CeleryDbConn.prefetchDeclarativeIds(
+            DocDbDocument, len(inserts)
+        )
         for insert in inserts:
             insert["id"] = next(newIdGen)
 
@@ -152,6 +170,8 @@ def _compileDocumentChunk(
         (datetime.now(pytz.utc) - startTime),
     )
 
+    return lastUpdateByChunkKey
+
 
 def _loadExistingHashes(conn, chunkKeys: List[str]) -> Dict[str, str]:
     compiledTable = DocDbEncodedChunk.__table__
@@ -172,7 +192,9 @@ def _buildIndex(chunkKeys) -> Dict[str, bytes]:
     try:
         indexQry = (
             session.query(
-                DocDbDocument.chunkKey, DocDbDocument.key, DocDbDocument.documentJson
+                DocDbDocument.chunkKey,
+                DocDbDocument.key,
+                DocDbDocument.documentJson,
             )
             .filter(DocDbDocument.chunkKey.in_(chunkKeys))
             .order_by(DocDbDocument.key)
@@ -184,7 +206,9 @@ def _buildIndex(chunkKeys) -> Dict[str, bytes]:
         packagedJsonByObjIdByChunkKey = defaultdict(dict)
 
         for item in indexQry:
-            packagedJsonByObjIdByChunkKey[item.chunkKey][item.key] = item.documentJson
+            packagedJsonByObjIdByChunkKey[item.chunkKey][
+                item.key
+            ] = item.documentJson
 
         encPayloadByChunkKey = {}
 

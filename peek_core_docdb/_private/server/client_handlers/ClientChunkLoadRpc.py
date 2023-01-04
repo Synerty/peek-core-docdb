@@ -35,7 +35,7 @@ class ClientChunkLoadRpc(ACIChunkLoadRpcABC):
     @vortexRPC(
         peekServerName,
         acceptOnlyFromVortex=peekBackendNames,
-        timeoutSeconds=60,
+        timeoutSeconds=120,
         additionalFilt=docDbFilt,
         deferToThread=True,
     )
@@ -48,7 +48,7 @@ class ClientChunkLoadRpc(ACIChunkLoadRpcABC):
     @vortexRPC(
         peekServerName,
         acceptOnlyFromVortex=peekBackendNames,
-        timeoutSeconds=60,
+        timeoutSeconds=120,
         additionalFilt=docDbFilt,
         deferToThread=True,
     )

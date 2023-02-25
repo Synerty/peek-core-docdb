@@ -4,4 +4,3 @@ export {
     PrivateDocumentLoaderService,
     DocumentResultI,
 } from "./PrivateDocumentLoaderService";
-export { PrivateDocumentLoaderStatusTuple } from "./PrivateDocumentLoaderStatusTuple";

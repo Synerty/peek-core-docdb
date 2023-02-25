@@ -40,8 +40,6 @@
     },
     "field": {
         "subprocessGroup": "docdb",
-        "cfgDir": "_private/both-cfg",
-        "cfgModule": "docdb-cfg.module#DocDBCfgModule",
         "showHomeLink": false,
         "appDir": "_private/both-app",
         "appModule": "debug-page/debug-page.module#DocDbPopupDebugModule",
@@ -88,8 +86,6 @@
     },
     "office": {
         "subprocessGroup": "docdb",
-        "cfgDir": "_private/both-cfg",
-        "cfgModule": "docdb-cfg.module#DocDBCfgModule",
         "showHomeLink": false,
         "appDir": "_private/both-app",
         "appModule": "debug-page/debug-page.module#DocDbPopupDebugModule",

@@ -6,7 +6,6 @@ import {
     DocDbModelSetTuple,
 } from "@peek/peek_core_docdb";
 import {
-    extend,
     NgLifeCycleEvents,
     TupleDataObserverService,
     TupleLoader,
@@ -36,7 +35,7 @@ export class EditDocumentTypeComponent extends NgLifeCycleEvents {
         super();
 
         this.loader = vortexService.createTupleLoader(this, () =>
-            extend({}, this.filt, docDbFilt)
+            Object.assign({}, this.filt, docDbFilt)
         );
 
         this.loader.observable.subscribe(

@@ -2,7 +2,6 @@ import { Observable, Subject } from "rxjs";
 import { filter, first, takeUntil } from "rxjs/operators";
 import { Injectable } from "@angular/core";
 import {
-    extend,
     Jsonable,
     NgLifeCycleEvents,
     Payload,
@@ -40,7 +39,7 @@ export interface DocumentResultI {
 
 // ----------------------------------------------------------------------------
 
-let clientDocumentWatchUpdateFromDeviceFilt = extend(
+let clientDocumentWatchUpdateFromDeviceFilt = Object.assign(
     { key: "clientDocumentWatchUpdateFromDevice" },
     docDbFilt
 );
@@ -452,7 +451,7 @@ export class PrivateDocumentLoaderService extends NgLifeCycleEvents {
         }
 
         let indexChunk: DocumentUpdateDateTuple = this.askServerChunks.pop();
-        let filt = extend({}, clientDocumentWatchUpdateFromDeviceFilt);
+        let filt = Object.assign({}, clientDocumentWatchUpdateFromDeviceFilt);
         filt[cacheAll] = true;
         let pl = new Payload(filt, [indexChunk]);
         this.vortexService.sendPayload(pl);

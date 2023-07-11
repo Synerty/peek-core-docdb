@@ -1,10 +1,9 @@
 import { Component } from "@angular/core";
 import { BalloonMsgService } from "@synerty/peek-plugin-base-js";
 import {
-    extend,
     NgLifeCycleEvents,
     TupleLoader,
-    VortexService
+    VortexService,
 } from "@synerty/vortexjs";
 import { docDbFilt } from "@peek/peek_core_docdb/_private";
 import { DocumentTuple } from "@peek/peek_core_docdb";
@@ -31,7 +30,7 @@ export class ViewDocumentComponent extends NgLifeCycleEvents {
         super();
 
         this.loader = vortexService.createTupleLoader(this, () =>
-            extend(
+            Object.assign(
                 {
                     docKey: this.docKey,
                     modelSetKey: this.modelSetKey,

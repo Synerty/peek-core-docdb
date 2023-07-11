@@ -2,7 +2,6 @@ import { takeUntil } from "rxjs/operators";
 import { Component } from "@angular/core";
 import { BalloonMsgService } from "@synerty/peek-plugin-base-js";
 import {
-    extend,
     NgLifeCycleEvents,
     TupleDataObserverService,
     TupleLoader,
@@ -34,7 +33,7 @@ export class EditPropertyComponent extends NgLifeCycleEvents {
         super();
 
         this.loader = vortexService.createTupleLoader(this, () =>
-            extend({}, this.filt, docDbFilt)
+            Object.assign({}, this.filt, docDbFilt)
         );
 
         this.loader.observable.subscribe(

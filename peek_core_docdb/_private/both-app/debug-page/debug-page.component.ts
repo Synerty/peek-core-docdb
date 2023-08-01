@@ -32,7 +32,7 @@ export class DocDbPopupComponent extends NgLifeCycleEvents implements OnInit {
         headerService.setTitle("Loading Document ...");
     }
 
-    ngOnInit() {
+    override ngOnInit() {
         this.route.params
             .pipe(takeUntil(this.onDestroyEvent))
             .subscribe((params: Params) => {

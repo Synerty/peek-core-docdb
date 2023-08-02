@@ -57,7 +57,7 @@ class DocumentChunkTupleSelector extends TupleSelector {
         super(docDbTuplePrefix + "DocumentChunkTuple", { key: chunkKey });
     }
 
-    toOrderedJsonStr(): string {
+    override toOrderedJsonStr(): string {
         return this.chunkKey;
     }
 }

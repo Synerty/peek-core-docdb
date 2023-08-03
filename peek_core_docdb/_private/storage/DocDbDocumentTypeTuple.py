@@ -9,7 +9,7 @@ from vortex.Tuple import Tuple, addTupleType
 
 
 @addTupleType
-class DocDbDocumentTypeTuple(Tuple, DeclarativeBase):
+class DocDbDocumentTypeTuple(DeclarativeBase, Tuple):
     __tupleType__ = docDbTuplePrefix + "DocDbDocumentTypeTuple"
     __tablename__ = "DocDbDocumentType"
 

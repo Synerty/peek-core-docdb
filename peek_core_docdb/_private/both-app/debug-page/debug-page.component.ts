@@ -13,7 +13,7 @@ import {
 @Component({
     selector: "plugin-docdb-popup-debug",
     templateUrl: "debug-page.component.html",
-    styles: [``],
+    styles: [],
 })
 export class DocDbPopupComponent extends NgLifeCycleEvents implements OnInit {
     doc: DocumentTuple = new DocumentTuple();
@@ -32,7 +32,7 @@ export class DocDbPopupComponent extends NgLifeCycleEvents implements OnInit {
         headerService.setTitle("Loading Document ...");
     }
 
-    ngOnInit() {
+    override ngOnInit() {
         this.route.params
             .pipe(takeUntil(this.onDestroyEvent))
             .subscribe((params: Params) => {

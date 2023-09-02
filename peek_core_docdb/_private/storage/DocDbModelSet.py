@@ -7,7 +7,7 @@ from .DeclarativeBase import DeclarativeBase
 
 
 @addTupleType
-class DocDbModelSet(Tuple, DeclarativeBase):
+class DocDbModelSet(DeclarativeBase, Tuple):
     __tablename__ = "DocDbModelSet"
     __tupleType__ = docDbTuplePrefix + __tablename__
 

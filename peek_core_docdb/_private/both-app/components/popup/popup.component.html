@@ -79,7 +79,7 @@
     (nzVisible)="closeModal()"
     [nzFooter]="null"
     [nzTitle]="modalName()"
-    [nzVisible]="modalAction$ | async"
+    [nzVisible]="(modalAction$ | async) != null"
 >
     <div class="child-menu-items">
         <ul nz-menu>

@@ -12,7 +12,7 @@ from vortex.Tuple import Tuple, addTupleType
 
 
 @addTupleType
-class DocDbDocument(Tuple, DeclarativeBase):
+class DocDbDocument(DeclarativeBase, Tuple):
     __tupleType__ = docDbTuplePrefix + "DocDbDocumentTable"
     __tablename__ = "DocDbDocument"
 
